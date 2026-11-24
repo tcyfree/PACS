@@ -34,8 +34,14 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 	{
 	case NVM::NVM_Type::FLASH:
 	{
+		if (parameters->PACS_Enabled && (parameters->Address_Mapping != SSD_Components::Flash_Address_Mapping_Type::PAGE_LEVEL
+			|| parameters->Plane_Allocation_Scheme != SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP)) {
+			throw std::invalid_argument("PACS requires page-level mapping with CWDP striping");
+		}
+
 		sim_time_type *read_latencies, *write_latencies;
 		sim_time_type average_flash_read_latency = 0, average_flash_write_latency = 0; //Required for FTL initialization
+		const auto& wordline_program_latencies = parameters->Flash_Parameters.Wordline_Program_Latencies;
 
 		//Step 1: create memory chips (flash chips in our case)
 		switch (parameters->Flash_Parameters.Flash_Technology)
@@ -73,6 +79,11 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		default:
 			throw std::invalid_argument("The specified flash technologies is not supported");
 		}
+		if (!wordline_program_latencies.empty()) {
+			average_flash_write_latency = static_cast<sim_time_type>(std::accumulate(
+				wordline_program_latencies.begin(), wordline_program_latencies.end(), 0.0L) / wordline_program_latencies.size());
+			PRINT_MESSAGE("Using program latencies for " << wordline_program_latencies.size() << " wordlines")
+		}
 
 		//Step 2: create memory channels to connect chips to the controller
 		this->Channel_count = parameters->Flash_Channel_Count;
@@ -90,7 +101,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 					chips[chip_cntr] = new NVM::FlashMemory::Flash_Chip(device->ID() + ".Channel." + std::to_string(channel_cntr) + ".Chip." + std::to_string(chip_cntr),
 																		channel_cntr, chip_cntr, parameters->Flash_Parameters.Flash_Technology, parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
 																		parameters->Flash_Parameters.Block_No_Per_Plane, parameters->Flash_Parameters.Page_No_Per_Block,
-																		read_latencies, write_latencies, parameters->Flash_Parameters.Block_Erase_Latency,
+																read_latencies, write_latencies, wordline_program_latencies, parameters->Flash_Parameters.Block_Erase_Latency,
 																		parameters->Flash_Parameters.Suspend_Program_Time, parameters->Flash_Parameters.Suspend_Erase_Time);
 					Simulator->AddObject(chips[chip_cntr]); //Each simulation object (a child of MQSimEngine::Sim_Object) should be added to the engine
 				}
@@ -102,7 +113,8 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 
 			//Step 3: create channel controller and connect channels to it
 			device->PHY = new SSD_Components::NVM_PHY_ONFI_NVDDR2(device->ID() + ".PHY", channels, parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
-																  parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die);
+																 parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
+																 parameters->PACS_Enabled);
 			Simulator->AddObject(device->PHY);
 			break;
 		}
@@ -440,6 +452,9 @@ void SSD_Device::Report_results_in_XML(std::string name_prefix, Utils::XmlWriter
 	{
 		((SSD_Components::FTL *)this->Firmware)->Report_results_in_XML(ID(), xmlwriter);
 		((SSD_Components::FTL *)this->Firmware)->TSU->Report_results_in_XML(ID(), xmlwriter);
+		if (const auto* pacs = static_cast<SSD_Components::NVM_PHY_ONFI_NVDDR2*>(PHY)->Get_pacs()) {
+			pacs->Report_results_in_XML(xmlwriter);
+		}
 		/*****************??****************/
 		unsigned int Die_no_per_chip = SSD_Components::Stats::Die_no_per_Chip;
 		unsigned int Plane_no_per_die =SSD_Components::Stats::Plane_no_per_Die;

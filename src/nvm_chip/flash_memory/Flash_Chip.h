@@ -1,6 +1,7 @@
 #ifndef FLASH_CHIP_H
 #define FLASH_CHIP_H
 
+#include <algorithm>
 #include "../../sim/Sim_Defs.h"
 #include "../../sim/Sim_Event.h"
 #include "../../sim/Engine.h"
@@ -24,7 +25,7 @@ namespace NVM
 			Flash_Chip(const sim_object_id_type&, flash_channel_ID_type channelID, flash_chip_ID_type localChipID,
 				Flash_Technology_Type flash_technology, 
 				unsigned int dieNo, unsigned int PlaneNoPerDie, unsigned int Block_no_per_plane, unsigned int Page_no_per_block,
-				sim_time_type *readLatency, sim_time_type *programLatency, sim_time_type eraseLatency,
+				sim_time_type *readLatency, sim_time_type *programLatency, const std::vector<sim_time_type>& wordlineProgramLatencies, sim_time_type eraseLatency,
 				sim_time_type suspendProgramLatency, sim_time_type suspendEraseLatency,
 				sim_time_type commProtocolDelayRead = 20, sim_time_type commProtocolDelayWrite = 0, sim_time_type commProtocolDelayErase = 0);
 			~Flash_Chip();
@@ -85,17 +86,22 @@ namespace NVM
 			typedef void(*ChipReadySignalHandlerType) (Flash_Chip* targetChip, Flash_Command* command);
 			void Connect_to_chip_ready_signal(ChipReadySignalHandlerType);
 			
-			sim_time_type Get_command_execution_latency(command_code_type CMDCode, flash_page_ID_type pageID)
+			unsigned int Get_page_type(flash_page_ID_type pageID) const
 			{
-				int latencyType = 0;
 				if (flash_technology == Flash_Technology_Type::MLC) {
-					latencyType = pageID % 2;
-				} else if (flash_technology == Flash_Technology_Type::TLC) {
-					//From: Yaakobi et al., "Characterization and Error-Correcting Codes for TLC Flash Memories", ICNC 2012
-					latencyType = (pageID <= 5) ? 0 : ((pageID <= 7) ? 1 : (((pageID - 8) >> 1) % 3));;
+					return pageID % 2;
 				}
+				if (flash_technology == Flash_Technology_Type::TLC) {
+					//From: Yaakobi et al., "Characterization and Error-Correcting Codes for TLC Flash Memories", ICNC 2012
+					return (pageID <= 5) ? 0 : ((pageID <= 7) ? 1 : (((pageID - 8) >> 1) % 3));
+				}
+				return 0;
+			}
 
-				switch (CMDCode)
+			sim_time_type Get_command_execution_latency(const Flash_Command& command)
+			{
+				const auto latencyType = Get_page_type(command.Address.front().PageID);
+				switch (command.CommandCode)
 				{
 					case CMD_READ_PAGE:
 					case CMD_READ_PAGE_MULTIPLANE:
@@ -105,8 +111,18 @@ namespace NVM
 					case CMD_PROGRAM_PAGE:
 					case CMD_PROGRAM_PAGE_MULTIPLANE:
 					case CMD_PROGRAM_PAGE_COPYBACK:
-					case CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE:
-						return _programLatency[latencyType] + _RBSignalDelayWrite;
+					case CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE: {
+						if (_wordlineProgramLatencies.empty()) {
+							return _programLatency[latencyType] + _RBSignalDelayWrite;
+						}
+						// Consecutive pages share a wordline. A multi-plane command waits for its slowest plane.
+						const auto pages_per_wordline = static_cast<unsigned int>(flash_technology);
+						sim_time_type latency = 0;
+						for (const auto& address : command.Address) {
+							latency = std::max(latency, _wordlineProgramLatencies[address.PageID / pages_per_wordline]);
+						}
+						return latency + _RBSignalDelayWrite;
+					}
 					case CMD_ERASE_BLOCK:
 					case CMD_ERASE_BLOCK_MULTIPLANE:
 						return _eraseLatency + _RBSignalDelayErase;
@@ -139,6 +155,7 @@ namespace NVM
 			unsigned int plane_no_in_die;                  //indicate how many planes in a die
 			unsigned int block_no_in_plane;                //indicate how many blocks in a plane
 			unsigned int page_no_per_block;                 //indicate how many pages in a block
+			const std::vector<sim_time_type> _wordlineProgramLatencies;
 			sim_time_type *_readLatency, *_programLatency, _eraseLatency;
 			sim_time_type _suspendProgramLatency, _suspendEraseLatency;
 			sim_time_type _RBSignalDelayRead, _RBSignalDelayWrite, _RBSignalDelayErase;

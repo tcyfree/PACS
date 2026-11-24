@@ -23,6 +23,7 @@ bool Device_Parameter_Set::Ideal_Mapping_Table = false;//If mapping is ideal, th
 unsigned int Device_Parameter_Set::CMT_Capacity = 2 * 1024 * 1024;//Size of SRAM/DRAM space that is used to cache address mapping table in bytes
 SSD_Components::CMT_Sharing_Mode Device_Parameter_Set::CMT_Sharing_Mode = SSD_Components::CMT_Sharing_Mode::SHARED;//How the entire CMT space is shared among concurrently running flows
 SSD_Components::Flash_Plane_Allocation_Scheme_Type Device_Parameter_Set::Plane_Allocation_Scheme = SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP;
+bool Device_Parameter_Set::PACS_Enabled = false;
 SSD_Components::Flash_Scheduling_Type Device_Parameter_Set::Transaction_Scheduling_Policy = SSD_Components::Flash_Scheduling_Type::OUT_OF_ORDER;
 double Device_Parameter_Set::Overprovisioning_Ratio = 0.07;//The ratio of spare space with respect to the whole available storage space of SSD
 double Device_Parameter_Set::GC_Exec_Threshold = 0.05;//The threshold for the ratio of free pages that used to trigger GC
@@ -56,6 +57,10 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 
 	attr = "Enabled_Preconditioning";
 	val = (Enabled_Preconditioning ? "true" : "false");
+	xmlwriter.Write_attribute_string(attr, val);
+
+	attr = "PACS_Enabled";
+	val = PACS_Enabled ? "true" : "false";
 	xmlwriter.Write_attribute_string(attr, val);
 
 	attr = "Memory_Type";
@@ -387,6 +392,13 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				std::string val = param->value();
 				std::transform(val.begin(), val.end(), val.begin(), ::toupper);
 				Enabled_Preconditioning = (val.compare("FALSE") == 0 ? false : true);
+			} else if (strcmp(param->name(), "PACS_Enabled") == 0) {
+				std::string val = param->value();
+				std::transform(val.begin(), val.end(), val.begin(), ::toupper);
+				if (val != "TRUE" && val != "FALSE") {
+					PRINT_ERROR("PACS_Enabled must be true or false")
+				}
+				PACS_Enabled = val == "TRUE";
 			} else if (strcmp(param->name(), "Memory_Type") == 0) {
 				std::string val = param->value();
 				std::transform(val.begin(), val.end(), val.begin(), ::toupper);

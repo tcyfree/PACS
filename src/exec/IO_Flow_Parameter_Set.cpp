@@ -475,8 +475,9 @@ void IO_Flow_Parameter_Set_Trace_Based::XML_deserialize(rapidxml::xml_node<> *no
 				Percentage_To_Be_Executed = std::stoi(val);
 			} else if (strcmp(param->name(), "File_Path") == 0) {
 				File_Path = param->value();
-				std::string trace_naem = File_Path.substr(18, File_Path.find_last_of(".")-18);
-				SSD_Components::Stats::filename = trace_naem;
+				const auto last_separator = File_Path.find_last_of("/\\");
+				const auto trace_filename = File_Path.substr(last_separator == std::string::npos ? 0 : last_separator + 1);
+				SSD_Components::Stats::filename = trace_filename.substr(0, trace_filename.find_last_of('.'));
 			} else if (strcmp(param->name(), "Time_Unit") == 0) {
 				std::string val = param->value();
 				std::transform(val.begin(), val.end(), val.begin(), ::toupper);

@@ -309,10 +309,12 @@ int main(int argc, char* argv[])
 		int setsize = exec_params->SSD_Device_Configuration.Set_count;
 		string setcount = std::to_string(setsize);
 		PRINT_MESSAGE("set的大小是"+setcount);
-		string trace_file_path = static_cast<IO_Flow_Parameter_Set_Trace_Based*>(io_scenarios->front()->front())->File_Path;
+		const string& trace_file_path = static_cast<IO_Flow_Parameter_Set_Trace_Based*>(io_scenarios->front()->front())->File_Path;
 		string relay_count=std::to_string(static_cast<IO_Flow_Parameter_Set_Trace_Based*>(io_scenarios->front()->front())->Relay_Count);
-		trace_file_path = trace_file_path.substr(18, trace_file_path.find_last_of(".")-18);
-		collect_results(ssd, host, ("w_"+trace_file_path +"_setsize"+ setcount +"_reply_"+relay_count+ ".xml").c_str());
+		const auto last_separator = trace_file_path.find_last_of("/\\");
+		const string trace_filename = trace_file_path.substr(last_separator == string::npos ? 0 : last_separator + 1);
+		const string trace_name = trace_filename.substr(0, trace_filename.find_last_of('.'));
+		collect_results(ssd, host, ("w_" + trace_name + "_setsize" + setcount + "_reply_" + relay_count + ".xml").c_str());
 
 	
 	}

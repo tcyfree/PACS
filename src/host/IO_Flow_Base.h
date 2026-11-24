@@ -66,6 +66,7 @@ namespace Host_Components
 		uint32_t Get_end_to_end_request_delay();//in microseconds
 		uint32_t Get_min_end_to_end_request_delay();//in microseconds
 		uint32_t Get_max_end_to_end_request_delay();//in microseconds
+		void Set_flash_page_sectors(unsigned int sectors) { flash_page_sectors = sectors; }
 		void Report_results_in_XML(std::string name_prefix, Utils::XmlWriter& xmlwriter);
 		virtual void Get_statistics(Utils::Workload_Statistics& stats, LPA_type(*Convert_host_logical_address_to_device_address)(LHA_type lha),
 			page_status_type(*Find_NVM_subunit_access_bitmap)(LHA_type lha)) = 0;
@@ -118,7 +119,9 @@ namespace Host_Components
 		sim_time_type STAT_sum_device_response_time_short_term, STAT_sum_request_delay_short_term;
 		unsigned int STAT_serviced_request_count_short_term;
 		
-		std::ofstream latency_files[3];
+		enum Latency_File { ALL_REQUESTS, READ_REQUESTS, WRITE_REQUESTS, MULTI_PAGE_WRITE_REQUESTS, LATENCY_FILE_COUNT };
+		std::ofstream latency_files[LATENCY_FILE_COUNT];
+		unsigned int flash_page_sectors = 0;
 
 	};
 }

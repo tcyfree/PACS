@@ -194,10 +194,12 @@ namespace SSD_Components
 		void Start_servicing_writes_for_overfull_plane(const NVM::FlashMemory::Physical_Page_Address plane_address);
 	private:
 		static Address_Mapping_Unit_Page_Level* _my_instance;
+		PACS* pacs = nullptr;
 		unsigned int cmt_capacity;
 		AddressMappingDomain** domains;
 		unsigned int CMT_entry_size, GTD_entry_size;//In CMT MQSim stores (lpn, ppn, page status bits) but in GTD it only stores (ppn, page status bits)
 		void allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction);
+		void select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain);
 		void allocate_page_in_plane_for_user_write(NVM_Transaction_Flash_WR* transaction, bool is_for_gc);
 		void allocate_plane_for_translation_write(NVM_Transaction_Flash* transaction);
 		void allocate_page_in_plane_for_translation_write(NVM_Transaction_Flash* transaction, MVPN_type mvpn, bool is_for_gc);

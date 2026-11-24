@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <sstream>
 #include <string.h>
 #include "../sim/Engine.h"
 #include "Flash_Parameter_Set.h"
@@ -11,6 +12,7 @@ sim_time_type Flash_Parameter_Set::Page_Read_Latency_MSB = 75000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_LSB = 750000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_CSB = 750000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_MSB = 750000;
+std::vector<sim_time_type> Flash_Parameter_Set::Wordline_Program_Latencies;
 sim_time_type Flash_Parameter_Set::Block_Erase_Latency = 3800000;//Block erase latency in nano-seconds
 unsigned int Flash_Parameter_Set::Block_PE_Cycles_Limit = 10000;
 sim_time_type Flash_Parameter_Set::Suspend_Erase_Time = 700000;//in nano-seconds
@@ -88,6 +90,16 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	val = std::to_string(Page_Program_Latency_MSB);
 	xmlwriter.Write_attribute_string(attr, val);
 
+	if (!Wordline_Program_Latencies.empty()) {
+		std::ostringstream latencies;
+		for (sim_time_type latency : Wordline_Program_Latencies) {
+			latencies << latency << ' ';
+		}
+		attr = "Wordline_Program_Latencies";
+		val = latencies.str();
+		xmlwriter.Write_attribute_string(attr, val);
+	}
+
 	attr = "Block_Erase_Latency";
 	val = std::to_string(Block_Erase_Latency);
 	xmlwriter.Write_attribute_string(attr, val);
@@ -133,6 +145,7 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 
 void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 {
+	Wordline_Program_Latencies.clear();
 	try {
 		for (auto param = node->first_node(); param; param = param->next_sibling()) {
 			if (strcmp(param->name(), "Flash_Technology") == 0) {
@@ -177,6 +190,25 @@ void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 			} else if (strcmp(param->name(), "Page_Program_Latency_MSB") == 0) {
 				std::string val = param->value();
 				Page_Program_Latency_MSB = std::stoull(val);
+			} else if (strcmp(param->name(), "Wordline_Program_Latencies") == 0) {
+				if (!Wordline_Program_Latencies.empty()) {
+					PRINT_ERROR("Specify Wordline_Program_Latencies only once")
+				}
+				std::istringstream latencies(param->value());
+				std::string value;
+				while (latencies >> value) {
+					if (value.find_first_not_of("0123456789") != std::string::npos) {
+						PRINT_ERROR("Wordline_Program_Latencies requires positive integer nanoseconds")
+					}
+					const sim_time_type latency = std::stoull(value);
+					if (latency == 0 || latency == INVALID_TIME) {
+						PRINT_ERROR("Invalid latency in Wordline_Program_Latencies")
+					}
+					Wordline_Program_Latencies.push_back(latency);
+				}
+				if (Wordline_Program_Latencies.empty()) {
+					PRINT_ERROR("Wordline_Program_Latencies is empty")
+				}
 			} else if (strcmp(param->name(), "Block_Erase_Latency") == 0) {
 				std::string val = param->value();
 				Block_Erase_Latency = std::stoull(val);
@@ -211,5 +243,10 @@ void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 		}
 	} catch (...) {
 		PRINT_ERROR("Error in the Flash_Parameter_Set!")
+	}
+	const auto pages_per_wordline = static_cast<unsigned int>(Flash_Technology);
+	if (!Wordline_Program_Latencies.empty() && (Page_No_Per_Block % pages_per_wordline != 0
+		|| Wordline_Program_Latencies.size() != Page_No_Per_Block / pages_per_wordline)) {
+		PRINT_ERROR("Wordline_Program_Latencies requires one entry per wordline in the block")
 	}
 }

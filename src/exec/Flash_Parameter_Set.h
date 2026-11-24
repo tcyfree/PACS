@@ -1,6 +1,7 @@
 #ifndef FLASH_PARAMETER_SET_H
 #define FLASH_PARAMETER_SET_H
 
+#include <vector>
 #include "../sim/Sim_Defs.h"
 #include "../nvm_chip/flash_memory/FlashTypes.h"
 #include "Parameter_Set_Base.h"
@@ -16,6 +17,7 @@ public:
 	static sim_time_type Page_Program_Latency_LSB;
 	static sim_time_type Page_Program_Latency_CSB;
 	static sim_time_type Page_Program_Latency_MSB;
+	static std::vector<sim_time_type> Wordline_Program_Latencies; // Nanoseconds, ordered by wordline ID
 	static sim_time_type Block_Erase_Latency;//Block erase latency in nano-seconds
 	static unsigned int Block_PE_Cycles_Limit;
 	static sim_time_type Suspend_Erase_Time;//in nano-seconds

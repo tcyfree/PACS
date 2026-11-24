@@ -112,7 +112,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 	}
 		if(SSD_Components::Stats::turn_on==1){
 			std::string directory = SSD_Components::Stats::filename; 
-			for(int i=0;i<3;i++){
+			for (int i = 0; i < LATENCY_FILE_COUNT; ++i){
 				std::string filename = SSD_Components::Stats::filename+"_latency_" + std::to_string(i) + ".csv";
 				latency_files[i].open(directory + "/"+filename);
 				if (!latency_files[i].is_open()) {
@@ -145,7 +145,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 				PRINT_ERROR("Unsupported host interface type in IO_Flow_Base!")
 		}
 		if(SSD_Components::Stats::turn_on==1){
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < LATENCY_FILE_COUNT; ++i)
 				{
 					latency_files[i].close();
 				}
@@ -295,7 +295,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 		STAT_transferred_bytes_total += request->LBA_count * SECTOR_SIZE_IN_BYTE;
 
 		if(SSD_Components::Stats::turn_on==1){
-			latency_files[0] << device_response_time << ",";
+			latency_files[ALL_REQUESTS] << device_response_time << ",";
 		}
 		if (request->Type == Host_IO_Request_Type::READ) {
 			STAT_serviced_read_request_count++;
@@ -316,7 +316,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 			STAT_transferred_bytes_read += request->LBA_count * SECTOR_SIZE_IN_BYTE;
 
 			if(SSD_Components::Stats::turn_on==1){
-				latency_files[1] << device_response_time << ",";
+				latency_files[READ_REQUESTS] << device_response_time << ",";
 			}
 
 		} else {
@@ -338,7 +338,10 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 			STAT_transferred_bytes_write += request->LBA_count * SECTOR_SIZE_IN_BYTE;
 
 			if(SSD_Components::Stats::turn_on==1){
-				latency_files[2] << device_response_time << ",";
+				latency_files[WRITE_REQUESTS] << device_response_time << ",";
+				if (flash_page_sectors && request->Start_LBA % flash_page_sectors + request->LBA_count > flash_page_sectors) {
+					latency_files[MULTI_PAGE_WRITE_REQUESTS] << device_response_time << ",";
+				}
 			}
 		}
 

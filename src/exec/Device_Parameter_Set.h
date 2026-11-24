@@ -36,6 +36,7 @@ public:
 	static unsigned int CMT_Capacity;//Size of SRAM/DRAM space that is used to cache address mapping table, the unit is bytes
 	static SSD_Components::CMT_Sharing_Mode CMT_Sharing_Mode;//How the entire CMT space is shared among concurrently running flows
 	static SSD_Components::Flash_Plane_Allocation_Scheme_Type Plane_Allocation_Scheme;
+	static bool PACS_Enabled;
 	static SSD_Components::Flash_Scheduling_Type Transaction_Scheduling_Policy;
 	static double Overprovisioning_Ratio;//The ratio of spare space with respect to the whole available storage space of SSD
 	static double GC_Exec_Threshold;//The threshold for the ratio of free pages that used to trigger GC

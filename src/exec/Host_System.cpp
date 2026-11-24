@@ -77,6 +77,7 @@ Host_System::Host_System(Host_Parameter_Set* parameters, bool preconditioning_re
 			default:
 				throw "The specified IO flow type is not supported.\n";
 		}
+		io_flow->Set_flash_page_sectors(ssd_host_interface->Get_no_of_LHAs_in_an_NVM_write_unit());
 		Simulator->AddObject(io_flow);
 	}
 	this->PCIe_root_complex->Set_io_flows(&this->IO_flows);

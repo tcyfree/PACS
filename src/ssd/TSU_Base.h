@@ -57,6 +57,9 @@ public:
 	void Submit_transaction(NVM_Transaction_Flash *transaction)
 	{
 		transaction_receive_slots.push_back(transaction);
+		if (transaction->Type == Transaction_Type::WRITE && _NVMController->Get_pacs()) {
+			_NVMController->Get_pacs()->Queue_program(transaction->Address);
+		}
 	}
 
 	/* Shedules the transactions currently stored in inputTransactionSlots. The transactions could

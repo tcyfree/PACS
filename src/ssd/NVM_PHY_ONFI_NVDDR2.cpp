@@ -8,8 +8,10 @@ namespace SSD_Components {
 	NVM_PHY_ONFI_NVDDR2* NVM_PHY_ONFI_NVDDR2::_my_instance;
 
 	NVM_PHY_ONFI_NVDDR2::NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
-		unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie)
-		: NVM_PHY_ONFI(id, ChannelCount, chip_no_per_channel, DieNoPerChip, PlaneNoPerDie), channels(channels)
+		unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
+		bool pacs_enabled)
+		: NVM_PHY_ONFI(id, ChannelCount, chip_no_per_channel, DieNoPerChip, PlaneNoPerDie), channels(channels),
+		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip) : nullptr)
 	{
 		WaitingReadTX = new Flash_Transaction_Queue[channel_count];
 		WaitingGCRead_TX = new Flash_Transaction_Queue[channel_count];
@@ -162,6 +164,13 @@ namespace SSD_Components {
 			PRINT_ERROR("Bus " << target_channel->ChannelID << ": starting communication on a busy flash channel!");
 		}
 
+		if (pacs) {
+			// A new command on this chip can overlap or suspend a program already being observed.
+			for (unsigned int die_id = 0; die_id < die_no_per_chip; ++die_id) {
+				chipBKE->Die_book_keeping_records[die_id].Program_observation_start = INVALID_TIME;
+			}
+		}
+
 		sim_time_type suspendTime = 0;
 		if (!dieBKE->Free) {
 			if (transaction_list.front()->SuspendRequired) {
@@ -232,7 +241,7 @@ namespace SSD_Components {
 				}
 				chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
-				dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
+				dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(*dieBKE->ActiveCommand);
 				if (chipBKE->Expected_command_exec_finish_time < dieBKE->Expected_finish_time) {
 					chipBKE->Expected_command_exec_finish_time = dieBKE->Expected_finish_time;
 				}
@@ -268,7 +277,7 @@ namespace SSD_Components {
 					}
 					chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
-					dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
+					dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(*dieBKE->ActiveCommand);
 					if (chipBKE->Expected_command_exec_finish_time < dieBKE->Expected_finish_time) {
 						chipBKE->Expected_command_exec_finish_time = dieBKE->Expected_finish_time;
 					}
@@ -299,7 +308,7 @@ namespace SSD_Components {
 					}
 					chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
-					dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
+					dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(*dieBKE->ActiveCommand);
 					if (chipBKE->Expected_command_exec_finish_time < dieBKE->Expected_finish_time) {
 						chipBKE->Expected_command_exec_finish_time = dieBKE->Expected_finish_time;
 					}
@@ -331,7 +340,7 @@ namespace SSD_Components {
 				}
 				chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
-				dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
+				dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(*dieBKE->ActiveCommand);
 				if (chipBKE->Expected_command_exec_finish_time < dieBKE->Expected_finish_time) {
 					chipBKE->Expected_command_exec_finish_time = dieBKE->Expected_finish_time;
 				}
@@ -403,6 +412,11 @@ namespace SSD_Components {
 			case NVDDR2_SimEventType::PROGRAM_CMD_ADDR_DATA_TRANSFERRED:
 			case NVDDR2_SimEventType::PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED:
 				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID <<  ": PROGRAM_CMD_ADDR_DATA_TRANSFERRED " )
+				if (pacs && dieBKE->ActiveCommand->CommandCode == CMD_PROGRAM_PAGE && chipBKE->No_of_active_dies == 0
+					&& chipBKE->OngoingDieCMDTransfers.size() == 1 && !chipBKE->HasSuspend && !dieBKE->Suspended) {
+					// NAND begins executing at the end of the command and data transfer.
+					dieBKE->Program_observation_start = Simulator->Time();
+				}
 				targetChip->EndCMDDataInXfer(dieBKE->ActiveCommand);
 				for (auto &tr : dieBKE->ActiveTransactions) {
 					tr->STAT_execution_time = dieBKE->Expected_finish_time - Simulator->Time();
@@ -478,7 +492,7 @@ namespace SSD_Components {
 			waitingChipBKE->OngoingDieCMDTransfers.push(waitingBKE);
 
 			waitingBKE->Expected_finish_time = Simulator->Time() + this->channels[channel_id]->ProgramCommandTime[waitingBKE->ActiveTransactions.size()]
-				+ targetChip->Get_command_execution_latency(waitingBKE->ActiveCommand->CommandCode, waitingBKE->ActiveCommand->Address[0].PageID);
+				+ targetChip->Get_command_execution_latency(*waitingBKE->ActiveCommand);
 			if (waitingChipBKE->Expected_command_exec_finish_time < waitingBKE->Expected_finish_time) {
 				waitingChipBKE->Expected_command_exec_finish_time = waitingBKE->Expected_finish_time;
 			}
@@ -582,7 +596,7 @@ namespace SSD_Components {
 				_my_instance->channels[chip->ChannelID]->SetStatus(BusChannelStatus::BUSY, chip);
 
 				dieBKE->Expected_finish_time = Simulator->Time() + _my_instance->channels[chip->ChannelID]->ProgramCommandTime[dieBKE->ActiveTransactions.size()]
-					+ chip->Get_command_execution_latency(dieBKE->ActiveCommand->CommandCode, dieBKE->ActiveCommand->Address[0].PageID);
+					+ chip->Get_command_execution_latency(*dieBKE->ActiveCommand);
 				if (chipBKE->Expected_command_exec_finish_time < dieBKE->Expected_finish_time)
 					chipBKE->Expected_command_exec_finish_time = dieBKE->Expected_finish_time;
 #if 0	
@@ -600,6 +614,14 @@ namespace SSD_Components {
 		case CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE:
 		{
 			DEBUG("Chip " << chip->ChannelID << ", " << chip->ChipID << ": finished program command")
+
+			if (auto* pacs = _my_instance->Get_pacs()) {
+				const auto& address = command->Address.front();
+				pacs->Observe_program(address, chip->Get_page_type(address.PageID), dieBKE->Program_observation_start, Simulator->Time());
+				for (const auto* transaction : dieBKE->ActiveTransactions) {
+					pacs->Complete_program(transaction->Address);
+				}
+			}
 
 			/**/	//chipBKE->SuspendLock = true;
 

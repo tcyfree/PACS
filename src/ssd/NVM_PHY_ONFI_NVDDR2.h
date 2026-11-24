@@ -3,12 +3,14 @@
 
 #include <queue>
 #include <list>
+#include <memory>
 #include "../sim/Sim_Defs.h"
 #include "../nvm_chip/flash_memory/FlashTypes.h"
 #include "../nvm_chip/flash_memory/Flash_Command.h"
 #include "NVM_PHY_ONFI.h"
 #include "ONFI_Channel_NVDDR2.h"
 #include "Flash_Transaction_Queue.h"
+#include "PACS.h"
 
 namespace SSD_Components
 {
@@ -35,6 +37,7 @@ namespace SSD_Components
 		bool Free;
 		bool Suspended;
 		sim_time_type Expected_finish_time;
+		sim_time_type Program_observation_start = INVALID_TIME;
 		sim_time_type RemainingExecTime;
 		sim_time_type DieInterleavedTime;//If the command transfer is done in die-interleaved mode, the transfer time is recorded in this temporary variable
 
@@ -65,6 +68,7 @@ namespace SSD_Components
 			delete ActiveCommand;
 			ActiveCommand = NULL;
 			ActiveTransactions.clear();
+			Program_observation_start = INVALID_TIME;
 			Free = true;
 		}
 	};
@@ -92,7 +96,9 @@ namespace SSD_Components
 	{
 	public:
 		NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
-			unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie);
+			unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
+			bool pacs_enabled = false);
+		PACS* Get_pacs() const { return pacs.get(); }
 		void Setup_triggers();
 		void Validate_simulation_config();
 		void Start_simulation();
@@ -130,6 +136,7 @@ namespace SSD_Components
 
 		static NVM_PHY_ONFI_NVDDR2* _my_instance;
 		ONFI_Channel_NVDDR2** channels;
+		std::unique_ptr<PACS> pacs;
 		ChipBookKeepingEntry** bookKeepingTable;
 		Flash_Transaction_Queue *WaitingReadTX, *WaitingGCRead_TX, *WaitingMappingRead_TX;
 		std::list<DieBookKeepingEntry*> *WaitingCopybackWrites;

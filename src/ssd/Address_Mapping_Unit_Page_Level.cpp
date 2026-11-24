@@ -322,6 +322,9 @@ namespace SSD_Components
 			Block_no_per_plane, Page_no_per_block, SectorsPerPage, PageSizeInByte, Overprovisioning_ratio, sharing_mode, fold_large_addresses)
 	{
 		_my_instance = this;
+		if (auto* nvddr2 = dynamic_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller)) {
+			pacs = nvddr2->Get_pacs();
+		}
 		domains = new AddressMappingDomain*[no_of_input_streams];
 
 		Write_transactions_for_overfull_planes = new std::set<NVM_Transaction_Flash_WR*>***[channel_count];
@@ -1075,6 +1078,10 @@ namespace SSD_Components
 				targetAddress.DieID = domain->Die_ids[(unsigned int)((lpn / (domain->Chip_no * domain->Channel_no)) % domain->Die_no)];
 				targetAddress.PlaneID = domain->Plane_ids[(unsigned int)((lpn / (domain->Die_no * domain->Chip_no * domain->Channel_no)) % domain->Plane_no)];
 
+				if (pacs && transaction->Source == Transaction_Source_Type::USERIO && transaction->UserIORequest) {
+					select_pacs_write_target(transaction, *domain);
+				}
+
 				TSU_Base* tsu = dynamic_cast<TSU_Base*>(ftl->TSU);
 				TSU_Priority_OutOfOrder* tsupo=dynamic_cast<TSU_Priority_OutOfOrder*>(tsu);
 				Stats::write_count++;
@@ -1230,6 +1237,58 @@ namespace SSD_Components
 				break;
 			default:
 				PRINT_ERROR("Unknown plane allocation scheme type!")
+		}
+	}
+
+	void Address_Mapping_Unit_Page_Level::select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain)
+	{
+		auto& baseline = transaction->Address;
+		if (domain.Chip_no < 2 || ftl->GC_and_WL_Unit->Stop_servicing_writes(baseline)) {
+			return;
+		}
+
+		// Keep CWDP's placement when siblings on this channel need their original chip or die stripes.
+		for (const auto* sibling : transaction->UserIORequest->Transaction_list) {
+			if (sibling != transaction && sibling->Type == Transaction_Type::WRITE
+				&& domain.Channel_ids[static_cast<const NVM_Transaction_Flash*>(sibling)->LPA % domain.Channel_no] == baseline.ChannelID) {
+				return;
+			}
+		}
+
+		const auto page_type = [this, transaction](const NVM::FlashMemory::Physical_Page_Address& address) {
+			const auto* frontier = block_manager->Get_plane_bookkeeping_entry(address)->Data_wf[transaction->Stream_id];
+			return flash_controller->Get_chip(address.ChannelID, address.ChipID)->Get_page_type(frontier->Current_page_write_index);
+		};
+		const unsigned int baseline_page_type = page_type(baseline);
+		double best_cost = pacs->Estimate_completion_cost(baseline, baseline_page_type);
+		if (best_cost == 0) {
+			return;
+		}
+
+		unsigned int eligible_chips = 1;
+		flash_chip_ID_type best_chip = baseline.ChipID;
+		for (unsigned int index = 0; index < domain.Chip_no; ++index) {
+			const auto chip = domain.Chip_ids[index];
+			if (chip == baseline.ChipID) {
+				continue;
+			}
+			const NVM::FlashMemory::Physical_Page_Address candidate(baseline.ChannelID, chip, baseline.DieID, baseline.PlaneID, 0, 0);
+			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(candidate) || page_type(candidate) != baseline_page_type) {
+				continue;
+			}
+			const double cost = pacs->Estimate_completion_cost(candidate, baseline_page_type);
+			if (cost == 0) {
+				return;
+			}
+			++eligible_chips;
+			if (cost < best_cost) {
+				best_cost = cost;
+				best_chip = chip;
+			}
+		}
+		if (eligible_chips > 1) {
+			pacs->Record_ranked_allocation(best_chip != baseline.ChipID);
+			baseline.ChipID = best_chip;
 		}
 	}
 
