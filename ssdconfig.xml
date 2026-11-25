@@ -9,6 +9,8 @@
 	</Host_Parameter_Set>
 	<Device_Parameter_Set>
 		<PACS_Enabled>false</PACS_Enabled>
+		<PACS_Request_Level_Enabled>false</PACS_Request_Level_Enabled>
+		<PACS_Cross_Channel_Enabled>false</PACS_Cross_Channel_Enabled>
 		<LEPA_Enabled>false</LEPA_Enabled>
 		<QSTR_MED_Enabled>false</QSTR_MED_Enabled>
 		<Independent_Wordline_Multiplane>false</Independent_Wordline_Multiplane>

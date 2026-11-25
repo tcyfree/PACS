@@ -100,7 +100,7 @@ namespace SSD_Components
 	public:
 		NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 			unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
-			bool pacs_enabled = false, bool pacs_request_level = false);
+			bool pacs_enabled = false, bool pacs_request_level = false, bool pacs_cross_channel = false);
 		PACS* Get_pacs() const { return pacs.get(); }
 		struct PACS_Read_Timing {
 			sim_time_type command, execution, data_out;

@@ -12,8 +12,10 @@ namespace SSD_Components
 	class PACS
 	{
 	public:
-		PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level = false);
+		PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip,
+			bool request_level = false, bool cross_channel = false);
 		bool Request_level_enabled() const { return request_level; }
+		bool Cross_channel_enabled() const { return cross_channel; }
 		void Queue_program(const NVM::FlashMemory::Physical_Page_Address& address);
 		void Complete_program(const NVM::FlashMemory::Physical_Page_Address& address);
 		void Observe_program(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type,
@@ -21,7 +23,7 @@ namespace SSD_Components
 		double Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
 		double Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
 		void Record_ranked_allocation(bool redirected);
-		void Record_request_plan(std::size_t redirected_pages);
+		void Record_request_plan(std::size_t redirected_pages, bool crossed_channel);
 		void Report_results_in_XML(Utils::XmlWriter& xmlwriter) const;
 
 	private:
@@ -44,6 +46,7 @@ namespace SSD_Components
 
 		const unsigned int chips_per_channel, dies_per_chip;
 		const bool request_level;
+		const bool cross_channel;
 		std::vector<Die> dies;
 		uint64_t qualified_observations = 0;
 		uint64_t discarded_observations = 0;
@@ -52,6 +55,7 @@ namespace SSD_Components
 		uint64_t planned_requests = 0;
 		uint64_t redirected_requests = 0;
 		uint64_t redirected_request_pages = 0;
+		uint64_t cross_channel_requests = 0;
 	};
 }
 

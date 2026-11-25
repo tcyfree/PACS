@@ -21,6 +21,20 @@ mkdir -p 1612_2
 
 QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORDER` 配置。
 
+## 请求级 PACS
+
+在 `Device_Parameter_Set` 中开启以下选项可使用跨通道的混合分配。
+
+```xml
+<PACS_Enabled>true</PACS_Enabled>
+<PACS_Request_Level_Enabled>true</PACS_Request_Level_Enabled>
+<PACS_Cross_Channel_Enabled>true</PACS_Cross_Channel_Enabled>
+```
+
+每笔跨页写先生成同通道放置方案。对该方案中预计最晚完成的一页，尝试将它放到其他通道的可写候选上，再用同一个模型估算整笔请求的完工时间。只有整笔请求预计缩短的时间达到该页在同通道方案中的预计编程时延，才采用跨通道方案。每笔请求最多跨通道重定向一页。
+
+`PACS_Cross_Channel_Enabled` 默认为 `false`。启用时，结果 XML 中的 `Cross_Channel_Multipage_Write_Requests` 记录实际提交了跨通道选址的请求数。
+
 ## QSTR-MED
 
 主机写入和 GC 迁移各使用自己的块组。策略按块的字线编程时延总和，在每个 plane 的空闲块池中取最快或最慢的四个候选。它选出全组最快或最慢的参考块，再用字线签名的 Hamming 距离从每个其余 plane 选出成员。每层按四个连续逻辑 WL 构建签名，最快两项记为 0。块编程完成后更新签名，模拟器为未映射的读请求预置的页也按其配置时延记入。主机写使用快组，GC 迁移使用慢组。预处理先填充初始数据，前沿块续配时启用 QSTR-MED。MQSim 逐平面推进写入和 GC，先填满的 plane 可补配一个本地块。

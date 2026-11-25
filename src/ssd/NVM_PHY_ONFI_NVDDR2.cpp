@@ -9,9 +9,9 @@ namespace SSD_Components {
 
 	NVM_PHY_ONFI_NVDDR2::NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 		unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
-		bool pacs_enabled, bool pacs_request_level)
+		bool pacs_enabled, bool pacs_request_level, bool pacs_cross_channel)
 		: NVM_PHY_ONFI(id, ChannelCount, chip_no_per_channel, DieNoPerChip, PlaneNoPerDie), channels(channels),
-		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip, pacs_request_level) : nullptr)
+		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip, pacs_request_level, pacs_cross_channel) : nullptr)
 	{
 		WaitingReadTX = new Flash_Transaction_Queue[channel_count];
 		WaitingGCRead_TX = new Flash_Transaction_Queue[channel_count];

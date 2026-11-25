@@ -38,6 +38,7 @@ public:
 	static SSD_Components::Flash_Plane_Allocation_Scheme_Type Plane_Allocation_Scheme;
 	static bool PACS_Enabled;
 	static bool PACS_Request_Level_Enabled;
+	static bool PACS_Cross_Channel_Enabled;
 	static bool LEPA_Enabled;
 	static bool QSTR_MED_Enabled;
 	static bool Independent_Wordline_Multiplane;

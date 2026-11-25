@@ -540,6 +540,7 @@ namespace SSD_Components
 		const auto plan = pacs && pacs->Request_level_enabled() && transactionList.size() > 1
 			? plan_pacs_request(transactionList) : std::vector<Physical_Page_Address>{};
 		std::size_t next_target = 0, redirected_pages = 0;
+		bool crossed_channel = false;
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 			it != transactionList.end(); ) {
 			auto* transaction = static_cast<NVM_Transaction_Flash*>(*(it++));
@@ -548,11 +549,13 @@ namespace SSD_Components
 				manage_user_transaction_facing_barrier(transaction);
 			} else if (query_cmt(transaction, target) && target) {
 				const auto original = cwdp_target(transaction->LPA, *domains[transaction->Stream_id]);
-				redirected_pages += transaction->Address.ChipID != original.ChipID;
+				const bool channel_changed = transaction->Address.ChannelID != original.ChannelID;
+				crossed_channel |= channel_changed;
+				redirected_pages += channel_changed || transaction->Address.ChipID != original.ChipID;
 			}
 		}
 		if (!plan.empty()) {
-			pacs->Record_request_plan(redirected_pages);
+			pacs->Record_request_plan(redirected_pages, crossed_channel);
 		}
 
 		if (transactionList.size() > 0) {
@@ -1274,14 +1277,16 @@ namespace SSD_Components
 		}
 		const auto stream = first->Stream_id;
 		auto& domain = *domains[stream];
-		if (domain.Chip_no < 2 || domain.PlaneAllocationScheme != Flash_Plane_Allocation_Scheme_Type::CWDP) {
+		const bool cross_channel = pacs->Cross_channel_enabled() && domain.Channel_no > 1;
+		if (domain.PlaneAllocationScheme != Flash_Plane_Allocation_Scheme_Type::CWDP
+			|| (domain.Chip_no < 2 && !cross_channel)) {
 			return {};
 		}
 
 		struct Page {
 			Physical_Page_Address original, old_page;
 			NVM_PHY_ONFI_NVDDR2::PACS_Read_Timing read;
-			sim_time_type write_transfer;
+			unsigned int write_bytes;
 			unsigned int reference_type;
 		};
 		const auto* phy = static_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller);
@@ -1302,7 +1307,7 @@ namespace SSD_Components
 			}
 			Page page{};
 			page.original = cwdp_target(write->LPA, domain);
-			page.write_transfer = phy->Estimate_pacs_write_transfer(page.original.ChannelID, write->Data_and_metadata_size_in_byte);
+			page.write_bytes = write->Data_and_metadata_size_in_byte;
 			const auto old_ppa = domain.Get_ppa(ideal_mapping_table, stream, write->LPA, false);
 			const auto read_sectors = domain.Get_page_status(ideal_mapping_table, stream, write->LPA) & ~write->write_sectors_bitmap;
 			if (old_ppa != NO_PPA && read_sectors) {
@@ -1363,7 +1368,8 @@ namespace SSD_Components
 			std::fill(data_ready.begin(), data_ready.end(), 0.0);
 			for (std::size_t i = 0; i < pages.size(); ++i) {
 				const auto type = next_page_type(plan[i]);
-				if (plan[i].ChipID != pages[i].original.ChipID
+				const auto& original = pages[i].original;
+				if ((plan[i].ChannelID != original.ChannelID || plan[i].ChipID != original.ChipID)
 					&& (type != pages[i].reference_type || pacs->Estimate_program_latency(plan[i], type) == 0)) {
 					return impossible;
 				}
@@ -1405,14 +1411,16 @@ namespace SSD_Components
 						channel_ready[page.old_page.ChannelID] = die_ready[die_index(page.old_page)] = data_ready[next];
 						pending[next] = Pending::PROGRAM;
 						break;
-					case Pending::PROGRAM:
-						channel_ready[plan[next].ChannelID] = start + page.write_transfer;
-						finish[next] = channel_ready[plan[next].ChannelID] + program_times[next];
+					case Pending::PROGRAM: {
+						const auto channel = plan[next].ChannelID;
+						channel_ready[channel] = start + phy->Estimate_pacs_write_transfer(channel, page.write_bytes);
+						finish[next] = channel_ready[channel] + program_times[next];
 						die_ready[die_index(plan[next])] = finish[next];
 						request_finish = std::max(request_finish, finish[next]);
 						pending[next] = Pending::DONE;
 						--programs_left;
 						break;
+					}
 					case Pending::DONE:
 						break;
 				}
@@ -1446,6 +1454,43 @@ namespace SSD_Components
 			}
 			plan[i].ChipID = best_chip;
 		}
+		if (!cross_channel) {
+			return plan;
+		}
+
+		// Use the same-channel plan as the reference. Try moving only its last-finishing page.
+		const double local_finish = estimate_plan(finish);
+		if (!std::isfinite(local_finish)) {
+			return plan;
+		}
+		const auto critical_page = std::max_element(finish.begin(), finish.end()) - finish.begin();
+		const auto& page = pages[critical_page];
+		if (pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
+			return plan;
+		}
+		const auto local_address = plan[critical_page];
+		auto best_address = local_address;
+		const double minimum_gain = program_times[critical_page];
+		best_finish = local_finish;
+		for (unsigned int c = 0; c < domain.Channel_no; ++c) {
+			const auto channel = domain.Channel_ids[c];
+			if (channel == local_address.ChannelID) {
+				continue;
+			}
+			for (unsigned int w = 0; w < domain.Chip_no; ++w) {
+				const Physical_Page_Address candidate(channel, domain.Chip_ids[w], local_address.DieID, local_address.PlaneID);
+				if (blocked[plane_index(candidate)]) {
+					continue;
+				}
+				plan[critical_page] = candidate;
+				const auto candidate_finish = estimate_plan(finish);
+				if (candidate_finish < best_finish && local_finish - candidate_finish >= minimum_gain) {
+					best_finish = candidate_finish;
+					best_address = candidate;
+				}
+			}
+		}
+		plan[critical_page] = best_address;
 		return plan;
 	}
 

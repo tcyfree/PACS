@@ -25,6 +25,7 @@ SSD_Components::CMT_Sharing_Mode Device_Parameter_Set::CMT_Sharing_Mode = SSD_Co
 SSD_Components::Flash_Plane_Allocation_Scheme_Type Device_Parameter_Set::Plane_Allocation_Scheme = SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP;
 bool Device_Parameter_Set::PACS_Enabled = false;
 bool Device_Parameter_Set::PACS_Request_Level_Enabled = false;
+bool Device_Parameter_Set::PACS_Cross_Channel_Enabled = false;
 bool Device_Parameter_Set::LEPA_Enabled = false;
 bool Device_Parameter_Set::QSTR_MED_Enabled = false;
 bool Device_Parameter_Set::Independent_Wordline_Multiplane = false;
@@ -67,6 +68,7 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	val = PACS_Enabled ? "true" : "false";
 	xmlwriter.Write_attribute_string(attr, val);
 	xmlwriter.Write_attribute_string("PACS_Request_Level_Enabled", PACS_Request_Level_Enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Enabled", PACS_Cross_Channel_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("LEPA_Enabled", LEPA_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("QSTR_MED_Enabled", QSTR_MED_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("Independent_Wordline_Multiplane", Independent_Wordline_Multiplane ? "true" : "false");
@@ -391,6 +393,7 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 {
 	PACS_Request_Level_Enabled = false;
+	PACS_Cross_Channel_Enabled = false;
 	LEPA_Enabled = false;
 	QSTR_MED_Enabled = false;
 	Independent_Wordline_Multiplane = false;
@@ -412,6 +415,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				}
 				PACS_Enabled = val == "TRUE";
 			} else if (strcmp(param->name(), "PACS_Request_Level_Enabled") == 0
+				|| strcmp(param->name(), "PACS_Cross_Channel_Enabled") == 0
 				|| strcmp(param->name(), "LEPA_Enabled") == 0
 				|| strcmp(param->name(), "QSTR_MED_Enabled") == 0
 				|| strcmp(param->name(), "Independent_Wordline_Multiplane") == 0) {
@@ -424,6 +428,8 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				const bool enabled = val == "TRUE";
 				if (name == "PACS_Request_Level_Enabled") {
 					PACS_Request_Level_Enabled = enabled;
+				} else if (name == "PACS_Cross_Channel_Enabled") {
+					PACS_Cross_Channel_Enabled = enabled;
 				} else if (name == "LEPA_Enabled") {
 					LEPA_Enabled = enabled;
 				} else if (name == "QSTR_MED_Enabled") {

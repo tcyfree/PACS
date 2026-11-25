@@ -4,8 +4,8 @@
 
 namespace SSD_Components
 {
-	PACS::PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level)
-		: chips_per_channel(chips_per_channel), dies_per_chip(dies_per_chip), request_level(request_level),
+	PACS::PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level, bool cross_channel)
+		: chips_per_channel(chips_per_channel), dies_per_chip(dies_per_chip), request_level(request_level), cross_channel(cross_channel),
 		dies(static_cast<std::size_t>(channels) * chips_per_channel * dies_per_chip)
 	{
 	}
@@ -67,11 +67,12 @@ namespace SSD_Components
 		redirected_allocations += redirected;
 	}
 
-	void PACS::Record_request_plan(std::size_t redirected_pages)
+	void PACS::Record_request_plan(std::size_t redirected_pages, bool crossed_channel)
 	{
 		++planned_requests;
 		redirected_requests += redirected_pages != 0;
 		redirected_request_pages += redirected_pages;
+		cross_channel_requests += crossed_channel;
 	}
 
 	void PACS::Report_results_in_XML(Utils::XmlWriter& xmlwriter) const
@@ -93,6 +94,9 @@ namespace SSD_Components
 			xmlwriter.Write_attribute_string("Planned_Multipage_Write_Requests", std::to_string(planned_requests));
 			xmlwriter.Write_attribute_string("Redirected_Multipage_Write_Requests", std::to_string(redirected_requests));
 			xmlwriter.Write_attribute_string("Redirected_Multipage_Write_Pages", std::to_string(redirected_request_pages));
+		}
+		if (cross_channel) {
+			xmlwriter.Write_attribute_string("Cross_Channel_Multipage_Write_Requests", std::to_string(cross_channel_requests));
 		}
 		for (unsigned int page_type = 0; page_type < max_page_types; ++page_type) {
 			std::vector<double> estimates;

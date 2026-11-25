@@ -1,0 +1,153 @@
+{
+  "trace": "1612_2",
+  "trace_file": {
+    "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_2.csv",
+    "size": 106663146,
+    "mtime_ns": 1795503522581223568,
+    "reads": 2449506,
+    "writes": 953039,
+    "multi_page_writes": 361144,
+    "bytes": 63527034368,
+    "span_ns": 3388269092096,
+    "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+  },
+  "simulator_sha256": "827ff0e0edee454282c209edb02c982b0ebcb6bfc38d9096b14eff91dd9e922c",
+  "settings": {
+    "flash_channels": 4,
+    "page_capacity_bytes": 16384,
+    "flash_technology": "TLC",
+    "wordline_timings": 256,
+    "device_data_caching": "TURNED_OFF",
+    "independent_wordline_multiplane": false
+  },
+  "rule": {
+    "reference": "Request-level PACS restricted to each write page\u2019s CWDP channel.",
+    "candidate": "Move its predicted last-finishing page to another eligible channel and reevaluate the full request.",
+    "minimum_gain": "One estimated program time for that page under the reference plan."
+  },
+  "requests_per_policy": 3402545,
+  "same_channel_samples_match_previous_experiment": true,
+  "policies": {
+    "pacs-request": {
+      "requests_completed": 3402545,
+      "reads": 2449506,
+      "writes": 953039,
+      "single_page_writes": 591895,
+      "multi_page_writes": 361144,
+      "latency": {
+        "average_write_latency_ms": 45.395602625259826,
+        "average_read_latency_ms": 7.145601658787935,
+        "p95_write_latency_ms": 133.883905,
+        "p99_write_latency_ms": 1142.997199,
+        "p999_write_latency_ms": 2818.850425,
+        "read_p99_latency_ms": 104.288286,
+        "single_page_write_p99_ms": 250.449519,
+        "single_page_write_p999_ms": 1455.741989,
+        "multi_page_write_p99_ms": 1702.078324,
+        "multi_page_write_p999_ms": 3239.064061
+      },
+      "simulated_duration_ns": 3388269204195,
+      "replay_throughput_mib_s": 17.880545323615333,
+      "gc_executions": 0,
+      "gc_moved_pages": 0,
+      "host_write_page_transactions": 1766328,
+      "page_programs": 1766328,
+      "page_program_amplification": 1.0,
+      "mean_write_transaction_wait_us": 57864,
+      "multiplane_commands": {
+        "Issued_Flash_Multiplane_Read_CMD": 0,
+        "Issued_Flash_Multiplane_Program_CMD": 0,
+        "Issued_Flash_Multiplane_Erase_CMD": 0,
+        "Issued_Flash_Multiplane_Copyback_Program_CMD": 0,
+        "Issued_Flash_Interleaved_Multiplane_Program_CMD": 0,
+        "Issued_Flash_Interleaved_Multiplane_Erase_CMD": 0
+      },
+      "policy_counters": {
+        "Median_Batch_Size": "9",
+        "Minimum_Samples": "36",
+        "EWMA_Alpha": "0.250000",
+        "Qualified_Program_Observations": "1766328",
+        "Discarded_Program_Observations": "0",
+        "Ranked_Write_Allocations": "192551",
+        "Redirected_Write_Allocations": "103335",
+        "Outstanding_Programs_At_End": "0",
+        "Planned_Multipage_Write_Requests": "361144",
+        "Redirected_Multipage_Write_Requests": "66436",
+        "Redirected_Multipage_Write_Pages": "69336"
+      },
+      "result_xml": "run/1612_2-pacs-request/w_1612_2_setsize4_reply_1.xml",
+      "log": "run/1612_2-pacs-request/run.log",
+      "latency_samples": "run/1612_2-pacs-request/1612_2",
+      "simulator_binary": "MQSim",
+      "wall_seconds": 24.779610506258905
+    },
+    "pacs-hybrid": {
+      "requests_completed": 3402545,
+      "reads": 2449506,
+      "writes": 953039,
+      "single_page_writes": 591895,
+      "multi_page_writes": 361144,
+      "latency": {
+        "average_write_latency_ms": 38.83926181063839,
+        "average_read_latency_ms": 5.24398616246582,
+        "p95_write_latency_ms": 110.850515,
+        "p99_write_latency_ms": 969.84613,
+        "p999_write_latency_ms": 2406.378758,
+        "read_p99_latency_ms": 16.768926,
+        "single_page_write_p99_ms": 241.403511,
+        "single_page_write_p999_ms": 1429.715229,
+        "multi_page_write_p99_ms": 1498.673192,
+        "multi_page_write_p999_ms": 2639.509803
+      },
+      "simulated_duration_ns": 3388269234195,
+      "replay_throughput_mib_s": 17.88054516529959,
+      "gc_executions": 0,
+      "gc_moved_pages": 0,
+      "host_write_page_transactions": 1766328,
+      "page_programs": 1766328,
+      "page_program_amplification": 1.0,
+      "mean_write_transaction_wait_us": 65138,
+      "multiplane_commands": {
+        "Issued_Flash_Multiplane_Read_CMD": 0,
+        "Issued_Flash_Multiplane_Program_CMD": 0,
+        "Issued_Flash_Multiplane_Erase_CMD": 0,
+        "Issued_Flash_Multiplane_Copyback_Program_CMD": 0,
+        "Issued_Flash_Interleaved_Multiplane_Program_CMD": 0,
+        "Issued_Flash_Interleaved_Multiplane_Erase_CMD": 0
+      },
+      "policy_counters": {
+        "Median_Batch_Size": "9",
+        "Minimum_Samples": "36",
+        "EWMA_Alpha": "0.250000",
+        "Qualified_Program_Observations": "1766328",
+        "Discarded_Program_Observations": "0",
+        "Ranked_Write_Allocations": "192168",
+        "Redirected_Write_Allocations": "102951",
+        "Outstanding_Programs_At_End": "0",
+        "Planned_Multipage_Write_Requests": "361144",
+        "Redirected_Multipage_Write_Requests": "106503",
+        "Redirected_Multipage_Write_Pages": "110936",
+        "Cross_Channel_Multipage_Write_Requests": "47427"
+      },
+      "result_xml": "run/1612_2-pacs-hybrid/w_1612_2_setsize4_reply_1.xml",
+      "log": "run/1612_2-pacs-hybrid/run.log",
+      "latency_samples": "run/1612_2-pacs-hybrid/1612_2",
+      "simulator_binary": "MQSim",
+      "wall_seconds": 25.0630663363263
+    }
+  },
+  "cross_channel_requests": 47427,
+  "cross_channel_fraction_of_multipage_writes": 0.13132434707485102,
+  "hybrid_vs_same_channel_percent": {
+    "average_write_latency_ms": -14.442678223139705,
+    "average_read_latency_ms": -26.61239160992742,
+    "p95_write_latency_ms": -17.204002228647276,
+    "p99_write_latency_ms": -15.148862057710078,
+    "p999_write_latency_ms": -14.632619856018092,
+    "read_p99_latency_ms": -83.92060446750462,
+    "single_page_write_p99_ms": -3.6119087136278316,
+    "single_page_write_p999_ms": -1.7878690177700274,
+    "multi_page_write_p99_ms": -11.950397883100006,
+    "multi_page_write_p999_ms": -18.51010806544219
+  }
+}
