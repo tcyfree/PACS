@@ -47,6 +47,9 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		if (parameters->PACS_Cross_Channel_Enabled && !parameters->PACS_Request_Level_Enabled) {
 			throw std::invalid_argument("PACS_Cross_Channel_Enabled requires PACS_Request_Level_Enabled");
 		}
+		if (parameters->PACS_Adaptive.enabled && !parameters->PACS_Cross_Channel_Enabled) {
+			throw std::invalid_argument("PACS_Cross_Channel_Adaptive_Enabled requires PACS_Cross_Channel_Enabled");
+		}
 		if (policies && (parameters->Address_Mapping != SSD_Components::Flash_Address_Mapping_Type::PAGE_LEVEL
 			|| parameters->Plane_Allocation_Scheme != SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP)) {
 			throw std::invalid_argument("PACS, LEPA and QSTR-MED require page-level mapping with CWDP striping");
@@ -146,7 +149,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 			device->PHY = new SSD_Components::NVM_PHY_ONFI_NVDDR2(device->ID() + ".PHY", channels, parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
 																 parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
 																 parameters->PACS_Enabled, parameters->PACS_Request_Level_Enabled,
-																 parameters->PACS_Cross_Channel_Enabled);
+																 parameters->PACS_Cross_Channel_Enabled, parameters->PACS_Adaptive);
 			Simulator->AddObject(device->PHY);
 			break;
 		}

@@ -1,11 +1,14 @@
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
 #include "PACS.h"
 
 namespace SSD_Components
 {
-	PACS::PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level, bool cross_channel)
+	PACS::PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level,
+		bool cross_channel, PACS_Adaptive_Options adaptive)
 		: chips_per_channel(chips_per_channel), dies_per_chip(dies_per_chip), request_level(request_level), cross_channel(cross_channel),
+		adaptive(adaptive),
 		dies(static_cast<std::size_t>(channels) * chips_per_channel * dies_per_chip)
 	{
 	}
@@ -67,12 +70,65 @@ namespace SSD_Components
 		redirected_allocations += redirected;
 	}
 
-	void PACS::Record_request_plan(std::size_t redirected_pages, bool crossed_channel)
+	void PACS::Record_request_plan(std::size_t redirected_pages, std::size_t crossed_pages)
 	{
 		++planned_requests;
 		redirected_requests += redirected_pages != 0;
 		redirected_request_pages += redirected_pages;
-		cross_channel_requests += crossed_channel;
+		cross_channel_requests += crossed_pages != 0;
+		cross_channel_pages += crossed_pages;
+		joint_cross_channel_requests += crossed_pages > 1;
+	}
+
+	void PACS::Record_adaptive_search(std::size_t critical_pages, unsigned int evaluations, bool budget_exhausted)
+	{
+		++critical_page_counts[critical_pages];
+		++search_evaluation_counts[evaluations];
+		search_budget_exhaustions += budget_exhausted;
+	}
+
+	void PACS::Track_request_prediction(const User_Request* request, std::size_t pages, sim_time_type start,
+		double estimated_duration, bool crossed_channel)
+	{
+		if (!request_predictions.emplace(request, Request_Prediction{pages, start, estimated_duration, crossed_channel}).second) {
+			throw std::logic_error("PACS already tracks a completion prediction for this request");
+		}
+	}
+
+	void PACS::Observe_request_page_completion(const User_Request* request, sim_time_type finish)
+	{
+		const auto entry = request_predictions.find(request);
+		if (entry == request_predictions.end() || --entry->second.pending_pages != 0) {
+			return;
+		}
+		const auto& prediction = entry->second;
+		const auto duration = finish - prediction.start;
+		prediction_error.Observe(prediction.estimated_duration, duration);
+		if (prediction.crossed_channel) {
+			cross_channel_prediction_error.Observe(prediction.estimated_duration, duration);
+		}
+		request_predictions.erase(entry);
+	}
+
+	void PACS::Prediction_Error::Observe(double estimated, sim_time_type actual)
+	{
+		const double error = estimated - actual;
+		++samples;
+		signed_error += error;
+		absolute_error += std::abs(error);
+		actual_duration += actual;
+	}
+
+	void PACS::Prediction_Error::Report(Utils::XmlWriter& xmlwriter, const char* tag) const
+	{
+		xmlwriter.Write_open_tag(tag);
+		xmlwriter.Write_attribute_string("Samples", std::to_string(samples));
+		if (samples) {
+			xmlwriter.Write_attribute_string("Mean_Signed_Error_ns", std::to_string(signed_error / samples));
+			xmlwriter.Write_attribute_string("Mean_Absolute_Error_ns", std::to_string(absolute_error / samples));
+			xmlwriter.Write_attribute_string("Mean_Actual_Duration_ns", std::to_string(actual_duration / samples));
+		}
+		xmlwriter.Write_close_tag();
 	}
 
 	void PACS::Report_results_in_XML(Utils::XmlWriter& xmlwriter) const
@@ -97,6 +153,30 @@ namespace SSD_Components
 		}
 		if (cross_channel) {
 			xmlwriter.Write_attribute_string("Cross_Channel_Multipage_Write_Requests", std::to_string(cross_channel_requests));
+		}
+		if (adaptive.enabled) {
+			xmlwriter.Write_attribute_string("Cross_Channel_Write_Pages", std::to_string(cross_channel_pages));
+			xmlwriter.Write_attribute_string("Joint_Cross_Channel_Multipage_Write_Requests", std::to_string(joint_cross_channel_requests));
+			xmlwriter.Write_attribute_string("Open_Request_Predictions_At_End", std::to_string(request_predictions.size()));
+			xmlwriter.Write_open_tag("Adaptive_Search");
+			xmlwriter.Write_attribute_string("Gain_Beta", std::to_string(adaptive.gain_beta));
+			xmlwriter.Write_attribute_string("Search_Budget", std::to_string(adaptive.search_budget));
+			xmlwriter.Write_attribute_string("Budget_Exhausted_Requests", std::to_string(search_budget_exhaustions));
+			for (const auto& entry : critical_page_counts) {
+				xmlwriter.Write_open_tag("Critical_Page_Count");
+				xmlwriter.Write_attribute_string("Pages", std::to_string(entry.first));
+				xmlwriter.Write_attribute_string("Requests", std::to_string(entry.second));
+				xmlwriter.Write_close_tag();
+			}
+			for (const auto& entry : search_evaluation_counts) {
+				xmlwriter.Write_open_tag("Candidate_Plan_Count");
+				xmlwriter.Write_attribute_string("Evaluations", std::to_string(entry.first));
+				xmlwriter.Write_attribute_string("Requests", std::to_string(entry.second));
+				xmlwriter.Write_close_tag();
+			}
+			xmlwriter.Write_close_tag();
+			prediction_error.Report(xmlwriter, "Request_Completion_Prediction");
+			cross_channel_prediction_error.Report(xmlwriter, "Cross_Channel_Completion_Prediction");
 		}
 		for (unsigned int page_type = 0; page_type < max_page_types; ++page_type) {
 			std::vector<double> estimates;

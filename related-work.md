@@ -35,6 +35,20 @@ QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORD
 
 `PACS_Cross_Channel_Enabled` 默认为 `false`。启用时，结果 XML 中的 `Cross_Channel_Multipage_Write_Requests` 记录实际提交了跨通道选址的请求数。
 
+### 自适应关键页
+
+在混合分配的配置上加上这三项可运行自适应模式。搜索预算表示每笔请求最多预测的跨通道组合数。
+
+```xml
+<PACS_Cross_Channel_Adaptive_Enabled>true</PACS_Cross_Channel_Adaptive_Enabled>
+<PACS_Cross_Channel_Gain_Beta>1</PACS_Cross_Channel_Gain_Beta>
+<PACS_Cross_Channel_Search_Budget>256</PACS_Cross_Channel_Search_Budget>
+```
+
+先预测同通道方案中每一页的完成时间。以 β 乘以最晚完成页的预计编程时延作为最低收益门槛 θ，把超过目标时间 `T_local - θ` 的页纳入联合搜索。β 为 0 时从并列最晚的页开始搜索。每个关键页可沿用原方案或跨通道选址。每次预测覆盖整笔请求，通过完整方案的预计收益决定是否采用。预计完成时间相同时优先选跨通道页数较少的方案。
+
+结果 XML 的 `Adaptive_Search` 记录关键页数分布、组合预测次数分布和预算耗尽次数。预测误差取预计时长减去从分配决策到最后一个 NAND program 完成的实际时长。统计样本为按所选地址完成分配的跨页写请求。
+
 ## QSTR-MED
 
 主机写入和 GC 迁移各使用自己的块组。策略按块的字线编程时延总和，在每个 plane 的空闲块池中取最快或最慢的四个候选。它选出全组最快或最慢的参考块，再用字线签名的 Hamming 距离从每个其余 plane 选出成员。每层按四个连续逻辑 WL 构建签名，最快两项记为 0。块编程完成后更新签名，模拟器为未映射的读请求预置的页也按其配置时延记入。主机写使用快组，GC 迁移使用慢组。预处理先填充初始数据，前沿块续配时启用 QSTR-MED。MQSim 逐平面推进写入和 GC，先填满的 plane 可补配一个本地块。

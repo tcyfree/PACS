@@ -9,6 +9,7 @@
 #include "../ssd/TSU_Base.h"
 #include "../ssd/ONFI_Channel_Base.h"
 #include "../ssd/GC_and_WL_Unit_Page_Level.h"
+#include "../ssd/PACS.h"
 #include "../nvm_chip/NVM_Types.h"
 #include "Parameter_Set_Base.h"
 #include "Flash_Parameter_Set.h"
@@ -39,6 +40,7 @@ public:
 	static bool PACS_Enabled;
 	static bool PACS_Request_Level_Enabled;
 	static bool PACS_Cross_Channel_Enabled;
+	static SSD_Components::PACS_Adaptive_Options PACS_Adaptive;
 	static bool LEPA_Enabled;
 	static bool QSTR_MED_Enabled;
 	static bool Independent_Wordline_Multiplane;

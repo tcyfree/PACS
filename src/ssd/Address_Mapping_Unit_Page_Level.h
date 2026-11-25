@@ -198,7 +198,11 @@ namespace SSD_Components
 		unsigned int cmt_capacity;
 		AddressMappingDomain** domains;
 		unsigned int CMT_entry_size, GTD_entry_size;//In CMT MQSim stores (lpn, ppn, page status bits) but in GTD it only stores (ppn, page status bits)
-		std::vector<NVM::FlashMemory::Physical_Page_Address> plan_pacs_request(const std::list<NVM_Transaction*>& transactions);
+		struct PACS_Write_Plan {
+			std::vector<NVM::FlashMemory::Physical_Page_Address> addresses;
+			double estimated_duration;
+		};
+		PACS_Write_Plan plan_pacs_request(const std::list<NVM_Transaction*>& transactions);
 		void allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction,
 			const NVM::FlashMemory::Physical_Page_Address* planned_address = nullptr);
 		void select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain);

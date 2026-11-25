@@ -9,9 +9,10 @@ namespace SSD_Components {
 
 	NVM_PHY_ONFI_NVDDR2::NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 		unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
-		bool pacs_enabled, bool pacs_request_level, bool pacs_cross_channel)
+		bool pacs_enabled, bool pacs_request_level, bool pacs_cross_channel, PACS_Adaptive_Options pacs_adaptive)
 		: NVM_PHY_ONFI(id, ChannelCount, chip_no_per_channel, DieNoPerChip, PlaneNoPerDie), channels(channels),
-		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip, pacs_request_level, pacs_cross_channel) : nullptr)
+		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip, pacs_request_level,
+			pacs_cross_channel, pacs_adaptive) : nullptr)
 	{
 		WaitingReadTX = new Flash_Transaction_Queue[channel_count];
 		WaitingGCRead_TX = new Flash_Transaction_Queue[channel_count];
@@ -748,6 +749,9 @@ namespace SSD_Components {
 				pacs->Observe_program(address, chip->Get_page_type(address.PageID), start, Simulator->Time());
 				for (const auto* transaction : dieBKE->ActiveTransactions) {
 					pacs->Complete_program(transaction->Address);
+					if (pacs->Adaptive_options().enabled && transaction->Source == Transaction_Source_Type::USERIO && transaction->UserIORequest) {
+						pacs->Observe_request_page_completion(transaction->UserIORequest, Simulator->Time());
+					}
 				}
 			}
 

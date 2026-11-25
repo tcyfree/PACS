@@ -1,5 +1,7 @@
 #include "Device_Parameter_Set.h"
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 
 
@@ -26,6 +28,7 @@ SSD_Components::Flash_Plane_Allocation_Scheme_Type Device_Parameter_Set::Plane_A
 bool Device_Parameter_Set::PACS_Enabled = false;
 bool Device_Parameter_Set::PACS_Request_Level_Enabled = false;
 bool Device_Parameter_Set::PACS_Cross_Channel_Enabled = false;
+SSD_Components::PACS_Adaptive_Options Device_Parameter_Set::PACS_Adaptive;
 bool Device_Parameter_Set::LEPA_Enabled = false;
 bool Device_Parameter_Set::QSTR_MED_Enabled = false;
 bool Device_Parameter_Set::Independent_Wordline_Multiplane = false;
@@ -69,6 +72,9 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	xmlwriter.Write_attribute_string(attr, val);
 	xmlwriter.Write_attribute_string("PACS_Request_Level_Enabled", PACS_Request_Level_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Enabled", PACS_Cross_Channel_Enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Adaptive_Enabled", PACS_Adaptive.enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Gain_Beta", std::to_string(PACS_Adaptive.gain_beta));
+	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Search_Budget", std::to_string(PACS_Adaptive.search_budget));
 	xmlwriter.Write_attribute_string("LEPA_Enabled", LEPA_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("QSTR_MED_Enabled", QSTR_MED_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("Independent_Wordline_Multiplane", Independent_Wordline_Multiplane ? "true" : "false");
@@ -394,6 +400,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 {
 	PACS_Request_Level_Enabled = false;
 	PACS_Cross_Channel_Enabled = false;
+	PACS_Adaptive = SSD_Components::PACS_Adaptive_Options{};
 	LEPA_Enabled = false;
 	QSTR_MED_Enabled = false;
 	Independent_Wordline_Multiplane = false;
@@ -416,6 +423,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				PACS_Enabled = val == "TRUE";
 			} else if (strcmp(param->name(), "PACS_Request_Level_Enabled") == 0
 				|| strcmp(param->name(), "PACS_Cross_Channel_Enabled") == 0
+				|| strcmp(param->name(), "PACS_Cross_Channel_Adaptive_Enabled") == 0
 				|| strcmp(param->name(), "LEPA_Enabled") == 0
 				|| strcmp(param->name(), "QSTR_MED_Enabled") == 0
 				|| strcmp(param->name(), "Independent_Wordline_Multiplane") == 0) {
@@ -430,6 +438,8 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 					PACS_Request_Level_Enabled = enabled;
 				} else if (name == "PACS_Cross_Channel_Enabled") {
 					PACS_Cross_Channel_Enabled = enabled;
+				} else if (name == "PACS_Cross_Channel_Adaptive_Enabled") {
+					PACS_Adaptive.enabled = enabled;
 				} else if (name == "LEPA_Enabled") {
 					LEPA_Enabled = enabled;
 				} else if (name == "QSTR_MED_Enabled") {
@@ -437,6 +447,23 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				} else {
 					Independent_Wordline_Multiplane = enabled;
 				}
+			} else if (strcmp(param->name(), "PACS_Cross_Channel_Gain_Beta") == 0) {
+				const std::string val = param->value();
+				std::size_t end = 0;
+				const auto beta = std::stod(val, &end);
+				if (!std::isfinite(beta) || beta < 0 || val.find_first_not_of(" \t\r\n", end) != std::string::npos) {
+					PRINT_ERROR("PACS_Cross_Channel_Gain_Beta must be finite and nonnegative")
+				}
+				PACS_Adaptive.gain_beta = beta;
+			} else if (strcmp(param->name(), "PACS_Cross_Channel_Search_Budget") == 0) {
+				const std::string val = param->value();
+				std::size_t end = 0;
+				const auto budget = std::stoll(val, &end);
+				if (budget <= 0 || budget > std::numeric_limits<unsigned int>::max()
+					|| val.find_first_not_of(" \t\r\n", end) != std::string::npos) {
+					PRINT_ERROR("PACS_Cross_Channel_Search_Budget must be a positive integer")
+				}
+				PACS_Adaptive.search_budget = static_cast<unsigned int>(budget);
 			} else if (strcmp(param->name(), "Memory_Type") == 0) {
 				std::string val = param->value();
 				std::transform(val.begin(), val.end(), val.begin(), ::toupper);
