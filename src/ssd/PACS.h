@@ -12,13 +12,16 @@ namespace SSD_Components
 	class PACS
 	{
 	public:
-		PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip);
+		PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level = false);
+		bool Request_level_enabled() const { return request_level; }
 		void Queue_program(const NVM::FlashMemory::Physical_Page_Address& address);
 		void Complete_program(const NVM::FlashMemory::Physical_Page_Address& address);
 		void Observe_program(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type,
 			sim_time_type program_start, sim_time_type ready_time);
 		double Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
+		double Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
 		void Record_ranked_allocation(bool redirected);
+		void Record_request_plan(std::size_t redirected_pages);
 		void Report_results_in_XML(Utils::XmlWriter& xmlwriter) const;
 
 	private:
@@ -40,11 +43,15 @@ namespace SSD_Components
 		std::size_t die_index(const NVM::FlashMemory::Physical_Page_Address& address) const;
 
 		const unsigned int chips_per_channel, dies_per_chip;
+		const bool request_level;
 		std::vector<Die> dies;
 		uint64_t qualified_observations = 0;
 		uint64_t discarded_observations = 0;
 		uint64_t ranked_allocations = 0;
 		uint64_t redirected_allocations = 0;
+		uint64_t planned_requests = 0;
+		uint64_t redirected_requests = 0;
+		uint64_t redirected_request_pages = 0;
 	};
 }
 

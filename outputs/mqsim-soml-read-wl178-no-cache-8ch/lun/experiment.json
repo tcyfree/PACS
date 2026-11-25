@@ -1,0 +1,62 @@
+{
+  "binary_sha256": "c2aedd7e5deb62aa2b91ec7c37feb4efa8c1ed313770a9c6380359e7597d12c9",
+  "config_sha256": "2af68c58195c6c92582087f3c614864ae5069c8713965bf48c5a50cbbf621953",
+  "workload_sha256": "eaaf0337cc51118d2ac315a3c574d618b6b59e65501752ef9da48a05c288359e",
+  "sources": {
+    "1612_4": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1612_4.csv",
+      "size": 89488739,
+      "mtime_ns": 1644731142000000000
+    },
+    "1613_2": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1613_2.csv",
+      "size": 172801222,
+      "mtime_ns": 1644658762000000000
+    },
+    "1612_2": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1612_2.csv",
+      "size": 127686575,
+      "mtime_ns": 1644729180000000000
+    },
+    "1708_0": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1708_0.csv",
+      "size": 92512837,
+      "mtime_ns": 1653618998000000000
+    },
+    "1619_0": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1619_0.csv",
+      "size": 53522512,
+      "mtime_ns": 1644907642000000000
+    },
+    "1614_6": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1614_6.csv",
+      "size": 42438586,
+      "mtime_ns": 1644758706000000000
+    },
+    "1615_1": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1615_1.csv",
+      "size": 19953581,
+      "mtime_ns": 1644845554000000000
+    },
+    "1616_2": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1616_2.csv",
+      "size": 39802967,
+      "mtime_ns": 1644805380000000000
+    },
+    "1617_3": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1617_3.csv",
+      "size": 29135983,
+      "mtime_ns": 1644907566000000000
+    },
+    "1618_3": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1618_3.csv",
+      "size": 36696583,
+      "mtime_ns": 1644907616000000000
+    },
+    "1620_2": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/1620_2.csv",
+      "size": 43054957,
+      "mtime_ns": 1644907710000000000
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "requests_completed": 2387992,
+  "reads": 2049890,
+  "writes": 338102,
+  "single_page_writes": 190990,
+  "multi_page_writes": 147112,
+  "latency": {
+    "average_write_latency_ms": 145.85008202421162,
+    "average_read_latency_ms": 10.904598106501812,
+    "p95_write_latency_ms": 1202.397038,
+    "p99_write_latency_ms": 2338.214597,
+    "p999_write_latency_ms": 3442.009821,
+    "read_p99_latency_ms": 373.571195,
+    "single_page_write_p99_ms": 1017.144045,
+    "single_page_write_p999_ms": 2131.498294,
+    "multi_page_write_p99_ms": 2739.248612,
+    "multi_page_write_p999_ms": 3766.666119
+  },
+  "simulated_duration_ns": 3391819160035,
+  "replay_throughput_mib_s": 22.43814075331508,
+  "gc_executions": 0,
+  "gc_moved_pages": 0,
+  "host_write_page_transactions": 912042,
+  "page_programs": 912042,
+  "page_program_amplification": 1.0,
+  "mean_write_transaction_wait_us": 149047,
+  "multiplane_commands": {
+    "Issued_Flash_Multiplane_Read_CMD": 0,
+    "Issued_Flash_Multiplane_Program_CMD": 0,
+    "Issued_Flash_Multiplane_Erase_CMD": 0,
+    "Issued_Flash_Multiplane_Copyback_Program_CMD": 0,
+    "Issued_Flash_Interleaved_Multiplane_Program_CMD": 0,
+    "Issued_Flash_Interleaved_Multiplane_Erase_CMD": 0
+  },
+  "policy_counters": {
+    "Median_Batch_Size": "9",
+    "Minimum_Samples": "36",
+    "EWMA_Alpha": "0.250000",
+    "Qualified_Program_Observations": "912042",
+    "Discarded_Program_Observations": "0",
+    "Ranked_Write_Allocations": "129857",
+    "Redirected_Write_Allocations": "68624",
+    "Outstanding_Programs_At_End": "0"
+  },
+  "result_xml": "run/1612_4-pacs/w_1612_4_setsize4_reply_1.xml",
+  "log": "run/1612_4-pacs/run.log",
+  "latency_samples": "run/1612_4-pacs/1612_4",
+  "wall_seconds": 24.224509563297033,
+  "samples_match_previous_experiment": true
+}

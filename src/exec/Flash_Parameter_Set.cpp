@@ -13,6 +13,7 @@ sim_time_type Flash_Parameter_Set::Page_Program_Latency_LSB = 750000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_CSB = 750000;
 sim_time_type Flash_Parameter_Set::Page_Program_Latency_MSB = 750000;
 std::vector<sim_time_type> Flash_Parameter_Set::Wordline_Program_Latencies;
+std::string Flash_Parameter_Set::Block_Latency_Profile_File;
 sim_time_type Flash_Parameter_Set::Block_Erase_Latency = 3800000;//Block erase latency in nano-seconds
 unsigned int Flash_Parameter_Set::Block_PE_Cycles_Limit = 10000;
 sim_time_type Flash_Parameter_Set::Suspend_Erase_Time = 700000;//in nano-seconds
@@ -99,6 +100,9 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 		val = latencies.str();
 		xmlwriter.Write_attribute_string(attr, val);
 	}
+	if (!Block_Latency_Profile_File.empty()) {
+		xmlwriter.Write_attribute_string("Block_Latency_Profile_File", Block_Latency_Profile_File);
+	}
 
 	attr = "Block_Erase_Latency";
 	val = std::to_string(Block_Erase_Latency);
@@ -146,6 +150,7 @@ void Flash_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 {
 	Wordline_Program_Latencies.clear();
+	Block_Latency_Profile_File.clear();
 	try {
 		for (auto param = node->first_node(); param; param = param->next_sibling()) {
 			if (strcmp(param->name(), "Flash_Technology") == 0) {
@@ -209,6 +214,8 @@ void Flash_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				if (Wordline_Program_Latencies.empty()) {
 					PRINT_ERROR("Wordline_Program_Latencies is empty")
 				}
+			} else if (strcmp(param->name(), "Block_Latency_Profile_File") == 0) {
+				Block_Latency_Profile_File = param->value();
 			} else if (strcmp(param->name(), "Block_Erase_Latency") == 0) {
 				std::string val = param->value();
 				Block_Erase_Latency = std::stoull(val);

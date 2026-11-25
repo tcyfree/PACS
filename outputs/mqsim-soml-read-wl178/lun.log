@@ -1,0 +1,56 @@
+1612_4 prepared: 2,049,890 reads, 338,102 writes
+1612_4 pacs running
+1612_4 baseline running
+1613_2 prepared: 3,395,852 reads, 1,201,201 writes
+1613_2 baseline running1613_2 pacs running
+
+1612_2 prepared: 2,449,506 reads, 953,039 writes
+1612_2 baseline running
+1612_2 pacs running
+1708_0 prepared: 1,984,024 reads, 480,257 writes
+1619_0 prepared: 842,953 reads, 587,722 writes
+1614_6 prepared: 691,854 reads, 441,716 writes
+1615_1 prepared: 178,742 reads, 355,787 writes
+1616_2 prepared: 707,522 reads, 354,837 writes
+1617_3 prepared: 387,173 reads, 394,165 writes
+1618_3 prepared: 498,867 reads, 484,740 writes
+1620_2 prepared: 794,067 reads, 353,097 writes
+1612_4 baseline verified, 2,387,992 requests in 24.4 s
+1708_0 baseline running
+1612_4 pacs verified, 2,387,992 requests in 24.6 s
+1708_0 pacs running
+1612_2 pacs verified, 3,402,545 requests in 24.2 s
+1619_0 baseline running
+1612_2 baseline verified, 3,402,545 requests in 24.7 s
+1619_0 pacs running
+1619_0 baseline verified, 1,430,675 requests in 9.6 s
+1614_6 baseline running
+1619_0 pacs verified, 1,430,675 requests in 9.6 s
+1614_6 pacs running
+1708_0 baseline verified, 2,464,281 requests in 20.0 s
+1615_1 baseline running
+1708_0 pacs verified, 2,464,281 requests in 20.6 s
+1615_1 pacs running
+1615_1 baseline verified, 534,529 requests in 2.8 s
+1616_2 baseline running
+1613_2 baseline verified, 4,597,053 requests in 43.3 s
+1616_2 pacs running
+1615_1 pacs verified, 534,529 requests in 2.9 s
+1617_3 baseline running
+1613_2 pacs verified, 4,597,053 requests in 44.0 s
+1617_3 pacs running
+1614_6 baseline verified, 1,133,570 requests in 8.3 s
+1618_3 baseline running
+1614_6 pacs verified, 1,133,570 requests in 8.3 s
+1618_3 pacs running
+1617_3 baseline verified, 781,338 requests in 4.7 s
+1620_2 baseline running
+1617_3 pacs verified, 781,338 requests in 4.7 s
+1620_2 pacs running
+1616_2 baseline verified, 1,062,359 requests in 6.3 s
+1616_2 pacs verified, 1,062,359 requests in 6.3 s
+1618_3 baseline verified, 983,607 requests in 5.4 s
+1618_3 pacs verified, 983,607 requests in 5.3 s
+1620_2 baseline verified, 1,147,164 requests in 7.2 s
+1620_2 pacs verified, 1,147,164 requests in 7.2 s
+Wrote /home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178/lun/comparison.json

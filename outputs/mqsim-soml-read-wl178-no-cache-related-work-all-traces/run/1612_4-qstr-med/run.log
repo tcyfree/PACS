@@ -1,0 +1,71 @@
+MQSim started at Tue Nov 24 19:20:39 2026
+
+******************************
+Executing scenario 1 out of 1 .......
+Using program latencies for 256 wordlines
+Loaded 0 per-block NAND latency profiles
+log2(total_physical_pages_no):24.0738
+sector_no_per_page:32
+CMTentrysize:5
+CMTentrycount:6710886
+GTD_entry_size:8
+translation_entries_per_page:2048
+Investigating input trace file: /home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+Trace file: /home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv seems healthy
+SSD Device preconditioning started .........
+6621696
+413856
+Finished preconditioning. Duration of preconditioning: 0:0:0
+[>                   ]  0% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[=>                  ]  5% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[==>                 ]  10% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[===>                ]  15% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[====>               ]  20% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[=====>              ]  25% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[======>             ]  30% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[=======>            ]  35% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[========>           ]  40% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[=========>          ]  45% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[==========>         ]  50% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[===========>        ]  55% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[============>       ]  60% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[=============>      ]  65% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[==============>     ]  70% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[===============>    ]  75% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[================>   ]  80% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[=================>  ]  85% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[==================> ]  90% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[===================>]  95% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+[====================]  100% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv
+
+MQSim finished at Tue Nov 24 19:21:04 2026
+
+Total simulation time: 0:0:25
+
+Writing results to output file .......
+set的大小是4
+2387992
+3391819160035
+Flow Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv - total requests generated: 2387992 total requests serviced:2387992
+                   - device response time: 31539 (us) end-to-end request delay:31539 (us)
+Simulation complete; Press any key to exit.

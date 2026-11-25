@@ -1,6 +1,7 @@
 #ifndef ONFI_CHANNEL_NVDDR2_H
 #define ONFI_CHANNEL_NVDDR2_H
 
+#include <vector>
 #include "../nvm_chip/flash_memory/FlashTypes.h"
 #include "ONFI_Channel_Base.h"
 
@@ -14,7 +15,7 @@ namespace SSD_Components
 	class ONFI_Channel_NVDDR2 : public ONFI_Channel_Base
 	{
 	public:
-		ONFI_Channel_NVDDR2(flash_channel_ID_type channelID, unsigned int chipCount, NVM::FlashMemory::Flash_Chip** flashChips, unsigned int ChannelWidth,
+		ONFI_Channel_NVDDR2(flash_channel_ID_type channelID, unsigned int chipCount, NVM::FlashMemory::Flash_Chip** flashChips, unsigned int ChannelWidth, unsigned int plane_count,
 			sim_time_type t_RC = 6, sim_time_type t_DSC = 6,
 			sim_time_type t_DBSY = 500, sim_time_type t_CS = 20, sim_time_type t_RR = 20,
 			sim_time_type t_WB = 100, sim_time_type t_WC = 25, sim_time_type t_ADL = 70, sim_time_type t_CALS = 15,
@@ -23,14 +24,14 @@ namespace SSD_Components
 
 
 		sim_time_type TwoUnitDataOutTime; //The DDR delay for two-unit device data out
-		sim_time_type ReadCommandTime[5];//Read command transfer time for different number of planes
+		std::vector<sim_time_type> ReadCommandTime;//Read command transfer time for different number of planes
 		sim_time_type ReadDataOutSetupTime, ReadDataOutSetupTime_TwoPlane, ReadDataOutSetupTime_ThreePlane, ReadDataOutSetupTime_FourPlane;
 
 		sim_time_type TwoUnitDataInTime; //The DDR delay for two-unit device data in
-		sim_time_type ProgramCommandTime[5];//Program command transfer time for different number of planes
+		std::vector<sim_time_type> ProgramCommandTime;//Program command transfer time for different number of planes
 		sim_time_type ProgramSuspendCommandTime;
 
-		sim_time_type EraseCommandTime[5];
+		std::vector<sim_time_type> EraseCommandTime;
 		sim_time_type EraseSuspendCommandTime;
 
 		unsigned int ChannelWidth; //channel width in bytes

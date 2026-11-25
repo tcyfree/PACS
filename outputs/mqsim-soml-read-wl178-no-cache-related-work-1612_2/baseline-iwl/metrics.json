@@ -1,0 +1,17 @@
+{
+  "requests_completed": 3402545,
+  "independent_wordline_multiplane": true,
+  "latency": {
+    "average_write_latency_ms": 14.818555878872743,
+    "average_read_latency_ms": 0.7746739050016616,
+    "p95_write_latency_ms": 32.369127,
+    "p99_write_latency_ms": 366.412363,
+    "p999_write_latency_ms": 1227.094224
+  },
+  "multiplane_program_commands": 365991,
+  "multiplane_read_commands": 446308,
+  "gc_executions": 0,
+  "policy_counters": {},
+  "result_xml": "baseline-iwl/w_1612_2_setsize4_reply_1.xml",
+  "wall_seconds": 23.000667924061418
+}

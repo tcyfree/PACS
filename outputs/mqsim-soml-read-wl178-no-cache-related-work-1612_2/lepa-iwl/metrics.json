@@ -1,0 +1,27 @@
+{
+  "requests_completed": 3402545,
+  "independent_wordline_multiplane": true,
+  "latency": {
+    "average_write_latency_ms": 9.441812626062521,
+    "average_read_latency_ms": 0.45226392466685117,
+    "p95_write_latency_ms": 18.086578,
+    "p99_write_latency_ms": 233.532564,
+    "p999_write_latency_ms": 662.360095
+  },
+  "multiplane_program_commands": 382446,
+  "multiplane_read_commands": 461322,
+  "gc_executions": 0,
+  "policy_counters": {
+    "Independent_Wordline_Multiplane": "true",
+    "Read_Unit_ns": "130000",
+    "Write_Time_Ratio": "11",
+    "Erase_Time_Ratio": "77",
+    "Write_Selections": "1766328",
+    "Die_Redirections": "494235",
+    "Outstanding_Reads": "0",
+    "Outstanding_Writes": "0",
+    "Outstanding_Erases": "0"
+  },
+  "result_xml": "lepa-iwl/w_1612_2_setsize4_reply_1.xml",
+  "wall_seconds": 23.37295115739107
+}

@@ -9,9 +9,9 @@ namespace SSD_Components {
 
 	NVM_PHY_ONFI_NVDDR2::NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 		unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
-		bool pacs_enabled)
+		bool pacs_enabled, bool pacs_request_level)
 		: NVM_PHY_ONFI(id, ChannelCount, chip_no_per_channel, DieNoPerChip, PlaneNoPerDie), channels(channels),
-		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip) : nullptr)
+		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip, pacs_request_level) : nullptr)
 	{
 		WaitingReadTX = new Flash_Transaction_Queue[channel_count];
 		WaitingGCRead_TX = new Flash_Transaction_Queue[channel_count];
@@ -34,6 +34,7 @@ namespace SSD_Components {
 					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].ActiveTransactions.clear();
 					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].SuspendedCommand = NULL;
 					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].SuspendedTransactions.clear();
+					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].ActiveTransfer = nullptr;
 					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].Free = true;
 					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].Suspended = false;
 					bookKeepingTable[channelID][chipID].Die_book_keeping_records[dieID].DieInterleavedTime = INVALID_TIME;
@@ -116,6 +117,114 @@ namespace SSD_Components {
 	sim_time_type NVM_PHY_ONFI_NVDDR2::Expected_transfer_time(NVM_Transaction_Flash* transaction)
 	{
 		return NVDDR2DataInTransferTime(transaction->Data_and_metadata_size_in_byte, channels[transaction->Address.ChannelID]);
+	}
+
+	sim_time_type NVM_PHY_ONFI_NVDDR2::Estimate_pacs_write_transfer(flash_channel_ID_type channel_id, unsigned int bytes) const
+	{
+		const auto* channel = channels[channel_id];
+		return channel->ProgramCommandTime[1] + NVDDR2DataInTransferTime(bytes, channel);
+	}
+
+	NVM_PHY_ONFI_NVDDR2::PACS_Read_Timing NVM_PHY_ONFI_NVDDR2::Estimate_pacs_read(
+		const NVM::FlashMemory::Physical_Page_Address& address, unsigned int bytes) const
+	{
+		const auto* channel = channels[address.ChannelID];
+		return {channel->ReadCommandTime[1], channel->Chips[address.ChipID]->Get_read_latency(address.PageID),
+			NVDDR2DataOutTransferTime(bytes, channel)};
+	}
+
+	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_program(
+		const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
+	{
+		const auto learned = pacs->Estimate_program_latency(address, page_type);
+		return learned > 0 ? learned : channels[address.ChannelID]->Chips[address.ChipID]->Get_nominal_program_latency(page_type);
+	}
+
+	void NVM_PHY_ONFI_NVDDR2::Update_pacs_queue(const NVM_Transaction_Flash& transaction, bool enqueue)
+	{
+		const auto& address = transaction.Address;
+		const auto* channel = channels[address.ChannelID];
+		const auto* chip = channel->Chips[address.ChipID];
+		auto& die = bookKeepingTable[address.ChannelID][address.ChipID].Die_book_keeping_records[address.DieID];
+		const auto update = [enqueue](sim_time_type& count, sim_time_type amount) {
+			if (!enqueue && count < amount) {
+				throw std::logic_error("PACS observed a dispatch without a queued operation");
+			}
+			count = enqueue ? count + amount : count - amount;
+		};
+		sim_time_type work = 0;
+		switch (transaction.Type) {
+			case Transaction_Type::READ: {
+				const auto read = Estimate_pacs_read(address, transaction.Data_and_metadata_size_in_byte);
+				work = read.command + read.execution + read.data_out;
+				break;
+			}
+			case Transaction_Type::WRITE:
+				update(die.PACS_queued_programs[chip->Get_page_type(address.PageID)], 1);
+				if (static_cast<const NVM_Transaction_Flash_WR&>(transaction).ExecutionMode == WriteExecutionModeType::COPYBACK) {
+					work = channel->ReadCommandTime[1] + chip->Get_read_latency(address.PageID) + channel->ProgramCommandTime[1];
+				} else {
+					work = Estimate_pacs_write_transfer(address.ChannelID, transaction.Data_and_metadata_size_in_byte);
+				}
+				break;
+			case Transaction_Type::ERASE:
+				work = channel->EraseCommandTime[1] + chip->Get_nominal_erase_latency();
+				break;
+			default:
+				throw std::logic_error("Unexpected transaction type in PACS");
+		}
+		update(die.PACS_queued_transfer_and_other_execution, work);
+	}
+
+	sim_time_type NVM_PHY_ONFI_NVDDR2::Estimate_pacs_channel_ready(flash_channel_ID_type channel) const
+	{
+		const auto now = Simulator->Time();
+		auto finish = now;
+		if (channels[channel]->GetStatus() == BusChannelStatus::BUSY) {
+			for (unsigned int chip = 0; chip < chip_no_per_channel; ++chip) {
+				finish = std::max(finish, bookKeepingTable[channel][chip].Last_transfer_finish_time);
+			}
+		}
+		return finish - now;
+	}
+
+	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address) const
+	{
+		const auto& chip = bookKeepingTable[address.ChannelID][address.ChipID];
+		const auto& die = chip.Die_book_keeping_records[address.DieID];
+		double remaining = die.PACS_queued_transfer_and_other_execution;
+		for (unsigned int type = 0; type < die.PACS_queued_programs.size(); ++type) {
+			if (die.PACS_queued_programs[type]) {
+				remaining += die.PACS_queued_programs[type] * Estimate_pacs_program(address, type);
+			}
+		}
+		if (die.Free) {
+			return remaining;
+		}
+		const auto now = Simulator->Time();
+		const auto* command = die.ActiveCommand;
+		if (command->CommandCode == CMD_PROGRAM_PAGE || command->CommandCode == CMD_PROGRAM_PAGE_COPYBACK) {
+			const auto& active = command->Address.front();
+			const auto type = channels[active.ChannelID]->Chips[active.ChipID]->Get_page_type(active.PageID);
+			// Estimate the outstanding array time from the issue time and learned page class.
+			return remaining + std::max(0.0, double(die.PACS_program_start) - now + Estimate_pacs_program(active, type));
+		}
+		const auto array_remaining = std::max(die.Expected_finish_time, now) - now;
+		if (command->CommandCode == CMD_READ_PAGE) {
+			if (die.ActiveTransfer) {
+				return remaining + std::max(chip.Last_transfer_finish_time, now) - now;
+			}
+			const auto* read = die.ActiveTransactions.front();
+			return remaining + std::max(array_remaining, Estimate_pacs_channel_ready(address.ChannelID))
+				+ Estimate_pacs_read(read->Address, read->Data_and_metadata_size_in_byte).data_out;
+		}
+		if (command->CommandCode == CMD_READ_PAGE_COPYBACK) {
+			const auto& active = command->Address.front();
+			const auto* flash = channels[active.ChannelID]->Chips[active.ChipID];
+			return remaining + array_remaining + channels[active.ChannelID]->ProgramCommandTime[1]
+				+ Estimate_pacs_program(active, flash->Get_page_type(active.PageID));
+		}
+		return remaining + array_remaining;
 	}
 
 	NVM_Transaction_Flash* NVM_PHY_ONFI_NVDDR2::Is_chip_busy_with_stream(NVM_Transaction_Flash* transaction)
@@ -206,6 +315,9 @@ namespace SSD_Components {
 		dieBKE->ActiveCommand = new NVM::FlashMemory::Flash_Command();
 		for (std::list<NVM_Transaction_Flash*>::iterator it = transaction_list.begin();
 			it != transaction_list.end(); it++) {
+			if (pacs && pacs->Request_level_enabled()) {
+				Update_pacs_queue(**it, false);
+			}
 			dieBKE->ActiveTransactions.push_back(*it);
 			dieBKE->ActiveCommand->Address.push_back((*it)->Address);
 			NVM::FlashMemory::PageMetadata metadata;
@@ -277,6 +389,7 @@ namespace SSD_Components {
 					}
 					chipBKE->OngoingDieCMDTransfers.push(dieBKE);
 
+					dieBKE->PACS_program_start = chipBKE->Last_transfer_finish_time;
 					dieBKE->Expected_finish_time = chipBKE->Last_transfer_finish_time + targetChip->Get_command_execution_latency(*dieBKE->ActiveCommand);
 					if (chipBKE->Expected_command_exec_finish_time < dieBKE->Expected_finish_time) {
 						chipBKE->Expected_command_exec_finish_time = dieBKE->Expected_finish_time;
@@ -432,10 +545,14 @@ namespace SSD_Components {
 					targetChannel->SetStatus(BusChannelStatus::IDLE, targetChip);
 				}
 				break;
-			case NVDDR2_SimEventType::READ_DATA_TRANSFERRED:
+			case NVDDR2_SimEventType::READ_DATA_TRANSFERRED: {
 				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID << ": READ_DATA_TRANSFERRED ")
+				auto* read = static_cast<NVM_Transaction_Flash_RD*>(dieBKE->ActiveTransfer);
+				const auto* related_write = read->RelatedWrite;
+				const auto write_channel = related_write && (read->Source == Transaction_Source_Type::USERIO
+					|| read->Source == Transaction_Source_Type::CACHE) ? related_write->Address.ChannelID : channel_id;
 				targetChip->EndDataOutXfer(dieBKE->ActiveCommand);
-				copy_read_data_to_transaction((NVM_Transaction_Flash_RD*)dieBKE->ActiveTransfer, dieBKE->ActiveCommand);
+				copy_read_data_to_transaction(read, dieBKE->ActiveCommand);
 	#if 0
 				if (tr->ExecutionMode != ExecutionModeType::COPYBACK)
 	#endif
@@ -467,7 +584,12 @@ namespace SSD_Components {
 					}
 				}
 				targetChannel->SetStatus(BusChannelStatus::IDLE, targetChip);
+				// An update read can unblock a NAND write on another idle channel.
+				if (write_channel != channel_id && channels[write_channel]->GetStatus() == BusChannelStatus::IDLE) {
+					broadcastChannelIdleSignal(write_channel);
+				}
 				break;
+			}
 			default:
 				PRINT_ERROR("Unknown simulation event specified for NVM_PHY_ONFI_NVDDR2!")
 		}
@@ -487,6 +609,8 @@ namespace SSD_Components {
 			}
 			targetChip->StartCMDXfer();
 			waitingChipBKE->Status = ChipStatus::CMD_IN;
+			waitingChipBKE->Last_transfer_finish_time = Simulator->Time() + this->channels[channel_id]->ProgramCommandTime[waitingBKE->ActiveTransactions.size()];
+			waitingBKE->PACS_program_start = waitingChipBKE->Last_transfer_finish_time;
 			Simulator->Register_sim_event(Simulator->Time() + this->channels[channel_id]->ProgramCommandTime[waitingBKE->ActiveTransactions.size()],
 				this, waitingBKE, (int)NVDDR2_SimEventType::PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED);
 			waitingChipBKE->OngoingDieCMDTransfers.push(waitingBKE);
@@ -590,6 +714,8 @@ namespace SSD_Components {
 				}
 				chip->StartCMDXfer();
 				chipBKE->Status = ChipStatus::CMD_IN;
+				chipBKE->Last_transfer_finish_time = Simulator->Time() + _my_instance->channels[chip->ChannelID]->ProgramCommandTime[dieBKE->ActiveTransactions.size()];
+				dieBKE->PACS_program_start = chipBKE->Last_transfer_finish_time;
 				Simulator->Register_sim_event(Simulator->Time() + _my_instance->channels[chip->ChannelID]->ProgramCommandTime[dieBKE->ActiveTransactions.size()],
 					_my_instance, dieBKE, (int)NVDDR2_SimEventType::PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED);
 				chipBKE->OngoingDieCMDTransfers.push(dieBKE);
@@ -617,7 +743,9 @@ namespace SSD_Components {
 
 			if (auto* pacs = _my_instance->Get_pacs()) {
 				const auto& address = command->Address.front();
-				pacs->Observe_program(address, chip->Get_page_type(address.PageID), dieBKE->Program_observation_start, Simulator->Time());
+				// A multi-plane ready signal gives the maximum time and cannot identify individual page timings.
+				const auto start = command->Address.size() == 1 ? dieBKE->Program_observation_start : INVALID_TIME;
+				pacs->Observe_program(address, chip->Get_page_type(address.PageID), start, Simulator->Time());
 				for (const auto* transaction : dieBKE->ActiveTransactions) {
 					pacs->Complete_program(transaction->Address);
 				}
@@ -681,7 +809,8 @@ namespace SSD_Components {
 		dieBKE->ActiveTransfer = tr;
 		channels[tr->Address.ChannelID]->Chips[tr->Address.ChipID]->StartDataOutXfer();
 		chipBKE->Status = ChipStatus::DATA_OUT;
-		Simulator->Register_sim_event(Simulator->Time() + NVDDR2DataOutTransferTime(tr->Data_and_metadata_size_in_byte, channels[tr->Address.ChannelID]),
+		chipBKE->Last_transfer_finish_time = Simulator->Time() + NVDDR2DataOutTransferTime(tr->Data_and_metadata_size_in_byte, channels[tr->Address.ChannelID]);
+		Simulator->Register_sim_event(chipBKE->Last_transfer_finish_time,
 			this, dieBKE, (int)NVDDR2_SimEventType::READ_DATA_TRANSFERRED);
 
 		tr->STAT_transfer_time += NVDDR2DataOutTransferTime(tr->Data_and_metadata_size_in_byte, channels[tr->Address.ChannelID]);

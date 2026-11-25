@@ -1,0 +1,73 @@
+MQSim started at Mon Nov 23 21:38:12 2026
+
+******************************
+Executing scenario 1 out of 1 .......
+Using program latencies for 178 wordlines
+log2(total_physical_pages_no):22.9914
+sector_no_per_page:16
+CMTentrysize:4
+CMTentrycount:8388608
+GTD_entry_size:5
+translation_entries_per_page:1638
+SSD Device preconditioning started .........
+6204172
+24235
+Finished preconditioning. Duration of preconditioning: 0:0:0
+Investigating input trace file: ../../sortedTrace/1617_3.csv
+Trace file: ../../sortedTrace/1617_3.csv seems healthy
+[>                   ]  0% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[=>                  ]  5% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[==>                 ]  10% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[===>                ]  15% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[====>               ]  20% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[=====>              ]  25% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[======>             ]  30% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[=======>            ]  35% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[========>           ]  40% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[=========>          ]  45% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[==========>         ]  50% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[===========>        ]  55% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[============>       ]  60% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[=============>      ]  65% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[==============>     ]  70% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[===============>    ]  75% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[================>   ]  80% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[=================>  ]  85% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[==================> ]  90% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[===================>]  95% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+[====================]  100% progress in Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv
+
+MQSim finished at Mon Nov 23 21:38:22 2026
+
+Total simulation time: 0:0:10
+
+Writing results to output file .......
+set的大小是4
+781338
+3593209617003
+Flow Host.IO_Flow.Trace.../../sortedTrace/1617_3.csv - total requests generated: 781338 total requests serviced:781338
+                   - device response time: 1041 (us) end-to-end request delay:1041 (us)
+Simulation complete; Press any key to exit.
+
+Elapsed wall time: 10.53 s
+Exit status: 0

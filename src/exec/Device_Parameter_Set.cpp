@@ -24,6 +24,10 @@ unsigned int Device_Parameter_Set::CMT_Capacity = 2 * 1024 * 1024;//Size of SRAM
 SSD_Components::CMT_Sharing_Mode Device_Parameter_Set::CMT_Sharing_Mode = SSD_Components::CMT_Sharing_Mode::SHARED;//How the entire CMT space is shared among concurrently running flows
 SSD_Components::Flash_Plane_Allocation_Scheme_Type Device_Parameter_Set::Plane_Allocation_Scheme = SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP;
 bool Device_Parameter_Set::PACS_Enabled = false;
+bool Device_Parameter_Set::PACS_Request_Level_Enabled = false;
+bool Device_Parameter_Set::LEPA_Enabled = false;
+bool Device_Parameter_Set::QSTR_MED_Enabled = false;
+bool Device_Parameter_Set::Independent_Wordline_Multiplane = false;
 SSD_Components::Flash_Scheduling_Type Device_Parameter_Set::Transaction_Scheduling_Policy = SSD_Components::Flash_Scheduling_Type::OUT_OF_ORDER;
 double Device_Parameter_Set::Overprovisioning_Ratio = 0.07;//The ratio of spare space with respect to the whole available storage space of SSD
 double Device_Parameter_Set::GC_Exec_Threshold = 0.05;//The threshold for the ratio of free pages that used to trigger GC
@@ -62,6 +66,10 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	attr = "PACS_Enabled";
 	val = PACS_Enabled ? "true" : "false";
 	xmlwriter.Write_attribute_string(attr, val);
+	xmlwriter.Write_attribute_string("PACS_Request_Level_Enabled", PACS_Request_Level_Enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("LEPA_Enabled", LEPA_Enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("QSTR_MED_Enabled", QSTR_MED_Enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("Independent_Wordline_Multiplane", Independent_Wordline_Multiplane ? "true" : "false");
 
 	attr = "Memory_Type";
 	val;
@@ -382,6 +390,10 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 
 void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 {
+	PACS_Request_Level_Enabled = false;
+	LEPA_Enabled = false;
+	QSTR_MED_Enabled = false;
+	Independent_Wordline_Multiplane = false;
 	try
 	{
 		for (auto param = node->first_node(); param; param = param->next_sibling()) {
@@ -399,6 +411,26 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 					PRINT_ERROR("PACS_Enabled must be true or false")
 				}
 				PACS_Enabled = val == "TRUE";
+			} else if (strcmp(param->name(), "PACS_Request_Level_Enabled") == 0
+				|| strcmp(param->name(), "LEPA_Enabled") == 0
+				|| strcmp(param->name(), "QSTR_MED_Enabled") == 0
+				|| strcmp(param->name(), "Independent_Wordline_Multiplane") == 0) {
+				const std::string name = param->name();
+				std::string val = param->value();
+				std::transform(val.begin(), val.end(), val.begin(), ::toupper);
+				if (val != "TRUE" && val != "FALSE") {
+					PRINT_ERROR(name << " must be true or false")
+				}
+				const bool enabled = val == "TRUE";
+				if (name == "PACS_Request_Level_Enabled") {
+					PACS_Request_Level_Enabled = enabled;
+				} else if (name == "LEPA_Enabled") {
+					LEPA_Enabled = enabled;
+				} else if (name == "QSTR_MED_Enabled") {
+					QSTR_MED_Enabled = enabled;
+				} else {
+					Independent_Wordline_Multiplane = enabled;
+				}
 			} else if (strcmp(param->name(), "Memory_Type") == 0) {
 				std::string val = param->value();
 				std::transform(val.begin(), val.end(), val.begin(), ::toupper);

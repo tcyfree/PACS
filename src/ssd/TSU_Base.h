@@ -2,6 +2,7 @@
 #define TSU_H
 
 #include <list>
+#include <memory>
 #include "../sim/Sim_Defs.h"
 #include "../sim/Sim_Object.h"
 #include "../nvm_chip/flash_memory/Flash_Chip.h"
@@ -9,6 +10,7 @@
 #include "FTL.h"
 #include "NVM_PHY_ONFI_NVDDR2.h"
 #include "Flash_Transaction_Queue.h"
+#include "LEPA.h"
 
 namespace SSD_Components
 {
@@ -19,6 +21,7 @@ enum class Flash_Scheduling_Type
 	FLIN
 };
 class FTL;
+class QSTR_MED;
 class TSU_Base : public MQSimEngine::Sim_Object
 {
 public:
@@ -57,10 +60,24 @@ public:
 	void Submit_transaction(NVM_Transaction_Flash *transaction)
 	{
 		transaction_receive_slots.push_back(transaction);
-		if (transaction->Type == Transaction_Type::WRITE && _NVMController->Get_pacs()) {
-			_NVMController->Get_pacs()->Queue_program(transaction->Address);
+		if (auto* pacs = _NVMController->Get_pacs()) {
+			if (transaction->Type == Transaction_Type::WRITE) {
+				pacs->Queue_program(transaction->Address);
+			}
+			if (pacs->Request_level_enabled()) {
+				_NVMController->Update_pacs_queue(*transaction, true);
+			}
+		}
+		if (lepa) {
+			lepa->Submit(*transaction);
 		}
 	}
+
+	void Set_independent_wordline_multiplane(bool enabled) { independent_wordline_multiplane = enabled; }
+	void Enable_lepa(sim_time_type read_time, sim_time_type program_time, sim_time_type erase_time);
+	LEPA* Get_lepa() const { return lepa.get(); }
+	void Set_qstr_med(QSTR_MED* policy) { qstr_med = policy; }
+	const QSTR_MED* Get_qstr_med() const { return qstr_med; }
 
 	/* Shedules the transactions currently stored in inputTransactionSlots. The transactions could
 		* be mixes of reads, writes, and erases.
@@ -103,6 +120,11 @@ protected:
 	}
 
 private:
+	bool independent_wordline_multiplane = false;
+	std::unique_ptr<LEPA> lepa;
+	QSTR_MED* qstr_med = nullptr;
+	bool issue_independent_wordline_command(Flash_Transaction_Queue& queue, Transaction_Type type, bool suspensionRequired);
+
 	bool transaction_is_ready(NVM_Transaction_Flash* transaction)
 	{
 		switch (transaction->Type)

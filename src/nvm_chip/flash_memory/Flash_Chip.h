@@ -2,6 +2,7 @@
 #define FLASH_CHIP_H
 
 #include <algorithm>
+#include <memory>
 #include "../../sim/Sim_Defs.h"
 #include "../../sim/Sim_Event.h"
 #include "../../sim/Engine.h"
@@ -10,6 +11,7 @@
 #include "FlashTypes.h"
 #include "Die.h"
 #include "Flash_Command.h"
+#include "Block_Latency_Profile.h"
 #include <vector>
 #include <stdexcept>
 
@@ -31,6 +33,11 @@ namespace NVM
 			~Flash_Chip();
 			flash_channel_ID_type ChannelID;
 			flash_chip_ID_type ChipID;         //Flashchip position in its related channel
+
+			void Set_block_latency_profile(const std::shared_ptr<const Block_Latency_Profile>& profile)
+			{
+				block_latency_profile = profile;
+			}
 
 			void StartCMDXfer()
 			{
@@ -98,34 +105,60 @@ namespace NVM
 				return 0;
 			}
 
+			sim_time_type Get_read_latency(flash_page_ID_type page_id) const
+			{
+				return _readLatency[Get_page_type(page_id)] + _RBSignalDelayRead;
+			}
+
+			sim_time_type Get_nominal_program_latency(unsigned int page_type) const
+			{
+				return _programLatency[page_type] + _RBSignalDelayWrite;
+			}
+
+			sim_time_type Get_nominal_erase_latency() const { return _eraseLatency + _RBSignalDelayErase; }
+
 			sim_time_type Get_command_execution_latency(const Flash_Command& command)
 			{
-				const auto latencyType = Get_page_type(command.Address.front().PageID);
 				switch (command.CommandCode)
 				{
 					case CMD_READ_PAGE:
 					case CMD_READ_PAGE_MULTIPLANE:
 					case CMD_READ_PAGE_COPYBACK:
-					case CMD_READ_PAGE_COPYBACK_MULTIPLANE:
-						return _readLatency[latencyType] + _RBSignalDelayRead;
+					case CMD_READ_PAGE_COPYBACK_MULTIPLANE: {
+						sim_time_type latency = 0;
+						for (const auto& address : command.Address) {
+							latency = std::max(latency, _readLatency[Get_page_type(address.PageID)]);
+						}
+						return latency + _RBSignalDelayRead;
+					}
 					case CMD_PROGRAM_PAGE:
 					case CMD_PROGRAM_PAGE_MULTIPLANE:
 					case CMD_PROGRAM_PAGE_COPYBACK:
 					case CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE: {
-						if (_wordlineProgramLatencies.empty()) {
-							return _programLatency[latencyType] + _RBSignalDelayWrite;
-						}
 						// Consecutive pages share a wordline. A multi-plane command waits for its slowest plane.
 						const auto pages_per_wordline = static_cast<unsigned int>(flash_technology);
 						sim_time_type latency = 0;
 						for (const auto& address : command.Address) {
-							latency = std::max(latency, _wordlineProgramLatencies[address.PageID / pages_per_wordline]);
+							const auto page_time = block_latency_profile
+								? block_latency_profile->Program_times(address)[address.PageID / pages_per_wordline]
+								: _wordlineProgramLatencies.empty()
+								? _programLatency[Get_page_type(address.PageID)]
+								: _wordlineProgramLatencies[address.PageID / pages_per_wordline];
+							latency = std::max(latency, page_time);
 						}
 						return latency + _RBSignalDelayWrite;
 					}
 					case CMD_ERASE_BLOCK:
-					case CMD_ERASE_BLOCK_MULTIPLANE:
-						return _eraseLatency + _RBSignalDelayErase;
+					case CMD_ERASE_BLOCK_MULTIPLANE: {
+						if (!block_latency_profile) {
+							return _eraseLatency + _RBSignalDelayErase;
+						}
+						sim_time_type latency = 0;
+						for (const auto& address : command.Address) {
+							latency = std::max(latency, block_latency_profile->Erase_time(address));
+						}
+						return latency + _RBSignalDelayErase;
+					}
 					default:
 						throw std::invalid_argument("Unsupported command for flash chip.");
 				}
@@ -156,6 +189,7 @@ namespace NVM
 			unsigned int block_no_in_plane;                //indicate how many blocks in a plane
 			unsigned int page_no_per_block;                 //indicate how many pages in a block
 			const std::vector<sim_time_type> _wordlineProgramLatencies;
+			std::shared_ptr<const Block_Latency_Profile> block_latency_profile;
 			sim_time_type *_readLatency, *_programLatency, _eraseLatency;
 			sim_time_type _suspendProgramLatency, _suspendEraseLatency;
 			sim_time_type _RBSignalDelayRead, _RBSignalDelayWrite, _RBSignalDelayErase;

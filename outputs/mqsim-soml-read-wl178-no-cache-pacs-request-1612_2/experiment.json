@@ -1,0 +1,40 @@
+{
+  "trace": "1612_2",
+  "trace_file": {
+    "path": "/home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_2.csv",
+    "size": 106663146,
+    "mtime_ns": 1795503522581223568,
+    "reads": 2449506,
+    "writes": 953039,
+    "multi_page_writes": 361144,
+    "bytes": 63527034368,
+    "span_ns": 3388269092096,
+    "history_batch": "/home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/lun"
+  },
+  "policies": [
+    "baseline",
+    "pacs",
+    "pacs-request",
+    "lepa"
+  ],
+  "simulator_sha256": "55fa497d84e2a43ae4613080a0fbfa2b552bc5842d4c35246a9f80395d18cf06",
+  "reference_inputs": "/home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache-related-work-all-traces/experiment.json",
+  "config_sha256": {
+    "baseline": {
+      "ssdconfig.xml": "50f6b9a7f7608e6181e99ccb7b41b03a5cabe27e2bba7a86745e5dd2bc3df00e",
+      "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+    },
+    "pacs": {
+      "ssdconfig.xml": "9696b4e014e125e81bd2ca63bee2d06d1ea48e2103efe1289c78df1d336d548f",
+      "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+    },
+    "pacs-request": {
+      "ssdconfig.xml": "087b80a32af7ffcfe42f927287364c9c8f6208e557bbcbb73294a635f4b58e37",
+      "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+    },
+    "lepa": {
+      "ssdconfig.xml": "7cd80a5b9b47233437a12f36970ed220b4c627afe5454e63ff2fb91dbb4c4cf1",
+      "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+    }
+  }
+}

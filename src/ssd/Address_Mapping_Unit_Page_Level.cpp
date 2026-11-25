@@ -1,6 +1,8 @@
 #include <cmath>
 #include <assert.h>
 #include <stdexcept>
+#include <limits>
+#include <unordered_set>
 
 #include "Address_Mapping_Unit_Page_Level.h"
 #include "Stats.h"
@@ -53,13 +55,15 @@ namespace SSD_Components
 		return true;
 	}
 
-	PPA_type Cached_Mapping_Table::Retrieve_ppa(const stream_id_type streamID, const LPA_type lpn)
+	PPA_type Cached_Mapping_Table::Retrieve_ppa(const stream_id_type streamID, const LPA_type lpn, bool touch)
 	{
 		LPA_type key = LPN_TO_UNIQUE_KEY(streamID, lpn);
 		auto it = addressMap.find(key);
 		assert(it != addressMap.end());
 		assert(it->second->Status == CMTEntryStatus::VALID);
-		lruList.splice(lruList.begin(), lruList, it->second->listPtr);
+		if (touch) {
+			lruList.splice(lruList.begin(), lruList, it->second->listPtr);
+		}
 		
 		return it->second->PPA;
 	}
@@ -285,12 +289,12 @@ namespace SSD_Components
 		}
 	}
 
-	inline PPA_type AddressMappingDomain::Get_ppa(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa)
+	inline PPA_type AddressMappingDomain::Get_ppa(const bool ideal_mapping, const stream_id_type stream_id, const LPA_type lpa, bool touch)
 	{
 		if (ideal_mapping) {
 			return GlobalMappingTable[lpa].PPA;
 		} else {
-			return CMT->Retrieve_ppa(stream_id, lpa);
+			return CMT->Retrieve_ppa(stream_id, lpa, touch);
 		}
 	}
 
@@ -521,21 +525,34 @@ namespace SSD_Components
 		return domains[stream_id]->No_of_inserted_entries_in_preconditioning;
 	}
 
+	using NVM::FlashMemory::Physical_Page_Address;
+
+	static Physical_Page_Address cwdp_target(LPA_type lpa, const AddressMappingDomain& domain)
+	{
+		return Physical_Page_Address(domain.Channel_ids[lpa % domain.Channel_no],
+			domain.Chip_ids[(lpa / domain.Channel_no) % domain.Chip_no],
+			domain.Die_ids[(lpa / (domain.Chip_no * domain.Channel_no)) % domain.Die_no],
+			domain.Plane_ids[(lpa / (domain.Die_no * domain.Chip_no * domain.Channel_no)) % domain.Plane_no]);
+	}
+
 	void Address_Mapping_Unit_Page_Level::Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList)
 	{
+		const auto plan = pacs && pacs->Request_level_enabled() && transactionList.size() > 1
+			? plan_pacs_request(transactionList) : std::vector<Physical_Page_Address>{};
+		std::size_t next_target = 0, redirected_pages = 0;
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 			it != transactionList.end(); ) {
-
-	//		if (((NVM_Transaction_Flash*)(*it))->LPA == 390780){
-	//			std::cout << "sss" << std::endl;
- //}
-
-			if (is_lpa_locked_for_gc((*it)->Stream_id, ((NVM_Transaction_Flash*)(*it))->LPA)) {
-				//iterator should be post-incremented since the iterator may be deleted from list
-				manage_user_transaction_facing_barrier((NVM_Transaction_Flash*)*(it++));
-			} else {
-				query_cmt((NVM_Transaction_Flash*)(*it++));
+			auto* transaction = static_cast<NVM_Transaction_Flash*>(*(it++));
+			const auto* target = plan.empty() ? nullptr : &plan[next_target++];
+			if (is_lpa_locked_for_gc(transaction->Stream_id, transaction->LPA)) {
+				manage_user_transaction_facing_barrier(transaction);
+			} else if (query_cmt(transaction, target) && target) {
+				const auto original = cwdp_target(transaction->LPA, *domains[transaction->Stream_id]);
+				redirected_pages += transaction->Address.ChipID != original.ChipID;
 			}
+		}
+		if (!plan.empty()) {
+			pacs->Record_request_plan(redirected_pages);
 		}
 
 		if (transactionList.size() > 0) {
@@ -561,7 +578,7 @@ namespace SSD_Components
 		}
 	}
 
-	bool Address_Mapping_Unit_Page_Level::query_cmt(NVM_Transaction_Flash* transaction)
+	bool Address_Mapping_Unit_Page_Level::query_cmt(NVM_Transaction_Flash* transaction, const Physical_Page_Address* planned_address)
 	{
 		stream_id_type stream_id = transaction->Stream_id;
 		Stats::total_CMT_queries++;
@@ -584,7 +601,7 @@ namespace SSD_Components
 				Stats::writeTR_CMT_hits_per_stream[stream_id]++;
 			}
 
-			if (translate_lpa_to_ppa(stream_id, transaction)) {
+			if (translate_lpa_to_ppa(stream_id, transaction, planned_address)) {
 				return true;
 			} else {
 				mange_unsuccessful_translation(transaction);
@@ -606,7 +623,7 @@ namespace SSD_Components
 					Stats::writeTR_CMT_miss++;
 					Stats::writeTR_CMT_miss_per_stream[stream_id]++;
 				}
-				if (translate_lpa_to_ppa(stream_id, transaction)) {
+				if (translate_lpa_to_ppa(stream_id, transaction, planned_address)) {
 					return true;
 				} else {
 					mange_unsuccessful_translation(transaction);
@@ -635,7 +652,8 @@ namespace SSD_Components
 	/*This function should be invoked only if the address translation entry exists in CMT.
 	* Otherwise, the call to the CMT->Rerieve_ppa, within this function, will throw an exception.
 	*/
-	bool Address_Mapping_Unit_Page_Level::translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction)
+	bool Address_Mapping_Unit_Page_Level::translate_lpa_to_ppa(stream_id_type streamID, NVM_Transaction_Flash* transaction,
+		const Physical_Page_Address* planned_address)
 	{
 		PPA_type ppa = domains[streamID]->Get_ppa(ideal_mapping_table, streamID, transaction->LPA);
 
@@ -661,7 +679,7 @@ namespace SSD_Components
 			
 			return true;
 		} else {//This is a write transaction
-			allocate_plane_for_user_write((NVM_Transaction_Flash_WR*)transaction);
+			allocate_plane_for_user_write((NVM_Transaction_Flash_WR*)transaction, planned_address);
 			//there are too few free pages remaining only for GC
 			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(transaction->Address)){
 				return false;
@@ -1065,7 +1083,8 @@ namespace SSD_Components
 		}
 	}
 
-	void Address_Mapping_Unit_Page_Level::allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction)
+	void Address_Mapping_Unit_Page_Level::allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction,
+		const Physical_Page_Address* planned_address)
 	{
 		LPA_type lpn = transaction->LPA;
 		NVM::FlashMemory::Physical_Page_Address& targetAddress = transaction->Address;
@@ -1073,13 +1092,18 @@ namespace SSD_Components
 
 		switch (domain->PlaneAllocationScheme) {
 			case Flash_Plane_Allocation_Scheme_Type::CWDP:{
-				targetAddress.ChannelID = domain->Channel_ids[(unsigned int)(lpn % domain->Channel_no)];
-				targetAddress.ChipID = domain->Chip_ids[(unsigned int)((lpn / domain->Channel_no) % domain->Chip_no)];
-				targetAddress.DieID = domain->Die_ids[(unsigned int)((lpn / (domain->Chip_no * domain->Channel_no)) % domain->Die_no)];
-				targetAddress.PlaneID = domain->Plane_ids[(unsigned int)((lpn / (domain->Die_no * domain->Chip_no * domain->Channel_no)) % domain->Plane_no)];
+				targetAddress = cwdp_target(lpn, *domain);
 
 				if (pacs && transaction->Source == Transaction_Source_Type::USERIO && transaction->UserIORequest) {
-					select_pacs_write_target(transaction, *domain);
+					if (planned_address && !ftl->GC_and_WL_Unit->Stop_servicing_writes(*planned_address)) {
+						targetAddress = *planned_address;
+					} else {
+						select_pacs_write_target(transaction, *domain);
+					}
+				} else if (auto* lepa = ftl->TSU->Get_lepa()) {
+					if (transaction->Source == Transaction_Source_Type::USERIO || transaction->Source == Transaction_Source_Type::CACHE) {
+						select_lepa_write_target(transaction, *domain, *lepa);
+					}
 				}
 
 				TSU_Base* tsu = dynamic_cast<TSU_Base*>(ftl->TSU);
@@ -1240,6 +1264,191 @@ namespace SSD_Components
 		}
 	}
 
+	std::vector<Physical_Page_Address> Address_Mapping_Unit_Page_Level::plan_pacs_request(const std::list<NVM_Transaction*>& transactions)
+	{
+		const auto* first = transactions.front();
+		const auto* request = first->UserIORequest;
+		if (first->Type != Transaction_Type::WRITE || first->Source != Transaction_Source_Type::USERIO
+			|| !request || &transactions != &request->Transaction_list) {
+			return {};
+		}
+		const auto stream = first->Stream_id;
+		auto& domain = *domains[stream];
+		if (domain.Chip_no < 2 || domain.PlaneAllocationScheme != Flash_Plane_Allocation_Scheme_Type::CWDP) {
+			return {};
+		}
+
+		struct Page {
+			Physical_Page_Address original, old_page;
+			NVM_PHY_ONFI_NVDDR2::PACS_Read_Timing read;
+			sim_time_type write_transfer;
+			unsigned int reference_type;
+		};
+		const auto* phy = static_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller);
+		std::vector<Page> pages;
+		std::vector<Physical_Page_Address> plan;
+		pages.reserve(transactions.size());
+		plan.reserve(transactions.size());
+		std::unordered_set<LPA_type> logical_pages;
+		for (const auto* transaction : transactions) {
+			if (transaction->Type != Transaction_Type::WRITE || transaction->Source != Transaction_Source_Type::USERIO
+				|| transaction->Stream_id != stream || transaction->UserIORequest != request) {
+				return {};
+			}
+			const auto* write = static_cast<const NVM_Transaction_Flash_WR*>(transaction);
+			if (write->Physical_address_determined || !logical_pages.insert(write->LPA).second || is_lpa_locked_for_gc(stream, write->LPA)
+				|| !domain.Mapping_entry_accessible(ideal_mapping_table, stream, write->LPA)) {
+				return {};
+			}
+			Page page{};
+			page.original = cwdp_target(write->LPA, domain);
+			page.write_transfer = phy->Estimate_pacs_write_transfer(page.original.ChannelID, write->Data_and_metadata_size_in_byte);
+			const auto old_ppa = domain.Get_ppa(ideal_mapping_table, stream, write->LPA, false);
+			const auto read_sectors = domain.Get_page_status(ideal_mapping_table, stream, write->LPA) & ~write->write_sectors_bitmap;
+			if (old_ppa != NO_PPA && read_sectors) {
+				page.old_page = Convert_ppa_to_address(old_ppa);
+				page.read = phy->Estimate_pacs_read(page.old_page, count_sector_no_from_status_bitmap(read_sectors) * SECTOR_SIZE_IN_BYTE);
+			}
+			plan.push_back(page.original);
+			pages.push_back(page);
+		}
+
+		const auto die_index = [this](const Physical_Page_Address& address) {
+			return (std::size_t(address.ChannelID) * chip_no_per_channel + address.ChipID) * die_no_per_chip + address.DieID;
+		};
+		const auto plane_index = [this, &die_index](const Physical_Page_Address& address) {
+			return die_index(address) * plane_no_per_die + address.PlaneID;
+		};
+		const auto die_count = std::size_t(channel_count) * chip_no_per_channel * die_no_per_chip;
+		std::vector<double> initial_die_ready(die_count), initial_channel_ready(channel_count);
+		std::vector<flash_page_ID_type> initial_frontier(die_count * plane_no_per_die);
+		std::vector<bool> blocked(initial_frontier.size());
+		for (unsigned int channel = 0; channel < channel_count; ++channel) {
+			initial_channel_ready[channel] = phy->Estimate_pacs_channel_ready(channel);
+			for (unsigned int chip = 0; chip < chip_no_per_channel; ++chip) {
+				for (unsigned int die = 0; die < die_no_per_chip; ++die) {
+					Physical_Page_Address address(channel, chip, die);
+					initial_die_ready[die_index(address)] = phy->Estimate_pacs_die_ready(address);
+					for (unsigned int plane = 0; plane < plane_no_per_die; ++plane) {
+						address.PlaneID = plane;
+						const auto index = plane_index(address);
+						initial_frontier[index] = block_manager->Get_plane_bookkeeping_entry(address)->Data_wf[stream]->Current_page_write_index;
+						blocked[index] = ftl->GC_and_WL_Unit->Stop_servicing_writes(address);
+					}
+				}
+			}
+		}
+		auto frontier = initial_frontier;
+		const auto next_page_type = [&](const Physical_Page_Address& address) {
+			auto& next_page = frontier[plane_index(address)];
+			const auto type = flash_controller->Get_chip(address.ChannelID, address.ChipID)->Get_page_type(next_page);
+			next_page = (next_page + 1) % pages_no_per_block;
+			return type;
+		};
+		for (auto& page : pages) {
+			if (blocked[plane_index(page.original)]) {
+				return {};
+			}
+			page.reference_type = next_page_type(page.original);
+		}
+
+		enum class Pending { READ_COMMAND, READ_DATA_OUT, PROGRAM, DONE };
+		std::vector<Pending> pending(pages.size());
+		std::vector<double> program_times(pages.size()), data_ready(pages.size()), die_ready, channel_ready;
+		const auto impossible = std::numeric_limits<double>::infinity();
+		const auto estimate_plan = [&](std::vector<double>& finish) {
+			frontier = initial_frontier;
+			die_ready = initial_die_ready;
+			channel_ready = initial_channel_ready;
+			std::fill(data_ready.begin(), data_ready.end(), 0.0);
+			for (std::size_t i = 0; i < pages.size(); ++i) {
+				const auto type = next_page_type(plan[i]);
+				if (plan[i].ChipID != pages[i].original.ChipID
+					&& (type != pages[i].reference_type || pacs->Estimate_program_latency(plan[i], type) == 0)) {
+					return impossible;
+				}
+				program_times[i] = phy->Estimate_pacs_program(plan[i], type);
+				pending[i] = pages[i].read.command ? Pending::READ_COMMAND : Pending::PROGRAM;
+			}
+
+			// Reserve the bus only during command/data transfer. A source die stays occupied
+			// by a read until the data is returned, even while the bus services other dies.
+			double request_finish = 0;
+			for (std::size_t programs_left = pages.size(); programs_left;) {
+				std::size_t next = pages.size();
+				double start = impossible;
+				for (std::size_t i = 0; i < pages.size(); ++i) {
+					if (pending[i] == Pending::DONE) {
+						continue;
+					}
+					const auto& address = pending[i] == Pending::PROGRAM ? plan[i] : pages[i].old_page;
+					const auto die_available = pending[i] == Pending::READ_DATA_OUT ? 0.0 : die_ready[die_index(address)];
+					const auto earliest = std::max({channel_ready[address.ChannelID], die_available, data_ready[i]});
+					if (earliest < start || (earliest == start && next < pages.size() && pending[i] < pending[next])) {
+						start = earliest;
+						next = i;
+					}
+				}
+				if (next == pages.size()) {
+					return impossible;
+				}
+				const auto& page = pages[next];
+				switch (pending[next]) {
+					case Pending::READ_COMMAND:
+						channel_ready[page.old_page.ChannelID] = start + page.read.command;
+						data_ready[next] = start + page.read.command + page.read.execution;
+						die_ready[die_index(page.old_page)] = impossible;
+						pending[next] = Pending::READ_DATA_OUT;
+						break;
+					case Pending::READ_DATA_OUT:
+						data_ready[next] = start + page.read.data_out;
+						channel_ready[page.old_page.ChannelID] = die_ready[die_index(page.old_page)] = data_ready[next];
+						pending[next] = Pending::PROGRAM;
+						break;
+					case Pending::PROGRAM:
+						channel_ready[plan[next].ChannelID] = start + page.write_transfer;
+						finish[next] = channel_ready[plan[next].ChannelID] + program_times[next];
+						die_ready[die_index(plan[next])] = finish[next];
+						request_finish = std::max(request_finish, finish[next]);
+						pending[next] = Pending::DONE;
+						--programs_left;
+						break;
+					case Pending::DONE:
+						break;
+				}
+			}
+			return request_finish;
+		};
+
+		std::vector<double> finish(pages.size());
+		double best_finish = estimate_plan(finish);
+		std::vector<std::size_t> order;
+		for (std::size_t i = 0; i < pages.size(); ++i) {
+			order.push_back(i);
+		}
+		std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) { return finish[a] > finish[b]; });
+		for (const auto i : order) {
+			const auto& page = pages[i];
+			if (pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
+				continue;
+			}
+			auto best_chip = page.original.ChipID;
+			for (unsigned int chip = 0; chip < domain.Chip_no; ++chip) {
+				plan[i].ChipID = domain.Chip_ids[chip];
+				if (plan[i].ChipID == page.original.ChipID || blocked[plane_index(plan[i])]) {
+					continue;
+				}
+				const auto trial_finish = estimate_plan(finish);
+				if (trial_finish < best_finish) {
+					best_finish = trial_finish;
+					best_chip = plan[i].ChipID;
+				}
+			}
+			plan[i].ChipID = best_chip;
+		}
+		return plan;
+	}
+
 	void Address_Mapping_Unit_Page_Level::select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain)
 	{
 		auto& baseline = transaction->Address;
@@ -1290,6 +1499,59 @@ namespace SSD_Components
 			pacs->Record_ranked_allocation(best_chip != baseline.ChipID);
 			baseline.ChipID = best_chip;
 		}
+	}
+
+	void Address_Mapping_Unit_Page_Level::select_lepa_write_target(NVM_Transaction_Flash_WR* transaction,
+		const AddressMappingDomain& domain, LEPA& lepa)
+	{
+		using NVM::FlashMemory::Physical_Page_Address;
+		const auto original = transaction->Address;
+		auto best = original;
+		auto static_target = original;
+		auto best_load = std::numeric_limits<uint64_t>::max();
+		auto static_load = best_load;
+		for (unsigned int c = 0; c < domain.Channel_no; ++c) {
+			for (unsigned int w = 0; w < domain.Chip_no; ++w) {
+				for (unsigned int d = 0; d < domain.Die_no; ++d) {
+					Physical_Page_Address candidate(domain.Channel_ids[c], domain.Chip_ids[w], domain.Die_ids[d], 0, 0, 0);
+					const auto next_plane = lepa.Next_write_plane(candidate);
+					auto nearest_distance = plane_no_per_die;
+					for (unsigned int p = 0; p < domain.Plane_no; ++p) {
+						const auto plane = domain.Plane_ids[p];
+						const auto distance = (plane + plane_no_per_die - next_plane) % plane_no_per_die;
+						if (distance >= nearest_distance) {
+							continue;
+						}
+						auto target = candidate;
+						target.PlaneID = plane;
+						if (!ftl->GC_and_WL_Unit->Stop_servicing_writes(target)) {
+							candidate = target;
+							nearest_distance = distance;
+						}
+					}
+					if (nearest_distance == plane_no_per_die) {
+						continue;
+					}
+					const auto load = lepa.Die_load(candidate);
+					if (candidate.ChannelID == original.ChannelID && candidate.ChipID == original.ChipID
+						&& candidate.DieID == original.DieID) {
+						static_target = candidate;
+						static_load = load;
+					}
+					if (load < best_load) {
+						best = candidate;
+						best_load = load;
+					}
+				}
+			}
+		}
+		if (best_load == std::numeric_limits<uint64_t>::max()) {
+			return; // The mapping unit will wait for GC on the static target.
+		}
+		const bool redirect = static_load == std::numeric_limits<uint64_t>::max()
+			|| static_load - best_load >= lepa.Write_time_ratio();
+		transaction->Address = redirect ? best : static_target;
+		lepa.Record_selection(redirect);
 	}
 
 	void Address_Mapping_Unit_Page_Level::allocate_page_in_plane_for_user_write(NVM_Transaction_Flash_WR* transaction, bool is_for_gc)
@@ -1370,6 +1632,11 @@ namespace SSD_Components
 
 		domain->Update_mapping_info(ideal_mapping_table, transaction->Stream_id, transaction->LPA, transaction->PPA,
 			((NVM_Transaction_Flash_WR*)transaction)->write_sectors_bitmap | domain->Get_page_status(ideal_mapping_table, transaction->Stream_id, transaction->LPA));
+		if (!is_for_gc && (transaction->Source == Transaction_Source_Type::USERIO || transaction->Source == Transaction_Source_Type::CACHE)) {
+			if (auto* lepa = ftl->TSU->Get_lepa()) {
+				lepa->Allocate_write(*transaction);
+			}
+		}
 	}
 
 	void Address_Mapping_Unit_Page_Level::allocate_page_in_plane_for_precondition(NVM::FlashMemory::Physical_Page_Address page_address)

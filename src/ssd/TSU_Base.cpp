@@ -1,5 +1,6 @@
 #include <string>
 #include "TSU_Base.h"
+#include "QSTR_MED.h"
 
 #define TRTOSTR(TR) (TR->Type == Transaction_Type::READ ? "Read, " : (TR->Type == Transaction_Type::WRITE ? "Write, " : "Erase, ") )
 
@@ -41,7 +42,18 @@ namespace SSD_Components
 
 	void TSU_Base::handle_transaction_serviced_signal_from_PHY(NVM_Transaction_Flash* transaction)
 	{
-		//TSU does nothing. The generator of the transaction will handle it.
+		if (_my_instance->lepa) {
+			_my_instance->lepa->Complete(*transaction);
+		}
+		if (_my_instance->qstr_med && transaction->Type == Transaction_Type::WRITE) {
+			_my_instance->qstr_med->Observe_program(transaction->Address);
+		}
+	}
+
+	void TSU_Base::Enable_lepa(sim_time_type read_time, sim_time_type program_time, sim_time_type erase_time)
+	{
+		lepa.reset(new LEPA(channel_count, chip_no_per_channel, die_no_per_chip, plane_no_per_die,
+			read_time, program_time, erase_time, independent_wordline_multiplane));
 	}
 
 	void TSU_Base::handle_channel_idle_signal(flash_channel_ID_type channelID)
@@ -71,6 +83,10 @@ namespace SSD_Components
 
 	bool TSU_Base::issue_command_to_chip(Flash_Transaction_Queue *sourceQueue1, Flash_Transaction_Queue *sourceQueue2, Transaction_Type transactionType, bool suspensionRequired)
 	{
+		if (independent_wordline_multiplane) {
+			return issue_independent_wordline_command(*sourceQueue1, transactionType, suspensionRequired);
+		}
+
 		flash_die_ID_type dieID = sourceQueue1->front()->Address.DieID;
 		flash_page_ID_type pageID = sourceQueue1->front()->Address.PageID;
 		unsigned int planeVector = 0;
@@ -146,5 +162,44 @@ namespace SSD_Components
 		}
 
 		return false;
+	}
+
+	bool TSU_Base::issue_independent_wordline_command(Flash_Transaction_Queue& queue, Transaction_Type transaction_type,
+		bool suspension_required)
+	{
+		transaction_dispatch_slots.clear();
+		std::vector<bool> selected_planes(plane_no_per_die, false);
+		const NVM_Transaction_Flash* first = nullptr;
+		for (auto it = queue.begin(); it != queue.end();) {
+			auto* transaction = *it;
+			const auto& address = transaction->Address;
+			if (!transaction_is_ready(transaction) || selected_planes[address.PlaneID]
+				|| (first && (address.DieID != first->Address.DieID || transaction->Source != first->Source))) {
+				++it;
+				continue;
+			}
+			if (transaction_type == Transaction_Type::WRITE
+				&& static_cast<NVM_Transaction_Flash_WR*>(transaction)->ExecutionMode == WriteExecutionModeType::COPYBACK
+				&& first) {
+				++it;
+				continue;
+			}
+			first = first ? first : transaction;
+			transaction->SuspendRequired = suspension_required;
+			selected_planes[address.PlaneID] = true;
+			transaction_dispatch_slots.push_back(transaction);
+			queue.remove(it++);
+			if (transaction_dispatch_slots.size() == plane_no_per_die
+				|| (transaction_type == Transaction_Type::WRITE
+					&& static_cast<NVM_Transaction_Flash_WR*>(transaction)->ExecutionMode == WriteExecutionModeType::COPYBACK)) {
+				break;
+			}
+		}
+		if (transaction_dispatch_slots.empty()) {
+			return false;
+		}
+		_NVMController->Send_command_to_chip(transaction_dispatch_slots);
+		transaction_dispatch_slots.clear();
+		return true;
 	}
 }

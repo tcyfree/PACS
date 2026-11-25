@@ -1,0 +1,28 @@
+{
+  "requests_completed": 3402545,
+  "independent_wordline_multiplane": false,
+  "latency": {
+    "average_write_latency_ms": 53.52843013993236,
+    "average_read_latency_ms": 9.733405269389012,
+    "p95_write_latency_ms": 159.234955,
+    "p99_write_latency_ms": 1347.019848,
+    "p999_write_latency_ms": 3489.539908
+  },
+  "multiplane_program_commands": 0,
+  "multiplane_read_commands": 0,
+  "gc_executions": 0,
+  "policy_counters": {
+    "Profiled_Blocks": "0",
+    "Fast_Superblocks": "332",
+    "Slow_Superblocks": "0",
+    "Fully_Allocated_Superblocks": "331",
+    "Cancelled_Superblocks": "0",
+    "Local_Fallback_Allocations": "394",
+    "Hamming_Distance_Checks": "19920",
+    "Updated_Block_Signatures": "5688",
+    "Extra_Superblock_Program_Time_ns": "0",
+    "Extra_Superblock_Erase_Time_ns": "0"
+  },
+  "result_xml": "qstr-med/w_1612_2_setsize4_reply_1.xml",
+  "wall_seconds": 23.81193831935525
+}

@@ -1,0 +1,41 @@
+{
+  "requests_completed": 1156885,
+  "simulated_finish_ns": 633579755297108,
+  "iops": 1.825950072311726,
+  "throughput_mib_s": 0.10031370384268315,
+  "reads": {
+    "samples": 350930,
+    "mean_us": 620.6465343971732,
+    "p50_us": 302.218,
+    "p95_us": 1936.088,
+    "p99_us": 2435.018,
+    "p99_9_us": 3302.558,
+    "max_us": 8054.927
+  },
+  "writes": {
+    "samples": 805955,
+    "mean_us": 75502.8736413311,
+    "p50_us": 57163.154,
+    "p95_us": 220905.031,
+    "p99_us": 286433.464,
+    "p99_9_us": 372829.584,
+    "max_us": 442055.023
+  },
+  "multi_page_writes": {
+    "samples": 692087,
+    "mean_us": 87250.46341111594,
+    "p50_us": 69974.137,
+    "p95_us": 227473.991,
+    "p99_us": 292217.941,
+    "p99_9_us": 377633.078,
+    "max_us": 442055.023
+  },
+  "gc_executions": 0,
+  "gc_moved_pages": 0,
+  "page_program_amplification": 1.0,
+  "mean_write_transaction_wait_us": 37539,
+  "result_xml": "run/src2_2-baseline/w_src2_2_setsize4_reply_1.xml",
+  "run_log": "run/src2_2-baseline/run.log",
+  "latency_sample_directory": "run/src2_2-baseline/src2_2",
+  "wall_seconds": 22.713219434954226
+}

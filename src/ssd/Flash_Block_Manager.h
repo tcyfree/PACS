@@ -3,6 +3,7 @@
 
 #include <list>
 #include "Flash_Block_Manager_Base.h"
+#include "QSTR_MED.h"
 #include "../nvm_chip/flash_memory/FlashTypes.h"
 #include "../nvm_chip/flash_memory/Physical_Page_Address.h"
 
@@ -15,6 +16,8 @@ namespace SSD_Components
 			unsigned int channel_count, unsigned int chip_no_per_channel, unsigned int die_no_per_chip, unsigned int plane_no_per_die,
 			unsigned int block_no_per_plane, unsigned int page_no_per_block);
 		~Flash_Block_Manager();
+		QSTR_MED* Enable_qstr_med(const std::shared_ptr<const QSTR_MED::Profile>& profile,
+			unsigned int pages_per_wordline, std::vector<std::vector<QSTR_MED::Address>> stream_planes);
 		//void Allocate_block_and_page_in_plane_for_user_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& address);
 		
 		/*Inconsistency*/void Allocate_block_and_page_in_plane_for_user_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& address, LPA_type lpa);
@@ -38,6 +41,9 @@ namespace SSD_Components
 		void Add_erased_block_to_pool(const NVM::FlashMemory::Physical_Page_Address& address);
 		unsigned int Get_pool_size(const NVM::FlashMemory::Physical_Page_Address& plane_address);
 	private:
+		Block_Pool_Slot_Type* next_write_frontier(PlaneBookKeepingType& plane,
+			const QSTR_MED::Address& address, stream_id_type stream, QSTR_MED::Destination destination);
+		std::unique_ptr<QSTR_MED> qstr_med;
 	};
 }
 

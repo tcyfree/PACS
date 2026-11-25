@@ -1,0 +1,600 @@
+{
+  "percentile_method": "Nearest rank from host enqueue to completion, by trace and policy.",
+  "multi_page_definition": "A host write spanning more than one 8192-byte flash page after LBA folding.",
+  "latency_reduction_sign": "Positive means PACS reduced latency.",
+  "aggregation": "Median of paired percentage changes with equal weight per trace.",
+  "aggregate": {
+    "mean_write_latency": {
+      "traces": 5,
+      "improved_traces": 3,
+      "median_reduction_percent": 1.2949890405385855
+    },
+    "write_p95": {
+      "traces": 5,
+      "improved_traces": 3,
+      "median_reduction_percent": 2.476845926357185
+    },
+    "write_p99": {
+      "traces": 5,
+      "improved_traces": 4,
+      "median_reduction_percent": 6.793794153321786
+    },
+    "write_p99_9": {
+      "traces": 5,
+      "improved_traces": 5,
+      "median_reduction_percent": 1.0605231857245712
+    },
+    "multi_page_write_p99": {
+      "traces": 5,
+      "improved_traces": 4,
+      "median_reduction_percent": 1.093956599717416
+    },
+    "multi_page_write_p99_9": {
+      "traces": 5,
+      "improved_traces": 5,
+      "median_reduction_percent": 0.8050660800519971
+    },
+    "mean_read_latency": {
+      "traces": 5,
+      "improved_traces": 1,
+      "median_reduction_percent": -3.2928283575389905
+    },
+    "read_p99": {
+      "traces": 5,
+      "improved_traces": 1,
+      "median_reduction_percent": -1.4259868655355445
+    }
+  },
+  "traces": {
+    "hm_0": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/hm_0.csv",
+        "source_bytes": 134128220,
+        "reads": 1417748,
+        "writes": 2575568,
+        "multi_page_writes": 549287,
+        "bytes": 32683298304,
+        "span_ns": 604795895097200
+      },
+      "baseline": {
+        "requests_completed": 3993316,
+        "simulated_finish_ns": 604795895186107,
+        "iops": 6.602749839714408,
+        "throughput_mib_s": 0.051536762097860137,
+        "reads": {
+          "samples": 1417748,
+          "mean_us": 1690.7676386099647,
+          "p50_us": 88.898,
+          "p95_us": 1321.79,
+          "p99_us": 2831.154,
+          "p99_9_us": 665731.66,
+          "max_us": 1641948.248
+        },
+        "writes": {
+          "samples": 2575568,
+          "mean_us": 5245.527521863527,
+          "p50_us": 1710.619,
+          "p95_us": 10472.994,
+          "p99_us": 19584.575,
+          "p99_9_us": 821965.954,
+          "max_us": 2381619.86
+        },
+        "multi_page_writes": {
+          "samples": 549287,
+          "mean_us": 2756.340184981622,
+          "p50_us": 1751.711,
+          "p95_us": 5544.113,
+          "p99_us": 11687.758,
+          "p99_9_us": 17649.578,
+          "max_us": 2273615.973
+        },
+        "gc_executions": 7666,
+        "gc_moved_pages": 2055,
+        "page_program_amplification": 1.0004685930897228,
+        "mean_write_transaction_wait_us": 1954,
+        "result_xml": "run/hm_0-baseline/w_hm_0_setsize4_reply_1.xml",
+        "run_log": "run/hm_0-baseline/run.log",
+        "latency_sample_directory": "run/hm_0-baseline/hm_0",
+        "wall_seconds": 36.28346881642938
+      },
+      "pacs": {
+        "requests_completed": 3993316,
+        "simulated_finish_ns": 604795895186107,
+        "iops": 6.602749839714408,
+        "throughput_mib_s": 0.051536762097860137,
+        "reads": {
+          "samples": 1417748,
+          "mean_us": 191.63823884851186,
+          "p50_us": 88.898,
+          "p95_us": 580.188,
+          "p99_us": 1666.549,
+          "p99_9_us": 10186.734,
+          "max_us": 31967.131
+        },
+        "writes": {
+          "samples": 2575568,
+          "mean_us": 2323.01402563784,
+          "p50_us": 1618.957,
+          "p95_us": 4674.462,
+          "p99_us": 10599.072,
+          "p99_9_us": 37081.579,
+          "max_us": 250407.636
+        },
+        "multi_page_writes": {
+          "samples": 549287,
+          "mean_us": 2441.25786380526,
+          "p50_us": 1701.229,
+          "p95_us": 4986.558,
+          "p99_us": 11559.899,
+          "p99_9_us": 15939.232,
+          "max_us": 174042.831
+        },
+        "gc_executions": 7671,
+        "gc_moved_pages": 1027,
+        "page_program_amplification": 1.000234182531944,
+        "mean_write_transaction_wait_us": 672,
+        "result_xml": "run/hm_0-pacs/w_hm_0_setsize4_reply_1.xml",
+        "run_log": "run/hm_0-pacs/run.log",
+        "latency_sample_directory": "run/hm_0-pacs/hm_0",
+        "wall_seconds": 36.59698483347893,
+        "pacs": {
+          "Qualified_Program_Observations": 4005291,
+          "Discarded_Program_Observations": 381204,
+          "Ranked_Write_Allocations": 3115294,
+          "Redirected_Write_Allocations": 1871852,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 55.71438685708077,
+        "write_p95": 55.366516967354315,
+        "write_p99": 45.880510554862695,
+        "write_p99_9": 95.48867215003895,
+        "multi_page_write_p99": 1.093956599717416,
+        "multi_page_write_p99_9": 9.69057730445454,
+        "mean_read_latency": 88.66560759312475,
+        "read_p99": 41.135346222777
+      }
+    },
+    "mds_0": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/mds_0.csv",
+        "source_bytes": 41394310,
+        "reads": 143973,
+        "writes": 1067061,
+        "multi_page_writes": 211133,
+        "bytes": 11403751424,
+        "span_ns": 604803410067000
+      },
+      "baseline": {
+        "requests_completed": 1211034,
+        "simulated_finish_ns": 604803411773564,
+        "iops": 2.002359736114396,
+        "throughput_mib_s": 0.01798181794619527,
+        "reads": {
+          "samples": 143973,
+          "mean_us": 229.36090206497053,
+          "p50_us": 117.41,
+          "p95_us": 620.672,
+          "p99_us": 1719.738,
+          "p99_9_us": 10120.126,
+          "max_us": 20170.322
+        },
+        "writes": {
+          "samples": 1067061,
+          "mean_us": 1600.9796541603528,
+          "p50_us": 1516.555,
+          "p95_us": 1879.043,
+          "p99_us": 3012.514,
+          "p99_9_us": 11542.838,
+          "max_us": 21576.573
+        },
+        "multi_page_writes": {
+          "samples": 211133,
+          "mean_us": 1742.6260760231703,
+          "p50_us": 1603.733,
+          "p95_us": 2831.592,
+          "p99_us": 3431.514,
+          "p99_9_us": 11546.582,
+          "max_us": 21576.573
+        },
+        "gc_executions": 2803,
+        "gc_moved_pages": 8,
+        "page_program_amplification": 1.0000051430606611,
+        "mean_write_transaction_wait_us": 99,
+        "result_xml": "run/mds_0-baseline/w_mds_0_setsize4_reply_1.xml",
+        "run_log": "run/mds_0-baseline/run.log",
+        "latency_sample_directory": "run/mds_0-baseline/mds_0",
+        "wall_seconds": 10.999399206601083
+      },
+      "pacs": {
+        "requests_completed": 1211034,
+        "simulated_finish_ns": 604803411633564,
+        "iops": 2.0023597365779024,
+        "throughput_mib_s": 0.017981817950357703,
+        "reads": {
+          "samples": 143973,
+          "mean_us": 237.9729169427601,
+          "p50_us": 117.41,
+          "p95_us": 643.438,
+          "p99_us": 1759.666,
+          "p99_9_us": 10120.126,
+          "max_us": 20120.346
+        },
+        "writes": {
+          "samples": 1067061,
+          "mean_us": 1580.2471430977237,
+          "p50_us": 1513.331,
+          "p95_us": 1832.502,
+          "p99_us": 2807.85,
+          "p99_9_us": 11480.008,
+          "max_us": 14235.133
+        },
+        "multi_page_writes": {
+          "samples": 211133,
+          "mean_us": 1701.751698157086,
+          "p50_us": 1599.989,
+          "p95_us": 2344.05,
+          "p99_us": 3305.439,
+          "p99_9_us": 11511.185,
+          "max_us": 14235.133
+        },
+        "gc_executions": 2813,
+        "gc_moved_pages": 3,
+        "page_program_amplification": 1.000001928647748,
+        "mean_write_transaction_wait_us": 82,
+        "result_xml": "run/mds_0-pacs/w_mds_0_setsize4_reply_1.xml",
+        "run_log": "run/mds_0-pacs/run.log",
+        "latency_sample_directory": "run/mds_0-pacs/mds_0",
+        "wall_seconds": 11.176688889041543,
+        "pacs": {
+          "Qualified_Program_Observations": 1552219,
+          "Discarded_Program_Observations": 3278,
+          "Ranked_Write_Allocations": 1076552,
+          "Redirected_Write_Allocations": 556365,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 1.2949890405385855,
+        "write_p95": 2.476845926357185,
+        "write_p99": 6.793794153321786,
+        "write_p99_9": 0.544320209639948,
+        "multi_page_write_p99": 3.6740342600962816,
+        "multi_page_write_p99_9": 0.30655825247679624,
+        "mean_read_latency": -3.754787673162374,
+        "read_p99": -2.3217490106050898
+      }
+    },
+    "proj_3": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/proj_3.csv",
+        "source_bytes": 80507862,
+        "reads": 2128303,
+        "writes": 116341,
+        "multi_page_writes": 76778,
+        "bytes": 22402553344,
+        "span_ns": 604797295766300
+      },
+      "baseline": {
+        "requests_completed": 2244644,
+        "simulated_finish_ns": 604797297332864,
+        "iops": 3.7113988602442594,
+        "throughput_mib_s": 0.035325455057936835,
+        "reads": {
+          "samples": 2128303,
+          "mean_us": 144.0559275004546,
+          "p50_us": 119.691,
+          "p95_us": 273.564,
+          "p99_us": 299.976,
+          "p99_9_us": 323.167,
+          "max_us": 10222.726
+        },
+        "writes": {
+          "samples": 116341,
+          "mean_us": 2262.211538950155,
+          "p50_us": 1677.421,
+          "p95_us": 4594.6,
+          "p99_us": 7520.754,
+          "p99_9_us": 13006.186,
+          "max_us": 18059.359
+        },
+        "multi_page_writes": {
+          "samples": 76778,
+          "mean_us": 2456.6263516241634,
+          "p50_us": 1755.299,
+          "p95_us": 5033.081,
+          "p99_us": 8366.511,
+          "p99_9_us": 13074.748,
+          "max_us": 17800.753
+        },
+        "gc_executions": 1027,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 479,
+        "result_xml": "run/proj_3-baseline/w_proj_3_setsize4_reply_1.xml",
+        "run_log": "run/proj_3-baseline/run.log",
+        "latency_sample_directory": "run/proj_3-baseline/proj_3",
+        "wall_seconds": 21.57196170836687
+      },
+      "pacs": {
+        "requests_completed": 2244644,
+        "simulated_finish_ns": 604797297442864,
+        "iops": 3.7113988595692335,
+        "throughput_mib_s": 0.03532545505151188,
+        "reads": {
+          "samples": 2128303,
+          "mean_us": 148.79944193190536,
+          "p50_us": 119.906,
+          "p95_us": 285.693,
+          "p99_us": 381.724,
+          "p99_9_us": 524.131,
+          "max_us": 10203.884
+        },
+        "writes": {
+          "samples": 116341,
+          "mean_us": 2294.3780201476693,
+          "p50_us": 1687.276,
+          "p95_us": 4658.299,
+          "p99_us": 7635.146,
+          "p99_9_us": 12893.89,
+          "max_us": 17109.981
+        },
+        "multi_page_writes": {
+          "samples": 76778,
+          "mean_us": 2543.740591419417,
+          "p50_us": 1774.043,
+          "p95_us": 5168.816,
+          "p99_us": 8705.115,
+          "p99_9_us": 13011.396,
+          "max_us": 17109.981
+        },
+        "gc_executions": 998,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 495,
+        "result_xml": "run/proj_3-pacs/w_proj_3_setsize4_reply_1.xml",
+        "run_log": "run/proj_3-pacs/run.log",
+        "latency_sample_directory": "run/proj_3-pacs/proj_3",
+        "wall_seconds": 21.129403442144394,
+        "pacs": {
+          "Qualified_Program_Observations": 384793,
+          "Discarded_Program_Observations": 56002,
+          "Ranked_Write_Allocations": 283107,
+          "Redirected_Write_Allocations": 145804,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": -1.4219042138049476,
+        "write_p95": -1.3863883689548606,
+        "write_p99": -1.5210177064693298,
+        "write_p99_9": 0.8634045368872911,
+        "multi_page_write_p99": -4.0471350602419465,
+        "multi_page_write_p99_9": 0.4845370633529522,
+        "mean_read_latency": -3.2928283575389905,
+        "read_p99": -27.251513454409682
+      }
+    },
+    "src2_2": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/src2_2.csv",
+        "source_bytes": 41614435,
+        "reads": 350930,
+        "writes": 805955,
+        "multi_page_writes": 731221,
+        "bytes": 66644063744,
+        "span_ns": 633579753331300
+      },
+      "baseline": {
+        "requests_completed": 1156885,
+        "simulated_finish_ns": 633579755037864,
+        "iops": 1.8259500730588563,
+        "throughput_mib_s": 0.10031370388372884,
+        "reads": {
+          "samples": 350930,
+          "mean_us": 520.3307408144074,
+          "p50_us": 139.874,
+          "p95_us": 664.774,
+          "p99_us": 10294.403,
+          "p99_9_us": 10431.15,
+          "max_us": 20425.748
+        },
+        "writes": {
+          "samples": 805955,
+          "mean_us": 5328.458699694152,
+          "p50_us": 4349.76,
+          "p95_us": 12638.094,
+          "p99_us": 16286.213,
+          "p99_9_us": 22517.203,
+          "max_us": 36308.47
+        },
+        "multi_page_writes": {
+          "samples": 731221,
+          "mean_us": 5658.723328011641,
+          "p50_us": 4947.684,
+          "p95_us": 12914.816,
+          "p99_us": 16445.432,
+          "p99_9_us": 22821.772,
+          "max_us": 36308.47
+        },
+        "gc_executions": 15325,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 1795,
+        "result_xml": "run/src2_2-baseline/w_src2_2_setsize4_reply_1.xml",
+        "run_log": "run/src2_2-baseline/run.log",
+        "latency_sample_directory": "run/src2_2-baseline/src2_2",
+        "wall_seconds": 32.577690032310784
+      },
+      "pacs": {
+        "requests_completed": 1156885,
+        "simulated_finish_ns": 633579754772864,
+        "iops": 1.8259500738225751,
+        "throughput_mib_s": 0.1003137039256859,
+        "reads": {
+          "samples": 350930,
+          "mean_us": 537.76551674408,
+          "p50_us": 139.874,
+          "p95_us": 684.044,
+          "p99_us": 10296.608,
+          "p99_9_us": 10427.22,
+          "max_us": 20450.866
+        },
+        "writes": {
+          "samples": 805955,
+          "mean_us": 5415.492658354375,
+          "p50_us": 4750.607,
+          "p95_us": 12901.661,
+          "p99_us": 16105.935,
+          "p99_9_us": 20514.933,
+          "max_us": 33713.658
+        },
+        "multi_page_writes": {
+          "samples": 731221,
+          "mean_us": 5770.333994330032,
+          "p50_us": 5119.063,
+          "p95_us": 12999.885,
+          "p99_us": 16315.275,
+          "p99_9_us": 20725.728,
+          "max_us": 33713.658
+        },
+        "gc_executions": 15321,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 1855,
+        "result_xml": "run/src2_2-pacs/w_src2_2_setsize4_reply_1.xml",
+        "run_log": "run/src2_2-pacs/run.log",
+        "latency_sample_directory": "run/src2_2-pacs/src2_2",
+        "wall_seconds": 33.37591949198395,
+        "pacs": {
+          "Qualified_Program_Observations": 2712442,
+          "Discarded_Program_Observations": 3239548,
+          "Ranked_Write_Allocations": 3939919,
+          "Redirected_Write_Allocations": 1861103,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": -1.6333796237403275,
+        "write_p95": -2.0854964364088513,
+        "write_p99": 1.1069362779425829,
+        "write_p99_9": 8.892179015306656,
+        "multi_page_write_p99": 0.7914477406248843,
+        "multi_page_write_p99_9": 9.184405137339912,
+        "mean_read_latency": -3.3507103390401527,
+        "read_p99": -0.021419406254064022
+      }
+    },
+    "web_0": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/web_0.csv",
+        "source_bytes": 68361889,
+        "reads": 606487,
+        "writes": 1423458,
+        "multi_page_writes": 908891,
+        "bytes": 31163521536,
+        "span_ns": 604804141265500
+      },
+      "baseline": {
+        "requests_completed": 2029945,
+        "simulated_finish_ns": 604804141352871,
+        "iops": 3.3563675596851366,
+        "throughput_mib_s": 0.04913962730343855,
+        "reads": {
+          "samples": 606487,
+          "mean_us": 175.21082833927193,
+          "p50_us": 115.898,
+          "p95_us": 271.015,
+          "p99_us": 1123.152,
+          "p99_9_us": 10120.126,
+          "max_us": 20120.346
+        },
+        "writes": {
+          "samples": 1423458,
+          "mean_us": 1762.1971331876318,
+          "p50_us": 1561.555,
+          "p95_us": 2946.426,
+          "p99_us": 4785.807,
+          "p99_9_us": 11667.826,
+          "max_us": 21486.468
+        },
+        "multi_page_writes": {
+          "samples": 908891,
+          "mean_us": 1760.8077313198173,
+          "p50_us": 1571.555,
+          "p95_us": 2802.102,
+          "p99_us": 4458.749,
+          "p99_9_us": 11641.032,
+          "max_us": 21486.468
+        },
+        "gc_executions": 6455,
+        "gc_moved_pages": 744,
+        "page_program_amplification": 1.0002502511761637,
+        "mean_write_transaction_wait_us": 160,
+        "result_xml": "run/web_0-baseline/w_web_0_setsize4_reply_1.xml",
+        "run_log": "run/web_0-baseline/run.log",
+        "latency_sample_directory": "run/web_0-baseline/web_0",
+        "wall_seconds": 24.018695391714573
+      },
+      "pacs": {
+        "requests_completed": 2029945,
+        "simulated_finish_ns": 604804141352871,
+        "iops": 3.3563675596851366,
+        "throughput_mib_s": 0.04913962730343855,
+        "reads": {
+          "samples": 606487,
+          "mean_us": 175.91318960670222,
+          "p50_us": 116.162,
+          "p95_us": 275.585,
+          "p99_us": 1139.168,
+          "p99_9_us": 10120.126,
+          "max_us": 20120.346
+        },
+        "writes": {
+          "samples": 1423458,
+          "mean_us": 1691.063523060041,
+          "p50_us": 1561.555,
+          "p95_us": 2499.802,
+          "p99_us": 3241.406,
+          "p99_9_us": 11544.086,
+          "max_us": 21486.468
+        },
+        "multi_page_writes": {
+          "samples": 908891,
+          "mean_us": 1726.0847249527171,
+          "p50_us": 1570.291,
+          "p95_us": 2629.602,
+          "p99_us": 3293.102,
+          "p99_9_us": 11547.314,
+          "max_us": 21486.468
+        },
+        "gc_executions": 6450,
+        "gc_moved_pages": 318,
+        "page_program_amplification": 1.0001069621962635,
+        "mean_write_transaction_wait_us": 120,
+        "result_xml": "run/web_0-pacs/w_web_0_setsize4_reply_1.xml",
+        "run_log": "run/web_0-pacs/run.log",
+        "latency_sample_directory": "run/web_0-pacs/web_0",
+        "wall_seconds": 24.33149501401931,
+        "pacs": {
+          "Qualified_Program_Observations": 2967057,
+          "Discarded_Program_Observations": 6274,
+          "Ranked_Write_Allocations": 2067706,
+          "Redirected_Write_Allocations": 1106702,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 4.036643164826714,
+        "write_p95": 15.158161107728475,
+        "write_p99": 32.2704404920633,
+        "write_p99_9": 1.0605231857245712,
+        "multi_page_write_p99": 26.14291587169405,
+        "multi_page_write_p99_9": 0.8050660800519971,
+        "mean_read_latency": -0.40086635859644115,
+        "read_p99": -1.4259868655355445
+      }
+    }
+  }
+}

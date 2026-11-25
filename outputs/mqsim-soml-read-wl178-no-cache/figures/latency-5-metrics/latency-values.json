@@ -1,0 +1,549 @@
+{
+  "experiment": "SOML Read",
+  "page_size_bytes": 16384,
+  "flash_channels": 4,
+  "device_level_data_caching_mode": "TURNED_OFF",
+  "statistics": "Arithmetic means and nearest-rank percentiles of recorded device response times.",
+  "p999": "99.9th percentile of all write requests in each trace.",
+  "normalization": "PACS latency divided by the Baseline latency for each trace and metric.",
+  "pacs_change_percent": "(PACS / Baseline - 1) × 100.",
+  "trace_order": [
+    "1612_2",
+    "1612_4",
+    "1613_2",
+    "1614_6",
+    "1615_1",
+    "1616_2",
+    "1617_3",
+    "1618_3",
+    "1619_0",
+    "1620_2",
+    "1708_0",
+    "hm_0",
+    "mds_0",
+    "proj_3",
+    "src2_2",
+    "web_0"
+  ],
+  "metrics": {
+    "average_write_latency": "Average Write Latency",
+    "average_read_latency": "Average Read Latency",
+    "p95_write_latency": "P95 Write Latency",
+    "p99_write_latency": "P99 Write Latency",
+    "p999_write_latency": "P999 Write Latency"
+  },
+  "per_trace": {
+    "1612_2": {
+      "average_write_latency": {
+        "baseline_ms": 53.52843013993237,
+        "pacs_ms": 49.96486751288038,
+        "pacs_normalized": 0.9334267300995708,
+        "pacs_change_percent": -6.657326990042922
+      },
+      "average_read_latency": {
+        "baseline_ms": 9.733405269389012,
+        "pacs_ms": 8.838105695051574,
+        "pacs_normalized": 0.9080178468317658,
+        "pacs_change_percent": -9.198215316823422
+      },
+      "p95_write_latency": {
+        "baseline_ms": 159.23495499999999,
+        "pacs_ms": 146.949963,
+        "pacs_normalized": 0.9228499044069816,
+        "pacs_change_percent": -7.715009559301844
+      },
+      "p99_write_latency": {
+        "baseline_ms": 1347.019848,
+        "pacs_ms": 1240.883567,
+        "pacs_normalized": 0.9212065945742473,
+        "pacs_change_percent": -7.8793405425752745
+      },
+      "p999_write_latency": {
+        "baseline_ms": 3489.5399079999997,
+        "pacs_ms": 3348.109286,
+        "pacs_normalized": 0.9594701233604577,
+        "pacs_change_percent": -4.052987663954233
+      }
+    },
+    "1612_4": {
+      "average_write_latency": {
+        "baseline_ms": 151.42184728443488,
+        "pacs_ms": 145.85008202421162,
+        "pacs_normalized": 0.9632036898231924,
+        "pacs_change_percent": -3.6796310176807623
+      },
+      "average_read_latency": {
+        "baseline_ms": 11.766461303540678,
+        "pacs_ms": 10.904598106501812,
+        "pacs_normalized": 0.9267525575612507,
+        "pacs_change_percent": -7.3247442438749255
+      },
+      "p95_write_latency": {
+        "baseline_ms": 1247.674686,
+        "pacs_ms": 1202.3970379999998,
+        "pacs_normalized": 0.9637103737792752,
+        "pacs_change_percent": -3.6289626220724847
+      },
+      "p99_write_latency": {
+        "baseline_ms": 2401.31965,
+        "pacs_ms": 2338.214597,
+        "pacs_normalized": 0.9737206777115243,
+        "pacs_change_percent": -2.6279322288475737
+      },
+      "p999_write_latency": {
+        "baseline_ms": 3512.7148399999996,
+        "pacs_ms": 3442.009821,
+        "pacs_normalized": 0.9798716883605617,
+        "pacs_change_percent": -2.012831163943829
+      }
+    },
+    "1613_2": {
+      "average_write_latency": {
+        "baseline_ms": 64.54222092557282,
+        "pacs_ms": 61.418611054233224,
+        "pacs_normalized": 0.9516036196687189,
+        "pacs_change_percent": -4.839638033128113
+      },
+      "average_read_latency": {
+        "baseline_ms": 11.36245820577222,
+        "pacs_ms": 10.335003902892117,
+        "pacs_normalized": 0.9095746462364853,
+        "pacs_change_percent": -9.042535376351468
+      },
+      "p95_write_latency": {
+        "baseline_ms": 291.02952799999997,
+        "pacs_ms": 269.65281400000003,
+        "pacs_normalized": 0.9265479549552789,
+        "pacs_change_percent": -7.345204504472114
+      },
+      "p99_write_latency": {
+        "baseline_ms": 1690.33298,
+        "pacs_ms": 1627.2249199999999,
+        "pacs_normalized": 0.9626653087014844,
+        "pacs_change_percent": -3.733469129851563
+      },
+      "p999_write_latency": {
+        "baseline_ms": 3051.0705040000003,
+        "pacs_ms": 2973.4119619999997,
+        "pacs_normalized": 0.9745471165290382,
+        "pacs_change_percent": -2.545288347096175
+      }
+    },
+    "1614_6": {
+      "average_write_latency": {
+        "baseline_ms": 10.90121399042371,
+        "pacs_ms": 10.332435560210632,
+        "pacs_normalized": 0.94782430372317,
+        "pacs_change_percent": -5.217569627683005
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.40127846413260604,
+        "pacs_ms": 0.396642962778274,
+        "pacs_normalized": 0.9884481681209779,
+        "pacs_change_percent": -1.155183187902209
+      },
+      "p95_write_latency": {
+        "baseline_ms": 31.358802999999998,
+        "pacs_ms": 29.925381,
+        "pacs_normalized": 0.9542896455582186,
+        "pacs_change_percent": -4.57103544417814
+      },
+      "p99_write_latency": {
+        "baseline_ms": 192.57652,
+        "pacs_ms": 184.22117300000002,
+        "pacs_normalized": 0.9566128466751815,
+        "pacs_change_percent": -4.338715332481846
+      },
+      "p999_write_latency": {
+        "baseline_ms": 877.801163,
+        "pacs_ms": 853.993113,
+        "pacs_normalized": 0.9728776276410561,
+        "pacs_change_percent": -2.712237235894388
+      }
+    },
+    "1615_1": {
+      "average_write_latency": {
+        "baseline_ms": 3.412711515212754,
+        "pacs_ms": 3.2138944566074645,
+        "pacs_normalized": 0.9417422018477014,
+        "pacs_change_percent": -5.825779815229859
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.6461478747244632,
+        "pacs_ms": 0.6418170589844581,
+        "pacs_normalized": 0.9932974851277628,
+        "pacs_change_percent": -0.6702514872237164
+      },
+      "p95_write_latency": {
+        "baseline_ms": 8.789178,
+        "pacs_ms": 7.861929,
+        "pacs_normalized": 0.8945010557301263,
+        "pacs_change_percent": -10.549894426987372
+      },
+      "p99_write_latency": {
+        "baseline_ms": 28.780982,
+        "pacs_ms": 26.912572,
+        "pacs_normalized": 0.9350817842143121,
+        "pacs_change_percent": -6.491821578568791
+      },
+      "p999_write_latency": {
+        "baseline_ms": 119.542203,
+        "pacs_ms": 114.985295,
+        "pacs_normalized": 0.9618803411210348,
+        "pacs_change_percent": -3.811965887896518
+      }
+    },
+    "1616_2": {
+      "average_write_latency": {
+        "baseline_ms": 5.451827180984508,
+        "pacs_ms": 5.248921039063007,
+        "pacs_normalized": 0.9627819930482721,
+        "pacs_change_percent": -3.7218006951727944
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.37435524075011095,
+        "pacs_ms": 0.3762555053114956,
+        "pacs_normalized": 1.0050760997964847,
+        "pacs_change_percent": 0.5076099796484712
+      },
+      "p95_write_latency": {
+        "baseline_ms": 11.575752,
+        "pacs_ms": 10.72397,
+        "pacs_normalized": 0.9264167027766317,
+        "pacs_change_percent": -7.358329722336832
+      },
+      "p99_write_latency": {
+        "baseline_ms": 54.311748,
+        "pacs_ms": 52.223727,
+        "pacs_normalized": 0.9615548923227438,
+        "pacs_change_percent": -3.8445107677256174
+      },
+      "p999_write_latency": {
+        "baseline_ms": 512.977943,
+        "pacs_ms": 513.258425,
+        "pacs_normalized": 1.000546772047078,
+        "pacs_change_percent": 0.05467720470779813
+      }
+    },
+    "1617_3": {
+      "average_write_latency": {
+        "baseline_ms": 13.29502698640417,
+        "pacs_ms": 12.636650667598595,
+        "pacs_normalized": 0.9504795048946612,
+        "pacs_change_percent": -4.952049510533884
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.5514779982850044,
+        "pacs_ms": 0.5313510134306887,
+        "pacs_normalized": 0.9635035578628577,
+        "pacs_change_percent": -3.6496442137142315
+      },
+      "p95_write_latency": {
+        "baseline_ms": 20.555409,
+        "pacs_ms": 19.00382,
+        "pacs_normalized": 0.9245167537167468,
+        "pacs_change_percent": -7.54832462832532
+      },
+      "p99_write_latency": {
+        "baseline_ms": 430.776717,
+        "pacs_ms": 415.572113,
+        "pacs_normalized": 0.9647042112538315,
+        "pacs_change_percent": -3.5295788746168455
+      },
+      "p999_write_latency": {
+        "baseline_ms": 888.688088,
+        "pacs_ms": 841.6146339999999,
+        "pacs_normalized": 0.9470303983640207,
+        "pacs_change_percent": -5.29696016359793
+      }
+    },
+    "1618_3": {
+      "average_write_latency": {
+        "baseline_ms": 8.734985112208607,
+        "pacs_ms": 8.46485497820481,
+        "pacs_normalized": 0.9690749176405299,
+        "pacs_change_percent": -3.0925082359470113
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.4408002306586726,
+        "pacs_ms": 0.44360369030222485,
+        "pacs_normalized": 1.0063599323425108,
+        "pacs_change_percent": 0.6359932342510755
+      },
+      "p95_write_latency": {
+        "baseline_ms": 8.890085,
+        "pacs_ms": 8.015477,
+        "pacs_normalized": 0.9016198382805115,
+        "pacs_change_percent": -9.83801617194885
+      },
+      "p99_write_latency": {
+        "baseline_ms": 136.64750099999998,
+        "pacs_ms": 129.934088,
+        "pacs_normalized": 0.9508705761110116,
+        "pacs_change_percent": -4.912942388898845
+      },
+      "p999_write_latency": {
+        "baseline_ms": 1229.299145,
+        "pacs_ms": 1213.6497279999999,
+        "pacs_normalized": 0.9872696429801876,
+        "pacs_change_percent": -1.27303570198124
+      }
+    },
+    "1619_0": {
+      "average_write_latency": {
+        "baseline_ms": 13.968286864146654,
+        "pacs_ms": 12.143347970258048,
+        "pacs_normalized": 0.8693512732350307,
+        "pacs_change_percent": -13.06487267649693
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.897812828126835,
+        "pacs_ms": 0.8400880782961803,
+        "pacs_normalized": 0.9357051402895528,
+        "pacs_change_percent": -6.429485971044723
+      },
+      "p95_write_latency": {
+        "baseline_ms": 31.175922,
+        "pacs_ms": 26.362983,
+        "pacs_normalized": 0.8456199948152295,
+        "pacs_change_percent": -15.438000518477047
+      },
+      "p99_write_latency": {
+        "baseline_ms": 319.00412800000004,
+        "pacs_ms": 260.512758,
+        "pacs_normalized": 0.8166438460633336,
+        "pacs_change_percent": -18.335615393666636
+      },
+      "p999_write_latency": {
+        "baseline_ms": 1235.691215,
+        "pacs_ms": 1207.003622,
+        "pacs_normalized": 0.9767841733826682,
+        "pacs_change_percent": -2.321582661733179
+      }
+    },
+    "1620_2": {
+      "average_write_latency": {
+        "baseline_ms": 12.194955839423727,
+        "pacs_ms": 11.84522732685636,
+        "pacs_normalized": 0.9713218713398889,
+        "pacs_change_percent": -2.86781286601111
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.400168104544075,
+        "pacs_ms": 0.40011851094429063,
+        "pacs_normalized": 0.9998760680843346,
+        "pacs_change_percent": -0.01239319156653984
+      },
+      "p95_write_latency": {
+        "baseline_ms": 44.208343,
+        "pacs_ms": 42.447012,
+        "pacs_normalized": 0.9601584026797838,
+        "pacs_change_percent": -3.9841597320216193
+      },
+      "p99_write_latency": {
+        "baseline_ms": 270.11149800000004,
+        "pacs_ms": 264.957713,
+        "pacs_normalized": 0.9809197866874959,
+        "pacs_change_percent": -1.908021331250409
+      },
+      "p999_write_latency": {
+        "baseline_ms": 659.0279370000001,
+        "pacs_ms": 680.787703,
+        "pacs_normalized": 1.033017972043877,
+        "pacs_change_percent": 3.301797204387702
+      }
+    },
+    "1708_0": {
+      "average_write_latency": {
+        "baseline_ms": 33.22444050060905,
+        "pacs_ms": 32.15504706740974,
+        "pacs_normalized": 0.9678130491563972,
+        "pacs_change_percent": -3.218695084360279
+      },
+      "average_read_latency": {
+        "baseline_ms": 1.8985233259980725,
+        "pacs_ms": 1.7997630191172083,
+        "pacs_normalized": 0.947980461694383,
+        "pacs_change_percent": -5.201953830561701
+      },
+      "p95_write_latency": {
+        "baseline_ms": 32.621383,
+        "pacs_ms": 30.762608,
+        "pacs_normalized": 0.9430197364716265,
+        "pacs_change_percent": -5.698026352837349
+      },
+      "p99_write_latency": {
+        "baseline_ms": 1037.328933,
+        "pacs_ms": 999.0842809999999,
+        "pacs_normalized": 0.9631316058163009,
+        "pacs_change_percent": -3.686839418369914
+      },
+      "p999_write_latency": {
+        "baseline_ms": 3169.096314,
+        "pacs_ms": 3109.161329,
+        "pacs_normalized": 0.9810876732476614,
+        "pacs_change_percent": -1.891232675233856
+      }
+    },
+    "hm_0": {
+      "average_write_latency": {
+        "baseline_ms": 9.53984536945598,
+        "pacs_ms": 6.694702936590298,
+        "pacs_normalized": 0.7017622065473867,
+        "pacs_change_percent": -29.823779345261325
+      },
+      "average_read_latency": {
+        "baseline_ms": 2.4647854094084423,
+        "pacs_ms": 0.9130417955772111,
+        "pacs_normalized": 0.37043459933347483,
+        "pacs_change_percent": -62.95654006665252
+      },
+      "p95_write_latency": {
+        "baseline_ms": 19.340006000000002,
+        "pacs_ms": 13.766622,
+        "pacs_normalized": 0.7118209787525401,
+        "pacs_change_percent": -28.817902124745988
+      },
+      "p99_write_latency": {
+        "baseline_ms": 102.436393,
+        "pacs_ms": 81.719067,
+        "pacs_normalized": 0.7977542415028221,
+        "pacs_change_percent": -20.224575849717784
+      },
+      "p999_write_latency": {
+        "baseline_ms": 1079.239322,
+        "pacs_ms": 392.347911,
+        "pacs_normalized": 0.3635411562589452,
+        "pacs_change_percent": -63.64588437410548
+      }
+    },
+    "mds_0": {
+      "average_write_latency": {
+        "baseline_ms": 1.771017117783332,
+        "pacs_ms": 1.7420074066552897,
+        "pacs_normalized": 0.9836197454915897,
+        "pacs_change_percent": -1.6380254508410297
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.5795955301827427,
+        "pacs_ms": 0.5664079998541393,
+        "pacs_normalized": 0.977247011679946,
+        "pacs_change_percent": -2.2752988320054013
+      },
+      "p95_write_latency": {
+        "baseline_ms": 2.703185,
+        "pacs_ms": 2.4858939999999996,
+        "pacs_normalized": 0.9196166744044524,
+        "pacs_change_percent": -8.038332559554762
+      },
+      "p99_write_latency": {
+        "baseline_ms": 3.763264,
+        "pacs_ms": 3.388598,
+        "pacs_normalized": 0.9004412127344773,
+        "pacs_change_percent": -9.95587872655227
+      },
+      "p999_write_latency": {
+        "baseline_ms": 19.099249,
+        "pacs_ms": 19.261795999999997,
+        "pacs_normalized": 1.0085106487694881,
+        "pacs_change_percent": 0.8510648769488149
+      }
+    },
+    "proj_3": {
+      "average_write_latency": {
+        "baseline_ms": 8.844390357380458,
+        "pacs_ms": 8.726380860247033,
+        "pacs_normalized": 0.9866571360642231,
+        "pacs_change_percent": -1.3342863935776883
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.7048083138054121,
+        "pacs_ms": 0.7081586513170351,
+        "pacs_normalized": 1.0047535442559323,
+        "pacs_change_percent": 0.47535442559323293
+      },
+      "p95_write_latency": {
+        "baseline_ms": 45.625402,
+        "pacs_ms": 45.680067,
+        "pacs_normalized": 1.0011981264296586,
+        "pacs_change_percent": 0.11981264296585525
+      },
+      "p99_write_latency": {
+        "baseline_ms": 81.70763099999999,
+        "pacs_ms": 81.148004,
+        "pacs_normalized": 0.9931508600463524,
+        "pacs_change_percent": -0.6849139953647554
+      },
+      "p999_write_latency": {
+        "baseline_ms": 127.008321,
+        "pacs_ms": 126.909273,
+        "pacs_normalized": 0.9992201455840047,
+        "pacs_change_percent": -0.07798544159952625
+      }
+    },
+    "src2_2": {
+      "average_write_latency": {
+        "baseline_ms": 214.28259202220593,
+        "pacs_ms": 213.5461820567724,
+        "pacs_normalized": 0.9965633700876775,
+        "pacs_change_percent": -0.34366299123225197
+      },
+      "average_read_latency": {
+        "baseline_ms": 1.0716475227737723,
+        "pacs_ms": 1.0834097603624655,
+        "pacs_normalized": 1.010975845451729,
+        "pacs_change_percent": 1.0975845451729027
+      },
+      "p95_write_latency": {
+        "baseline_ms": 614.370828,
+        "pacs_ms": 612.839088,
+        "pacs_normalized": 0.9975068152161678,
+        "pacs_change_percent": -0.2493184783832203
+      },
+      "p99_write_latency": {
+        "baseline_ms": 819.34325,
+        "pacs_ms": 819.057377,
+        "pacs_normalized": 0.999651094947081,
+        "pacs_change_percent": -0.034890505291895746
+      },
+      "p999_write_latency": {
+        "baseline_ms": 1062.9676829999999,
+        "pacs_ms": 1062.5402009999998,
+        "pacs_normalized": 0.9995978410192174,
+        "pacs_change_percent": -0.04021589807825521
+      }
+    },
+    "web_0": {
+      "average_write_latency": {
+        "baseline_ms": 1.9812558264479878,
+        "pacs_ms": 1.9181652811463352,
+        "pacs_normalized": 0.9681562852916568,
+        "pacs_change_percent": -3.184371470834324
+      },
+      "average_read_latency": {
+        "baseline_ms": 0.42620843186086427,
+        "pacs_ms": 0.4270557253890026,
+        "pacs_normalized": 1.001987979272111,
+        "pacs_change_percent": 0.1987979272110918
+      },
+      "p95_write_latency": {
+        "baseline_ms": 3.406908,
+        "pacs_ms": 3.1093159999999997,
+        "pacs_normalized": 0.9126504149803868,
+        "pacs_change_percent": -8.734958501961321
+      },
+      "p99_write_latency": {
+        "baseline_ms": 5.540281,
+        "pacs_ms": 4.734089,
+        "pacs_normalized": 0.854485359136116,
+        "pacs_change_percent": -14.5514640863884
+      },
+      "p999_write_latency": {
+        "baseline_ms": 27.79829,
+        "pacs_ms": 28.386072,
+        "pacs_normalized": 1.021144538027339,
+        "pacs_change_percent": 2.1144538027338955
+      }
+    }
+  }
+}

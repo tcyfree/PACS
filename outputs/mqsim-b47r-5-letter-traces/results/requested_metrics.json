@@ -1,0 +1,227 @@
+{
+  "source_comparison": "comparison.json",
+  "timestamp_scale_ns": 100,
+  "definitions": {
+    "latencies": "Nearest rank and mean from NVMe enqueue to host completion, pooled by request.",
+    "single_page_writes": "All write sample counts minus multi-page write sample counts at each latency.",
+    "replay_throughput": "Total host bytes divided by summed simulation duration.",
+    "page_program_amplification": "Total physical page programs divided by total host write page transactions.",
+    "gc": "Sum of GC executions and moved pages."
+  },
+  "per_trace": {
+    "hm_0": {
+      "baseline": {
+        "single_page_write_p99_ms": 22.0023,
+        "single_page_write_p99_9_ms": 975.747564,
+        "mean_read_latency_ms": 1.6907676386099646,
+        "read_p99_ms": 2.831154,
+        "replay_throughput_mib_s": 0.051536762097860137,
+        "gc_executions": 7666,
+        "gc_moved_pages": 2055,
+        "page_program_amplification": 1.0004685930897228,
+        "single_page_writes": 2026281,
+        "reads": 1417748,
+        "bytes": 32683298304,
+        "simulation_ns": 604795895186107,
+        "nand_programs": 4387523,
+        "host_write_page_transactions": 4385468
+      },
+      "pacs": {
+        "single_page_write_p99_ms": 8.941409,
+        "single_page_write_p99_9_ms": 51.032844,
+        "mean_read_latency_ms": 0.19163823884851186,
+        "read_p99_ms": 1.666549,
+        "replay_throughput_mib_s": 0.051536762097860137,
+        "gc_executions": 7671,
+        "gc_moved_pages": 1027,
+        "page_program_amplification": 1.000234182531944,
+        "single_page_writes": 2026281,
+        "reads": 1417748,
+        "bytes": 32683298304,
+        "simulation_ns": 604795895186107,
+        "nand_programs": 4386495,
+        "host_write_page_transactions": 4385468
+      }
+    },
+    "mds_0": {
+      "baseline": {
+        "single_page_write_p99_ms": 2.732182,
+        "single_page_write_p99_9_ms": 11.542838,
+        "mean_read_latency_ms": 0.2293609020649705,
+        "read_p99_ms": 1.719738,
+        "replay_throughput_mib_s": 0.01798181794619527,
+        "gc_executions": 2803,
+        "gc_moved_pages": 8,
+        "page_program_amplification": 1.0000051430606611,
+        "single_page_writes": 855928,
+        "reads": 143973,
+        "bytes": 11403751424,
+        "simulation_ns": 604803411773564,
+        "nand_programs": 1555502,
+        "host_write_page_transactions": 1555494
+      },
+      "pacs": {
+        "single_page_write_p99_ms": 2.498202,
+        "single_page_write_p99_9_ms": 11.468776,
+        "mean_read_latency_ms": 0.2379729169427601,
+        "read_p99_ms": 1.759666,
+        "replay_throughput_mib_s": 0.017981817950357703,
+        "gc_executions": 2813,
+        "gc_moved_pages": 3,
+        "page_program_amplification": 1.000001928647748,
+        "single_page_writes": 855928,
+        "reads": 143973,
+        "bytes": 11403751424,
+        "simulation_ns": 604803411633564,
+        "nand_programs": 1555497,
+        "host_write_page_transactions": 1555494
+      }
+    },
+    "proj_3": {
+      "baseline": {
+        "single_page_write_p99_ms": 4.956627,
+        "single_page_write_p99_9_ms": 11.542838,
+        "mean_read_latency_ms": 0.1440559275004546,
+        "read_p99_ms": 0.299976,
+        "replay_throughput_mib_s": 0.035325455057936835,
+        "gc_executions": 1027,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "single_page_writes": 39563,
+        "reads": 2128303,
+        "bytes": 22402553344,
+        "simulation_ns": 604797297332864,
+        "nand_programs": 440795,
+        "host_write_page_transactions": 440795
+      },
+      "pacs": {
+        "single_page_write_p99_ms": 4.42178,
+        "single_page_write_p99_9_ms": 11.542838,
+        "mean_read_latency_ms": 0.14879944193190536,
+        "read_p99_ms": 0.381724,
+        "replay_throughput_mib_s": 0.03532545505151188,
+        "gc_executions": 998,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "single_page_writes": 39563,
+        "reads": 2128303,
+        "bytes": 22402553344,
+        "simulation_ns": 604797297442864,
+        "nand_programs": 440795,
+        "host_write_page_transactions": 440795
+      }
+    },
+    "src2_2": {
+      "baseline": {
+        "single_page_write_p99_ms": 6.453278,
+        "single_page_write_p99_9_ms": 14.481964,
+        "mean_read_latency_ms": 0.5203307408144074,
+        "read_p99_ms": 10.294403,
+        "replay_throughput_mib_s": 0.10031370388372884,
+        "gc_executions": 15325,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "single_page_writes": 74734,
+        "reads": 350930,
+        "bytes": 66644063744,
+        "simulation_ns": 633579755037864,
+        "nand_programs": 5951990,
+        "host_write_page_transactions": 5951990
+      },
+      "pacs": {
+        "single_page_write_p99_ms": 5.156751,
+        "single_page_write_p99_9_ms": 11.818482,
+        "mean_read_latency_ms": 0.53776551674408,
+        "read_p99_ms": 10.296608,
+        "replay_throughput_mib_s": 0.1003137039256859,
+        "gc_executions": 15321,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "single_page_writes": 74734,
+        "reads": 350930,
+        "bytes": 66644063744,
+        "simulation_ns": 633579754772864,
+        "nand_programs": 5951990,
+        "host_write_page_transactions": 5951990
+      }
+    },
+    "web_0": {
+      "baseline": {
+        "single_page_write_p99_ms": 5.634804,
+        "single_page_write_p99_9_ms": 11.836796,
+        "mean_read_latency_ms": 0.17521082833927193,
+        "read_p99_ms": 1.123152,
+        "replay_throughput_mib_s": 0.04913962730343855,
+        "gc_executions": 6455,
+        "gc_moved_pages": 744,
+        "page_program_amplification": 1.0002502511761637,
+        "single_page_writes": 514567,
+        "reads": 606487,
+        "bytes": 31163521536,
+        "simulation_ns": 604804141352871,
+        "nand_programs": 2973757,
+        "host_write_page_transactions": 2973013
+      },
+      "pacs": {
+        "single_page_write_p99_ms": 3.148554,
+        "single_page_write_p99_9_ms": 11.542838,
+        "mean_read_latency_ms": 0.1759131896067022,
+        "read_p99_ms": 1.139168,
+        "replay_throughput_mib_s": 0.04913962730343855,
+        "gc_executions": 6450,
+        "gc_moved_pages": 318,
+        "page_program_amplification": 1.0001069621962635,
+        "single_page_writes": 514567,
+        "reads": 606487,
+        "bytes": 31163521536,
+        "simulation_ns": 604804141352871,
+        "nand_programs": 2973331,
+        "host_write_page_transactions": 2973013
+      }
+    }
+  },
+  "pooled": {
+    "baseline": {
+      "single_page_write_p99_ms": 17.557371,
+      "single_page_write_p99_9_ms": 472.072929,
+      "mean_read_latency_ms": 0.6510166851919152,
+      "read_p99_ms": 1.821074,
+      "replay_throughput_mib_s": 0.05132567138514977,
+      "gc_executions": 33276,
+      "gc_moved_pages": 2807,
+      "page_program_amplification": 1.0001833830281524,
+      "single_page_writes": 3511073,
+      "reads": 4647441,
+      "bytes": 164297188352,
+      "simulation_ns": 3052780500683270,
+      "nand_programs": 15309567,
+      "host_write_page_transactions": 15306760
+    },
+    "pacs": {
+      "single_page_write_p99_ms": 6.832133,
+      "single_page_write_p99_9_ms": 26.280176,
+      "mean_read_latency_ms": 0.19753963927675466,
+      "read_p99_ms": 1.415487,
+      "replay_throughput_mib_s": 0.05132567139010954,
+      "gc_executions": 33253,
+      "gc_moved_pages": 1348,
+      "page_program_amplification": 1.0000880656651048,
+      "single_page_writes": 3511073,
+      "reads": 4647441,
+      "bytes": 164297188352,
+      "simulation_ns": 3052780500388270,
+      "nand_programs": 15308108,
+      "host_write_page_transactions": 15306760
+    }
+  },
+  "pooled_pacs_change_percent": {
+    "single_page_write_p99_ms": -61.08681077594134,
+    "single_page_write_p99_9_ms": -94.43302625811022,
+    "mean_read_latency_ms": -69.65674708958936,
+    "read_p99_ms": -22.27185715682065,
+    "replay_throughput_mib_s": 9.663336797416378e-09,
+    "gc_executions": -0.06911888448131176,
+    "gc_moved_pages": -51.977199857499116,
+    "page_program_amplification": -0.009529988666578948
+  }
+}

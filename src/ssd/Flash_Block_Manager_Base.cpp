@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "Flash_Block_Manager.h"
 
 
@@ -118,12 +119,17 @@ namespace SSD_Components
 
 	Block_Pool_Slot_Type* PlaneBookKeepingType::Get_a_free_block(stream_id_type stream_id, bool for_mapping_data)
 	{
-		Block_Pool_Slot_Type* new_block = NULL;
-		new_block = (*Free_block_pool.begin()).second;//Assign a new write frontier block
-		if (Free_block_pool.size() == 0) {
-			PRINT_ERROR("Requesting a free block from an empty pool!")
+		return Take_free_block(Free_block_pool.begin(), stream_id, for_mapping_data);
+	}
+
+	Block_Pool_Slot_Type* PlaneBookKeepingType::Take_free_block(decltype(Free_block_pool)::iterator entry,
+		stream_id_type stream_id, bool for_mapping_data)
+	{
+		if (entry == Free_block_pool.end()) {
+			throw std::runtime_error("Requesting an unavailable free block");
 		}
-		Free_block_pool.erase(Free_block_pool.begin());
+		auto* new_block = entry->second;
+		Free_block_pool.erase(entry);
 		new_block->Stream_id = stream_id;
 		new_block->Holds_mapping_data = for_mapping_data;
 		Block_usage_history.push(new_block->BlockID);

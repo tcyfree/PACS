@@ -1,0 +1,1150 @@
+{
+  "percentile_method": "Nearest rank from host enqueue to completion, by trace and policy.",
+  "multi_page_definition": "A host write spanning more than one 8192-byte flash page after LBA folding.",
+  "latency_reduction_sign": "Positive means PACS reduced latency.",
+  "aggregation": "Median of paired percentage changes with equal weight per trace.",
+  "aggregate": {
+    "mean_write_latency": {
+      "traces": 10,
+      "improved_traces": 10,
+      "median_reduction_percent": 2.9369102988956177
+    },
+    "write_p95": {
+      "traces": 10,
+      "improved_traces": 9,
+      "median_reduction_percent": 8.620432180241057
+    },
+    "write_p99": {
+      "traces": 10,
+      "improved_traces": 9,
+      "median_reduction_percent": 13.42324969906401
+    },
+    "write_p99_9": {
+      "traces": 10,
+      "improved_traces": 10,
+      "median_reduction_percent": 7.124962729837464
+    },
+    "multi_page_write_p99": {
+      "traces": 10,
+      "improved_traces": 9,
+      "median_reduction_percent": 7.939615422754293
+    },
+    "multi_page_write_p99_9": {
+      "traces": 10,
+      "improved_traces": 9,
+      "median_reduction_percent": 8.990199053956822
+    },
+    "mean_read_latency": {
+      "traces": 10,
+      "improved_traces": 2,
+      "median_reduction_percent": -2.6094855067895995
+    },
+    "read_p99": {
+      "traces": 10,
+      "improved_traces": 2,
+      "median_reduction_percent": -1.9616493795609258
+    }
+  },
+  "traces": {
+    "1612_4": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1612_4.csv",
+        "source_bytes": 89488739,
+        "reads": 2049890,
+        "writes": 338102,
+        "multi_page_writes": 204361,
+        "bytes": 79803046400,
+        "span_ns": 3391819047936
+      },
+      "baseline": {
+        "requests_completed": 2387992,
+        "simulated_finish_ns": 3391819136843,
+        "iops": 704.0446154869769,
+        "throughput_mib_s": 22.438140906738752,
+        "reads": {
+          "samples": 2049890,
+          "mean_us": 8998.159704487558,
+          "p50_us": 104.93,
+          "p95_us": 217.744,
+          "p99_us": 4178.314,
+          "p99_9_us": 3834176.154,
+          "max_us": 8784183.744
+        },
+        "writes": {
+          "samples": 338102,
+          "mean_us": 29163.897548257628,
+          "p50_us": 1622.113,
+          "p95_us": 7015.901,
+          "p99_us": 18025.272,
+          "p99_9_us": 9131818.06,
+          "max_us": 13753892.066
+        },
+        "multi_page_writes": {
+          "samples": 204361,
+          "mean_us": 41478.03762471313,
+          "p50_us": 1754.267,
+          "p95_us": 10870.584,
+          "p99_us": 23993.158,
+          "p99_9_us": 10860892.671,
+          "max_us": 13753892.066
+        },
+        "gc_executions": 11046,
+        "gc_moved_pages": 19872,
+        "page_program_amplification": 1.0133595522613825,
+        "mean_write_transaction_wait_us": 4042,
+        "result_xml": "run/1612_4-baseline/w_1612_4_setsize4_reply_1.xml",
+        "run_log": "run/1612_4-baseline/run.log",
+        "latency_sample_directory": "run/1612_4-baseline/1612_4",
+        "wall_seconds": 42.61056512314826
+      },
+      "pacs": {
+        "requests_completed": 2387992,
+        "simulated_finish_ns": 3391819136843,
+        "iops": 704.0446154869769,
+        "throughput_mib_s": 22.438140906738752,
+        "reads": {
+          "samples": 2049890,
+          "mean_us": 1686.2217971359437,
+          "p50_us": 104.93,
+          "p95_us": 218.768,
+          "p99_us": 1649.915,
+          "p99_9_us": 10140.094,
+          "max_us": 15935142.882
+        },
+        "writes": {
+          "samples": 338102,
+          "mean_us": 5582.905135586303,
+          "p50_us": 1617.485,
+          "p95_us": 5633.874,
+          "p99_us": 12620.239,
+          "p99_9_us": 22569.455,
+          "max_us": 17682057.167
+        },
+        "multi_page_writes": {
+          "samples": 204361,
+          "mean_us": 7094.117471870856,
+          "p50_us": 1731.226,
+          "p95_us": 8399.26,
+          "p99_us": 13638.355,
+          "p99_9_us": 29528.29,
+          "max_us": 17682057.167
+        },
+        "gc_executions": 11043,
+        "gc_moved_pages": 11896,
+        "page_program_amplification": 1.0079974453352156,
+        "mean_write_transaction_wait_us": 1354,
+        "result_xml": "run/1612_4-pacs/w_1612_4_setsize4_reply_1.xml",
+        "run_log": "run/1612_4-pacs/run.log",
+        "latency_sample_directory": "run/1612_4-pacs/1612_4",
+        "wall_seconds": 45.710769118741155,
+        "pacs": {
+          "Qualified_Program_Observations": 1235481,
+          "Discarded_Program_Observations": 263890,
+          "Ranked_Write_Allocations": 919754,
+          "Redirected_Write_Allocations": 460438,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 80.856793484656,
+        "write_p95": 19.69849631572623,
+        "write_p99": 29.98586096232002,
+        "write_p99_9": 99.7528481749011,
+        "multi_page_write_p99": 43.15731593148347,
+        "multi_page_write_p99_9": 99.7281228081846,
+        "mean_read_latency": 81.26037042557722,
+        "read_p99": 60.51242199604913
+      }
+    },
+    "1613_2": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1613_2.csv",
+        "source_bytes": 172801222,
+        "reads": 3395852,
+        "writes": 1201201,
+        "multi_page_writes": 698116,
+        "bytes": 111645986816,
+        "span_ns": 3595856192768
+      },
+      "baseline": {
+        "requests_completed": 4597053,
+        "simulated_finish_ns": 4496697588241,
+        "iops": 1022.3175808000592,
+        "throughput_mib_s": 23.67824566070053,
+        "reads": {
+          "samples": 3395852,
+          "mean_us": 23528329.40584531,
+          "p50_us": 116.162,
+          "p95_us": 120044477.928,
+          "p99_us": 215462180.834,
+          "p99_9_us": 232565740.011,
+          "max_us": 244893681.403
+        },
+        "writes": {
+          "samples": 1201201,
+          "mean_us": 46925587.21952785,
+          "p50_us": 26947744.772,
+          "p95_us": 137326287.551,
+          "p99_us": 155623743.558,
+          "p99_9_us": 232423686.082,
+          "max_us": 254862174.541
+        },
+        "multi_page_writes": {
+          "samples": 698116,
+          "mean_us": 47112958.49805004,
+          "p50_us": 25143412.842,
+          "p95_us": 137452374.471,
+          "p99_us": 154559957.645,
+          "p99_9_us": 233049619.989,
+          "max_us": 254862174.541
+        },
+        "gc_executions": 25343,
+        "gc_moved_pages": 5209633,
+        "page_program_amplification": 2.4942124587090757,
+        "mean_write_transaction_wait_us": 121339,
+        "result_xml": "run/1613_2-baseline/w_1613_2_setsize4_reply_1.xml",
+        "run_log": "run/1613_2-baseline/run.log",
+        "latency_sample_directory": "run/1613_2-baseline/1613_2",
+        "wall_seconds": 142.18778462335467
+      },
+      "pacs": {
+        "requests_completed": 4597053,
+        "simulated_finish_ns": 4466657365029,
+        "iops": 1029.1931133988276,
+        "throughput_mib_s": 23.837492212828085,
+        "reads": {
+          "samples": 3395852,
+          "mean_us": 24033291.016597833,
+          "p50_us": 116.162,
+          "p95_us": 140131293.858,
+          "p99_us": 193300329.17,
+          "p99_9_us": 208370393.252,
+          "max_us": 226076351.809
+        },
+        "writes": {
+          "samples": 1201201,
+          "mean_us": 43843337.40123674,
+          "p50_us": 23041919.396,
+          "p95_us": 145575704.912,
+          "p99_us": 173937097.712,
+          "p99_9_us": 205857890.573,
+          "max_us": 244819262.039
+        },
+        "multi_page_writes": {
+          "samples": 698116,
+          "mean_us": 43842291.8199394,
+          "p50_us": 18670334.206,
+          "p95_us": 145733994.693,
+          "p99_us": 170464217.404,
+          "p99_9_us": 206937057.412,
+          "max_us": 244819262.039
+        },
+        "gc_executions": 25805,
+        "gc_moved_pages": 5420954,
+        "page_program_amplification": 2.554822960636344,
+        "mean_write_transaction_wait_us": 85614,
+        "result_xml": "run/1613_2-pacs/w_1613_2_setsize4_reply_1.xml",
+        "run_log": "run/1613_2-pacs/run.log",
+        "latency_sample_directory": "run/1613_2-pacs/1613_2",
+        "wall_seconds": 144.83281841594726,
+        "pacs": {
+          "Qualified_Program_Observations": 8107709,
+          "Discarded_Program_Observations": 799786,
+          "Ranked_Write_Allocations": 2261278,
+          "Redirected_Write_Allocations": 1184231,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 6.568377725081387,
+        "write_p95": -6.007165494761035,
+        "write_p99": -11.767712133961572,
+        "write_p99_9": 11.4299002639634,
+        "multi_page_write_p99": -10.290025955836235,
+        "multi_page_write_p99_9": 11.204722229640417,
+        "mean_read_latency": -2.146185570774395,
+        "read_p99": 10.285726979192845
+      }
+    },
+    "1614_6": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1614_6.csv",
+        "source_bytes": 42438586,
+        "reads": 691854,
+        "writes": 441716,
+        "multi_page_writes": 248706,
+        "bytes": 26806895616,
+        "span_ns": 3592594665728
+      },
+      "baseline": {
+        "requests_completed": 1133570,
+        "simulated_finish_ns": 3592596288158,
+        "iops": 315.529469241089,
+        "throughput_mib_s": 7.116036927341547,
+        "reads": {
+          "samples": 691854,
+          "mean_us": 195.84410803724484,
+          "p50_us": 103.682,
+          "p95_us": 193.424,
+          "p99_us": 1552.403,
+          "p99_9_us": 10140.094,
+          "max_us": 20976.324
+        },
+        "writes": {
+          "samples": 441716,
+          "mean_us": 1993.4437809678616,
+          "p50_us": 1571.555,
+          "p95_us": 3639.534,
+          "p99_us": 8265.926,
+          "p99_9_us": 13947.376,
+          "max_us": 35263.654
+        },
+        "multi_page_writes": {
+          "samples": 248706,
+          "mean_us": 2205.0761458549455,
+          "p50_us": 1672.803,
+          "p95_us": 4156.81,
+          "p99_us": 11476.264,
+          "p99_9_us": 14948.684,
+          "max_us": 35263.654
+        },
+        "gc_executions": 5298,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 363,
+        "result_xml": "run/1614_6-baseline/w_1614_6_setsize4_reply_1.xml",
+        "run_log": "run/1614_6-baseline/run.log",
+        "latency_sample_directory": "run/1614_6-baseline/1614_6",
+        "wall_seconds": 16.701584992930293
+      },
+      "pacs": {
+        "requests_completed": 1133570,
+        "simulated_finish_ns": 3592596258942,
+        "iops": 315.52947180706303,
+        "throughput_mib_s": 7.116036985211154,
+        "reads": {
+          "samples": 691854,
+          "mean_us": 200.43848478291665,
+          "p50_us": 103.682,
+          "p95_us": 206.064,
+          "p99_us": 1562.12,
+          "p99_9_us": 10140.094,
+          "max_us": 20158.508
+        },
+        "writes": {
+          "samples": 441716,
+          "mean_us": 1940.996901649476,
+          "p50_us": 1566.947,
+          "p95_us": 3317.189,
+          "p99_us": 7115.799,
+          "p99_9_us": 13085.709,
+          "max_us": 24445.334
+        },
+        "multi_page_writes": {
+          "samples": 248706,
+          "mean_us": 2135.7975940186407,
+          "p50_us": 1667.339,
+          "p95_us": 3993.276,
+          "p99_us": 11449.096,
+          "p99_9_us": 14141.628,
+          "max_us": 24445.334
+        },
+        "gc_executions": 5305,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 356,
+        "result_xml": "run/1614_6-pacs/w_1614_6_setsize4_reply_1.xml",
+        "run_log": "run/1614_6-pacs/run.log",
+        "latency_sample_directory": "run/1614_6-pacs/1614_6",
+        "wall_seconds": 17.220125592313707,
+        "pacs": {
+          "Qualified_Program_Observations": 1158051,
+          "Discarded_Program_Observations": 95944,
+          "Ranked_Write_Allocations": 822923,
+          "Redirected_Write_Allocations": 449036,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 2.630968569021863,
+        "write_p95": 8.856765728799354,
+        "write_p99": 13.914073268984017,
+        "write_p99_9": 6.177986454226225,
+        "multi_page_write_p99": 0.2367320933014394,
+        "multi_page_write_p99_9": 5.398843135623165,
+        "mean_read_latency": -2.345935648366848,
+        "read_p99": -0.6259328280092236
+      }
+    },
+    "1615_1": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1615_1.csv",
+        "source_bytes": 19953581,
+        "reads": 178742,
+        "writes": 355787,
+        "multi_page_writes": 188815,
+        "bytes": 8143726592,
+        "span_ns": 3590026216192
+      },
+      "baseline": {
+        "requests_completed": 534529,
+        "simulated_finish_ns": 3590027641612,
+        "iops": 148.89272544987563,
+        "throughput_mib_s": 2.1633434797559636,
+        "reads": {
+          "samples": 178742,
+          "mean_us": 187.12341348423988,
+          "p50_us": 104.93,
+          "p95_us": 235.931,
+          "p99_us": 1508.739,
+          "p99_9_us": 10120.594,
+          "max_us": 20230.319
+        },
+        "writes": {
+          "samples": 355787,
+          "mean_us": 1798.4175241844137,
+          "p50_us": 1553.643,
+          "p95_us": 3003.102,
+          "p99_us": 4232.769,
+          "p99_9_us": 11721.106,
+          "max_us": 23299.131
+        },
+        "multi_page_writes": {
+          "samples": 188815,
+          "mean_us": 1923.0486164287795,
+          "p50_us": 1613.205,
+          "p95_us": 3304.844,
+          "p99_us": 4682.201,
+          "p99_9_us": 12330.739,
+          "max_us": 23299.131
+        },
+        "gc_executions": 1443,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 230,
+        "result_xml": "run/1615_1-baseline/w_1615_1_setsize4_reply_1.xml",
+        "run_log": "run/1615_1-baseline/run.log",
+        "latency_sample_directory": "run/1615_1-baseline/1615_1",
+        "wall_seconds": 6.243084923364222
+      },
+      "pacs": {
+        "requests_completed": 534529,
+        "simulated_finish_ns": 3590027641612,
+        "iops": 148.89272544987563,
+        "throughput_mib_s": 2.1633434797559636,
+        "reads": {
+          "samples": 178742,
+          "mean_us": 196.88817917445255,
+          "p50_us": 104.93,
+          "p95_us": 289.947,
+          "p99_us": 1541.499,
+          "p99_9_us": 10137.598,
+          "max_us": 20251.995
+        },
+        "writes": {
+          "samples": 355787,
+          "mean_us": 1764.9328101982364,
+          "p50_us": 1551.555,
+          "p95_us": 2845.283,
+          "p99_us": 3939.462,
+          "p99_9_us": 11576.15,
+          "max_us": 24377.201
+        },
+        "multi_page_writes": {
+          "samples": 188815,
+          "mean_us": 1874.2838228424648,
+          "p50_us": 1608.733,
+          "p95_us": 2999.194,
+          "p99_us": 4352.087,
+          "p99_9_us": 12319.88,
+          "max_us": 24377.201
+        },
+        "gc_executions": 1453,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 212,
+        "result_xml": "run/1615_1-pacs/w_1615_1_setsize4_reply_1.xml",
+        "run_log": "run/1615_1-pacs/run.log",
+        "latency_sample_directory": "run/1615_1-pacs/1615_1",
+        "wall_seconds": 6.36867508944124,
+        "pacs": {
+          "Qualified_Program_Observations": 728510,
+          "Discarded_Program_Observations": 19572,
+          "Ranked_Write_Allocations": 493530,
+          "Redirected_Write_Allocations": 276750,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 1.8618987824511213,
+        "write_p95": 5.255199457094695,
+        "write_p99": 6.929435553889196,
+        "write_p99_9": 1.236709232046873,
+        "multi_page_write_p99": 7.05040215061249,
+        "multi_page_write_p99_9": 0.08806447042630783,
+        "mean_read_latency": -5.218355901269978,
+        "read_p99": -2.171349716551374
+      }
+    },
+    "1616_2": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1616_2.csv",
+        "source_bytes": 39802967,
+        "reads": 707522,
+        "writes": 354837,
+        "multi_page_writes": 184251,
+        "bytes": 18268618240,
+        "span_ns": 3596878829056
+      },
+      "baseline": {
+        "requests_completed": 1062359,
+        "simulated_finish_ns": 3596880334868,
+        "iops": 295.3556696622733,
+        "throughput_mib_s": 4.8437285618950465,
+        "reads": {
+          "samples": 707522,
+          "mean_us": 167.75876797894625,
+          "p50_us": 102.434,
+          "p95_us": 177.821,
+          "p99_us": 1328.683,
+          "p99_9_us": 10120.126,
+          "max_us": 20110.362
+        },
+        "writes": {
+          "samples": 354837,
+          "mean_us": 1828.5088481979049,
+          "p50_us": 1555.803,
+          "p95_us": 3082.062,
+          "p99_us": 4691.135,
+          "p99_9_us": 12656.152,
+          "max_us": 22692.93
+        },
+        "multi_page_writes": {
+          "samples": 184251,
+          "mean_us": 1975.9875722357,
+          "p50_us": 1615.885,
+          "p95_us": 3480.957,
+          "p99_us": 6292.195,
+          "p99_9_us": 13276.297,
+          "max_us": 22692.93
+        },
+        "gc_executions": 3525,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 264,
+        "result_xml": "run/1616_2-baseline/w_1616_2_setsize4_reply_1.xml",
+        "run_log": "run/1616_2-baseline/run.log",
+        "latency_sample_directory": "run/1616_2-baseline/1616_2",
+        "wall_seconds": 13.486524631269276
+      },
+      "pacs": {
+        "requests_completed": 1062359,
+        "simulated_finish_ns": 3596880229868,
+        "iops": 295.35567828428555,
+        "throughput_mib_s": 4.8437287032929985,
+        "reads": {
+          "samples": 707522,
+          "mean_us": 172.57853671122592,
+          "p50_us": 102.434,
+          "p95_us": 183.995,
+          "p99_us": 1394.107,
+          "p99_9_us": 10120.126,
+          "max_us": 20209.15
+        },
+        "writes": {
+          "samples": 354837,
+          "mean_us": 1789.368353621522,
+          "p50_us": 1553.875,
+          "p95_us": 2906.148,
+          "p99_us": 4324.908,
+          "p99_9_us": 12072.233,
+          "max_us": 20017.6
+        },
+        "multi_page_writes": {
+          "samples": 184251,
+          "mean_us": 1918.0185321219424,
+          "p50_us": 1611.277,
+          "p95_us": 3119.93,
+          "p99_us": 5630.154,
+          "p99_9_us": 12826.5,
+          "max_us": 20017.6
+        },
+        "gc_executions": 3536,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 251,
+        "result_xml": "run/1616_2-pacs/w_1616_2_setsize4_reply_1.xml",
+        "run_log": "run/1616_2-pacs/run.log",
+        "latency_sample_directory": "run/1616_2-pacs/1616_2",
+        "wall_seconds": 13.53744290675968,
+        "pacs": {
+          "Qualified_Program_Observations": 732740,
+          "Discarded_Program_Observations": 29902,
+          "Ranked_Write_Allocations": 510561,
+          "Redirected_Write_Allocations": 284619,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 2.1405690552144696,
+        "write_p95": 5.70767233105628,
+        "write_p99": 7.806788762207861,
+        "write_p99_9": 4.613716712631133,
+        "multi_page_write_p99": 10.521622422699862,
+        "multi_page_write_p99_9": 3.387970305274135,
+        "mean_read_latency": -2.873035365212351,
+        "read_p99": -4.923973588884634
+      }
+    },
+    "1617_3": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1617_3.csv",
+        "source_bytes": 29135983,
+        "reads": 387173,
+        "writes": 394165,
+        "multi_page_writes": 212748,
+        "bytes": 14784683520,
+        "span_ns": 3593209507072
+      },
+      "baseline": {
+        "requests_completed": 781338,
+        "simulated_finish_ns": 3593209617003,
+        "iops": 217.44848847746687,
+        "throughput_mib_s": 3.9240051241371754,
+        "reads": {
+          "samples": 387173,
+          "mean_us": 176.51337859303206,
+          "p50_us": 104.93,
+          "p95_us": 207.518,
+          "p99_us": 1439.315,
+          "p99_9_us": 10136.35,
+          "max_us": 20140.314
+        },
+        "writes": {
+          "samples": 394165,
+          "mean_us": 1936.9249503431304,
+          "p50_us": 1561.555,
+          "p95_us": 3303.766,
+          "p99_us": 8750.751,
+          "p99_9_us": 19720.646,
+          "max_us": 39761.393
+        },
+        "multi_page_writes": {
+          "samples": 212748,
+          "mean_us": 2141.787207137082,
+          "p50_us": 1623.669,
+          "p95_us": 3927.463,
+          "p99_us": 11506.216,
+          "p99_9_us": 22505.054,
+          "max_us": 39761.393
+        },
+        "gc_executions": 2750,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 358,
+        "result_xml": "run/1617_3-baseline/w_1617_3_setsize4_reply_1.xml",
+        "run_log": "run/1617_3-baseline/run.log",
+        "latency_sample_directory": "run/1617_3-baseline/1617_3",
+        "wall_seconds": 10.86005190666765
+      },
+      "pacs": {
+        "requests_completed": 781338,
+        "simulated_finish_ns": 3593209617003,
+        "iops": 217.44848847746687,
+        "throughput_mib_s": 3.9240051241371754,
+        "reads": {
+          "samples": 387173,
+          "mean_us": 183.67104722953306,
+          "p50_us": 104.93,
+          "p95_us": 218.827,
+          "p99_us": 1478.803,
+          "p99_9_us": 10135.102,
+          "max_us": 20142.48
+        },
+        "writes": {
+          "samples": 394165,
+          "mean_us": 1883.2839016680832,
+          "p50_us": 1560.411,
+          "p95_us": 3026.775,
+          "p99_us": 6598.878,
+          "p99_9_us": 19578.497,
+          "max_us": 56453.374
+        },
+        "multi_page_writes": {
+          "samples": 212748,
+          "mean_us": 2070.2298398762855,
+          "p50_us": 1617.485,
+          "p95_us": 3480.868,
+          "p99_us": 11453.128,
+          "p99_9_us": 22880.21,
+          "max_us": 56453.374
+        },
+        "gc_executions": 2748,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 339,
+        "result_xml": "run/1617_3-pacs/w_1617_3_setsize4_reply_1.xml",
+        "run_log": "run/1617_3-pacs/run.log",
+        "latency_sample_directory": "run/1617_3-pacs/1617_3",
+        "wall_seconds": 10.531970643438399,
+        "pacs": {
+          "Qualified_Program_Observations": 859692,
+          "Discarded_Program_Observations": 67508,
+          "Ranked_Write_Allocations": 611458,
+          "Redirected_Write_Allocations": 333996,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 2.7693922093132484,
+        "write_p95": 8.384098631682757,
+        "write_p99": 24.590723699028803,
+        "write_p99_9": 0.7208131011529839,
+        "multi_page_write_p99": 0.4613853937732393,
+        "multi_page_write_p99_9": -1.6669855579995563,
+        "mean_read_latency": -4.055028969222585,
+        "read_p99": -2.7435273029184026
+      }
+    },
+    "1618_3": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1618_3.csv",
+        "source_bytes": 36696583,
+        "reads": 498867,
+        "writes": 484740,
+        "multi_page_writes": 255224,
+        "bytes": 16459380736,
+        "span_ns": 3599677884672
+      },
+      "baseline": {
+        "requests_completed": 983607,
+        "simulated_finish_ns": 3599679321946,
+        "iops": 273.2485068887354,
+        "throughput_mib_s": 4.360635286642479,
+        "reads": {
+          "samples": 498867,
+          "mean_us": 186.83217413258444,
+          "p50_us": 108.674,
+          "p95_us": 190.736,
+          "p99_us": 1479.45,
+          "p99_9_us": 10131.358,
+          "max_us": 20140.314
+        },
+        "writes": {
+          "samples": 484740,
+          "mean_us": 1816.851217607377,
+          "p50_us": 1537.803,
+          "p95_us": 3008.463,
+          "p99_us": 5098.154,
+          "p99_9_us": 13859.074,
+          "max_us": 34751.659
+        },
+        "multi_page_writes": {
+          "samples": 255224,
+          "mean_us": 1955.6686137706486,
+          "p50_us": 1589.813,
+          "p95_us": 3370.459,
+          "p99_us": 9219.831,
+          "p99_9_us": 15866.051,
+          "max_us": 34751.659
+        },
+        "gc_executions": 3451,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 280,
+        "result_xml": "run/1618_3-baseline/w_1618_3_setsize4_reply_1.xml",
+        "run_log": "run/1618_3-baseline/run.log",
+        "latency_sample_directory": "run/1618_3-baseline/1618_3",
+        "wall_seconds": 12.319379134103656
+      },
+      "pacs": {
+        "requests_completed": 983607,
+        "simulated_finish_ns": 3599679331946,
+        "iops": 273.24850612964417,
+        "throughput_mib_s": 4.360635274528524,
+        "reads": {
+          "samples": 498867,
+          "mean_us": 193.36772241900147,
+          "p50_us": 108.674,
+          "p95_us": 199.323,
+          "p99_us": 1506.643,
+          "p99_9_us": 10137.598,
+          "max_us": 11529.911
+        },
+        "writes": {
+          "samples": 484740,
+          "mean_us": 1773.6272667718777,
+          "p50_us": 1536.555,
+          "p95_us": 2847.01,
+          "p99_us": 4438.839,
+          "p99_9_us": 12740.378,
+          "max_us": 36458.64
+        },
+        "multi_page_writes": {
+          "samples": 255224,
+          "mean_us": 1899.7069766283737,
+          "p50_us": 1582.421,
+          "p95_us": 3033.548,
+          "p99_us": 7725.91,
+          "p99_9_us": 13723.347,
+          "max_us": 36458.64
+        },
+        "gc_executions": 3448,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 262,
+        "result_xml": "run/1618_3-pacs/w_1618_3_setsize4_reply_1.xml",
+        "run_log": "run/1618_3-pacs/run.log",
+        "latency_sample_directory": "run/1618_3-pacs/1618_3",
+        "wall_seconds": 12.544208507984877,
+        "pacs": {
+          "Qualified_Program_Observations": 912191,
+          "Discarded_Program_Observations": 44578,
+          "Ranked_Write_Allocations": 638331,
+          "Redirected_Write_Allocations": 354601,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 2.3790583629858975,
+        "write_p95": 5.366627410740965,
+        "write_p99": 12.932426129144003,
+        "write_p99_9": 8.071939005448703,
+        "multi_page_write_p99": 16.203344725082268,
+        "multi_page_write_p99_9": 13.50496100132289,
+        "mean_read_latency": -3.4980850149391784,
+        "read_p99": -1.838047923214714
+      }
+    },
+    "1619_0": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1619_0.csv",
+        "source_bytes": 53522512,
+        "reads": 842953,
+        "writes": 587722,
+        "multi_page_writes": 294278,
+        "bytes": 30145441280,
+        "span_ns": 3599968976896
+      },
+      "baseline": {
+        "requests_completed": 1430675,
+        "simulated_finish_ns": 3599970631870,
+        "iops": 397.41296424322155,
+        "throughput_mib_s": 7.985879898841051,
+        "reads": {
+          "samples": 842953,
+          "mean_us": 193.00977030154704,
+          "p50_us": 108.674,
+          "p95_us": 216.976,
+          "p99_us": 1519.111,
+          "p99_9_us": 10140.094,
+          "max_us": 20438.618
+        },
+        "writes": {
+          "samples": 587722,
+          "mean_us": 2193.53903432235,
+          "p50_us": 1565.775,
+          "p95_us": 3614.734,
+          "p99_us": 11455.24,
+          "p99_9_us": 87416.535,
+          "max_us": 228004.242
+        },
+        "multi_page_writes": {
+          "samples": 294278,
+          "mean_us": 2652.7585866867385,
+          "p50_us": 1671.555,
+          "p95_us": 4357.204,
+          "p99_us": 12929.382,
+          "p99_9_us": 174573.538,
+          "max_us": 228004.242
+        },
+        "gc_executions": 5279,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 551,
+        "result_xml": "run/1619_0-baseline/w_1619_0_setsize4_reply_1.xml",
+        "run_log": "run/1619_0-baseline/run.log",
+        "latency_sample_directory": "run/1619_0-baseline/1619_0",
+        "wall_seconds": 20.089817201718688
+      },
+      "pacs": {
+        "requests_completed": 1430675,
+        "simulated_finish_ns": 3599970756870,
+        "iops": 397.4129504440482,
+        "throughput_mib_s": 7.985879621551302,
+        "reads": {
+          "samples": 842953,
+          "mean_us": 200.81286660822136,
+          "p50_us": 108.674,
+          "p95_us": 237.2,
+          "p99_us": 1555.419,
+          "p99_9_us": 10140.094,
+          "max_us": 20184.136
+        },
+        "writes": {
+          "samples": 587722,
+          "mean_us": 1904.1770420794185,
+          "p50_us": 1564.257,
+          "p95_us": 3146.834,
+          "p99_us": 7022.961,
+          "p99_9_us": 16607.596,
+          "max_us": 33317.381
+        },
+        "multi_page_writes": {
+          "samples": 294278,
+          "mean_us": 2132.440225456881,
+          "p50_us": 1659.267,
+          "p95_us": 3874.971,
+          "p99_us": 11462.632,
+          "p99_9_us": 21889.527,
+          "max_us": 33317.381
+        },
+        "gc_executions": 5278,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 351,
+        "result_xml": "run/1619_0-pacs/w_1619_0_setsize4_reply_1.xml",
+        "run_log": "run/1619_0-pacs/run.log",
+        "latency_sample_directory": "run/1619_0-pacs/1619_0",
+        "wall_seconds": 20.533154414966702,
+        "pacs": {
+          "Qualified_Program_Observations": 1300565,
+          "Discarded_Program_Observations": 95928,
+          "Ranked_Write_Allocations": 927071,
+          "Redirected_Write_Allocations": 507159,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 13.191558833249761,
+        "write_p95": 12.944244306773333,
+        "write_p99": 38.69215311071614,
+        "write_p99_9": 81.00176814374991,
+        "multi_page_write_p99": 11.344316379545438,
+        "multi_page_write_p99_9": 87.46114259310022,
+        "mean_read_latency": -4.042850418651467,
+        "read_p99": -2.390082094066859
+      }
+    },
+    "1620_2": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1620_2.csv",
+        "source_bytes": 43054957,
+        "reads": 794067,
+        "writes": 353097,
+        "multi_page_writes": 182758,
+        "bytes": 23840062464,
+        "span_ns": 3593135805952
+      },
+      "baseline": {
+        "requests_completed": 1147164,
+        "simulated_finish_ns": 3593138424723,
+        "iops": 319.26518391465436,
+        "throughput_mib_s": 6.327520007857816,
+        "reads": {
+          "samples": 794067,
+          "mean_us": 177.6673242509763,
+          "p50_us": 104.93,
+          "p95_us": 186.914,
+          "p99_us": 1411.341,
+          "p99_9_us": 10131.417,
+          "max_us": 20140.314
+        },
+        "writes": {
+          "samples": 353097,
+          "mean_us": 1967.339725698604,
+          "p50_us": 1561.555,
+          "p95_us": 3611.972,
+          "p99_us": 9966.161,
+          "p99_9_us": 14657.183,
+          "max_us": 33319.522
+        },
+        "multi_page_writes": {
+          "samples": 182758,
+          "mean_us": 2209.810060566432,
+          "p50_us": 1629.458,
+          "p95_us": 4371.976,
+          "p99_us": 11542.838,
+          "p99_9_us": 16728.678,
+          "max_us": 33319.522
+        },
+        "gc_executions": 4546,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 397,
+        "result_xml": "run/1620_2-baseline/w_1620_2_setsize4_reply_1.xml",
+        "run_log": "run/1620_2-baseline/run.log",
+        "latency_sample_directory": "run/1620_2-baseline/1620_2",
+        "wall_seconds": 15.694517947733402
+      },
+      "pacs": {
+        "requests_completed": 1147164,
+        "simulated_finish_ns": 3593138749723,
+        "iops": 319.26515503706514,
+        "throughput_mib_s": 6.327519435532575,
+        "reads": {
+          "samples": 794067,
+          "mean_us": 181.35623482275426,
+          "p50_us": 104.93,
+          "p95_us": 192.529,
+          "p99_us": 1440.771,
+          "p99_9_us": 10132.606,
+          "max_us": 20222.286
+        },
+        "writes": {
+          "samples": 353097,
+          "mean_us": 1906.2650727562116,
+          "p50_us": 1560.019,
+          "p95_us": 3241.574,
+          "p99_us": 8185.585,
+          "p99_9_us": 14039.436,
+          "max_us": 33790.709
+        },
+        "multi_page_writes": {
+          "samples": 182758,
+          "mean_us": 2124.755481461824,
+          "p50_us": 1619.981,
+          "p95_us": 4121.66,
+          "p99_us": 11470.024,
+          "p99_9_us": 15595.197,
+          "max_us": 33790.709
+        },
+        "gc_executions": 4526,
+        "gc_moved_pages": 0,
+        "page_program_amplification": 1.0,
+        "mean_write_transaction_wait_us": 384,
+        "result_xml": "run/1620_2-pacs/w_1620_2_setsize4_reply_1.xml",
+        "run_log": "run/1620_2-pacs/run.log",
+        "latency_sample_directory": "run/1620_2-pacs/1620_2",
+        "wall_seconds": 15.828270600177348,
+        "pacs": {
+          "Qualified_Program_Observations": 824910,
+          "Discarded_Program_Observations": 78464,
+          "Ranked_Write_Allocations": 550593,
+          "Redirected_Write_Allocations": 298559,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 3.1044283884779866,
+        "write_p95": 10.254730656826805,
+        "write_p99": 17.866217493375835,
+        "write_p99_9": 4.214636605137567,
+        "multi_page_write_p99": 0.6308154025899015,
+        "multi_page_write_p99_9": 6.7756758782732245,
+        "mean_read_latency": -2.076302205444902,
+        "read_p99": -2.0852508359071376
+      }
+    },
+    "1708_0": {
+      "trace": {
+        "source": "/home/HDD/abtrace/Trace/sortedTrace/1708_0.csv",
+        "source_bytes": 92512837,
+        "reads": 1984024,
+        "writes": 480257,
+        "multi_page_writes": 241410,
+        "bytes": 62142549504,
+        "span_ns": 3599931663104
+      },
+      "baseline": {
+        "requests_completed": 2464281,
+        "simulated_finish_ns": 3599931772723,
+        "iops": 684.5354733309321,
+        "throughput_mib_s": 16.46246572421606,
+        "reads": {
+          "samples": 1984024,
+          "mean_us": 533.5291747700633,
+          "p50_us": 99.362,
+          "p95_us": 192.912,
+          "p99_us": 1473.475,
+          "p99_9_us": 10140.094,
+          "max_us": 6250527.288
+        },
+        "writes": {
+          "samples": 480257,
+          "mean_us": 2450.0045014794164,
+          "p50_us": 1566.555,
+          "p95_us": 4096.075,
+          "p99_us": 12360.485,
+          "p99_9_us": 30487.958,
+          "max_us": 7360898.078
+        },
+        "multi_page_writes": {
+          "samples": 241410,
+          "mean_us": 2948.5119844579763,
+          "p50_us": 1677.421,
+          "p95_us": 5636.247,
+          "p99_us": 14798.339,
+          "p99_9_us": 37811.619,
+          "max_us": 6882622.8
+        },
+        "gc_executions": 10090,
+        "gc_moved_pages": 6651,
+        "page_program_amplification": 1.0052518909887154,
+        "mean_write_transaction_wait_us": 676,
+        "result_xml": "run/1708_0-baseline/w_1708_0_setsize4_reply_1.xml",
+        "run_log": "run/1708_0-baseline/run.log",
+        "latency_sample_directory": "run/1708_0-baseline/1708_0",
+        "wall_seconds": 37.8815857488662
+      },
+      "pacs": {
+        "requests_completed": 2464281,
+        "simulated_finish_ns": 3599931772723,
+        "iops": 684.5354733309321,
+        "throughput_mib_s": 16.46246572421606,
+        "reads": {
+          "samples": 1984024,
+          "mean_us": 185.739894632323,
+          "p50_us": 99.362,
+          "p95_us": 199.035,
+          "p99_us": 1483.115,
+          "p99_9_us": 10140.094,
+          "max_us": 339151.534
+        },
+        "writes": {
+          "samples": 480257,
+          "mean_us": 2053.390981901357,
+          "p50_us": 1566.555,
+          "p95_us": 3633.08,
+          "p99_us": 11555.126,
+          "p99_9_us": 24272.899,
+          "max_us": 162807.029
+        },
+        "multi_page_writes": {
+          "samples": 241410,
+          "mean_us": 2411.616801942753,
+          "p50_us": 1675.775,
+          "p95_us": 4805.141,
+          "p99_us": 13491.819,
+          "p99_9_us": 27155.014,
+          "max_us": 117118.221
+        },
+        "gc_executions": 10083,
+        "gc_moved_pages": 213,
+        "page_program_amplification": 1.0001681931710413,
+        "mean_write_transaction_wait_us": 512,
+        "result_xml": "run/1708_0-pacs/w_1708_0_setsize4_reply_1.xml",
+        "run_log": "run/1708_0-pacs/run.log",
+        "latency_sample_directory": "run/1708_0-pacs/1708_0",
+        "wall_seconds": 38.043137486092746,
+        "pacs": {
+          "Qualified_Program_Observations": 1111722,
+          "Discarded_Program_Observations": 154892,
+          "Ranked_Write_Allocations": 840602,
+          "Redirected_Write_Allocations": 462226,
+          "Outstanding_Programs_At_End": 0
+        }
+      },
+      "pacs_latency_reduction_percent": {
+        "mean_write_latency": 16.188277178207933,
+        "write_p95": 11.303381896083442,
+        "write_p99": 6.515593846034362,
+        "write_p99_9": 20.385291136913786,
+        "multi_page_write_p99": 8.828828694896096,
+        "multi_page_write_p99_9": 28.183413675039937,
+        "mean_read_latency": 65.18655334783297,
+        "read_p99": -0.6542357352517181
+      }
+    }
+  }
+}

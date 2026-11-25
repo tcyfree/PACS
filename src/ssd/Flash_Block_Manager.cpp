@@ -17,6 +17,20 @@ namespace SSD_Components
 	{
 	}
 
+	QSTR_MED* Flash_Block_Manager::Enable_qstr_med(const std::shared_ptr<const QSTR_MED::Profile>& profile,
+		unsigned int pages_per_wordline, std::vector<std::vector<QSTR_MED::Address>> stream_planes)
+	{
+		qstr_med.reset(new QSTR_MED(*this, profile, pages_per_wordline, std::move(stream_planes)));
+		return qstr_med.get();
+	}
+
+	Block_Pool_Slot_Type* Flash_Block_Manager::next_write_frontier(PlaneBookKeepingType& plane,
+		const QSTR_MED::Address& address, stream_id_type stream, QSTR_MED::Destination destination)
+	{
+		return qstr_med ? qstr_med->Take_frontier(stream, address, destination)
+			: plane.Get_a_free_block(stream, destination == QSTR_MED::Destination::MAPPING);
+	}
+
 	//void Flash_Block_Manager::Allocate_block_and_page_in_plane_for_user_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& page_address)
 	/*Inconsistency*/void Flash_Block_Manager::Allocate_block_and_page_in_plane_for_user_write(const stream_id_type stream_id, NVM::FlashMemory::Physical_Page_Address& page_address, LPA_type lpa)
 	{
@@ -41,7 +55,7 @@ namespace SSD_Components
 		//The current write frontier block is written to the end
 		if(plane_record->Data_wf[stream_id]->Current_page_write_index == pages_no_per_block) {
 			//Assign a new write frontier block
-			plane_record->Data_wf[stream_id] = plane_record->Get_a_free_block(stream_id, false);
+			plane_record->Data_wf[stream_id] = next_write_frontier(*plane_record, page_address, stream_id, QSTR_MED::Destination::HOST);
 			//if (page_address.ChannelID == 2 && page_address.ChipID == 1 && page_address.DieID == 0 && page_address.PlaneID == 1 && plane_record->Data_wf[stream_id]->BlockID == 0) {
 			//	std::cout << "取到该255块--user_write" << std::endl;
 			//}
@@ -86,6 +100,9 @@ namespace SSD_Components
 		//}
 
 		/*Inconsistency*/this->gc_and_wl_unit->flash_controller->Change_flash_page_status_for_preconditioning(page_address, lpa);
+		if (qstr_med) {
+			qstr_med->Observe_program(page_address);
+		}
 
 		/*if (page_address.ChannelID == 2 && page_address.ChipID == 1 && page_address.DieID == 0 && page_address.PlaneID == 1 && page_address.BlockID == 0 && page_address.PageID == 122) {
 			std::cout << "online-写第0块，122页，要checkgc" << std::endl;
@@ -96,7 +113,7 @@ namespace SSD_Components
 		//The current write frontier block is written to the end
 		if (plane_record->Data_wf[stream_id]->Current_page_write_index == pages_no_per_block) {
 			//Assign a new write frontier block
-			plane_record->Data_wf[stream_id] = plane_record->Get_a_free_block(stream_id, false);
+			plane_record->Data_wf[stream_id] = next_write_frontier(*plane_record, page_address, stream_id, QSTR_MED::Destination::HOST);
 			gc_and_wl_unit->Check_gc_required(plane_record->Get_free_block_pool_size(), page_address);
 		}
 
@@ -129,7 +146,7 @@ namespace SSD_Components
 		//The current write frontier block is written to the end
 		if (plane_record->GC_wf[stream_id]->Current_page_write_index == pages_no_per_block) {
 			//Assign a new write frontier block
-			plane_record->GC_wf[stream_id] = plane_record->Get_a_free_block(stream_id, false);
+			plane_record->GC_wf[stream_id] = next_write_frontier(*plane_record, page_address, stream_id, QSTR_MED::Destination::GC);
 
 			/*if (page_address.ChannelID == 1 && page_address.ChipID == 0 && page_address.DieID == 1 && page_address.PlaneID == 0 && plane_record->GC_wf[stream_id]->BlockID == 0) {
 				std::cout << "gc池选中了一个新的，第0块" << std::endl;
@@ -199,7 +216,7 @@ namespace SSD_Components
 		//The current write frontier block for translation pages is written to the end
 		if (plane_record->Translation_wf[streamID]->Current_page_write_index == pages_no_per_block) {
 			//Assign a new write frontier block
-			plane_record->Translation_wf[streamID] = plane_record->Get_a_free_block(streamID, true);
+			plane_record->Translation_wf[streamID] = next_write_frontier(*plane_record, page_address, streamID, QSTR_MED::Destination::MAPPING);
 			/*if (page_address.ChannelID == 2 && page_address.ChipID == 1 && page_address.DieID == 0 && page_address.PlaneID == 1 && plane_record->GC_wf[streamID]->BlockID == 0) {
 				std::cout << "取到该255块--translate_write" << std::endl;
 			}*/
@@ -246,6 +263,9 @@ namespace SSD_Components
 			std::cout << "擦除1|0|1|0|0块" << std::endl;
 		}*/
 
+		if (qstr_med) {
+			qstr_med->Clear_open_block_observations(block_address);
+		}
 		block->Erase();
 
 		Stats:: Block_erase_histogram[block_address.ChannelID][block_address.ChipID][block_address.DieID][block_address.PlaneID][block->Erase_count]++;

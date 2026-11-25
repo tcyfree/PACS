@@ -1,0 +1,51 @@
+{
+  "requests_completed": 1430675,
+  "reads": 842953,
+  "writes": 587722,
+  "single_page_writes": 385155,
+  "multi_page_writes": 202567,
+  "latency": {
+    "average_write_latency_ms": 13.968286864146654,
+    "average_read_latency_ms": 0.897812828126835,
+    "p95_write_latency_ms": 31.175922,
+    "p99_write_latency_ms": 319.004128,
+    "p999_write_latency_ms": 1235.691215,
+    "read_p99_latency_ms": 2.943013,
+    "single_page_write_p99_ms": 59.676981,
+    "single_page_write_p999_ms": 625.396091,
+    "multi_page_write_p99_ms": 591.72245,
+    "multi_page_write_p999_ms": 2021.287002
+  },
+  "simulated_duration_ns": 3599970857095,
+  "replay_throughput_mib_s": 7.985879399220395,
+  "gc_executions": 0,
+  "gc_moved_pages": 0,
+  "host_write_page_transactions": 998050,
+  "page_programs": 998050,
+  "page_program_amplification": 1.0,
+  "mean_write_transaction_wait_us": 21629,
+  "multiplane_commands": {
+    "Issued_Flash_Multiplane_Read_CMD": 0,
+    "Issued_Flash_Multiplane_Program_CMD": 0,
+    "Issued_Flash_Multiplane_Erase_CMD": 0,
+    "Issued_Flash_Multiplane_Copyback_Program_CMD": 0,
+    "Issued_Flash_Interleaved_Multiplane_Program_CMD": 0,
+    "Issued_Flash_Interleaved_Multiplane_Erase_CMD": 0
+  },
+  "policy_counters": {
+    "Profiled_Blocks": "0",
+    "Fast_Superblocks": "159",
+    "Slow_Superblocks": "0",
+    "Fully_Allocated_Superblocks": "158",
+    "Cancelled_Superblocks": "0",
+    "Local_Fallback_Allocations": "201",
+    "Hamming_Distance_Checks": "9540",
+    "Updated_Block_Signatures": "2728",
+    "Extra_Superblock_Program_Time_ns": "0",
+    "Extra_Superblock_Erase_Time_ns": "0"
+  },
+  "result_xml": "run/1619_0-qstr-med/w_1619_0_setsize4_reply_1.xml",
+  "log": "run/1619_0-qstr-med/run.log",
+  "latency_samples": "run/1619_0-qstr-med/1619_0",
+  "wall_seconds": 10.740176158957183
+}

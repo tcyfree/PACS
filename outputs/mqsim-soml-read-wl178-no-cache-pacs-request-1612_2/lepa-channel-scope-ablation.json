@@ -1,0 +1,108 @@
+{
+  "trace": "1612_2",
+  "settings": {
+    "flash_channels": 4,
+    "page_capacity_bytes": 16384,
+    "flash_technology": "TLC",
+    "wordline_timings": 256,
+    "device_data_caching": "TURNED_OFF",
+    "independent_wordline_multiplane": false
+  },
+  "tested_change": "Skip eligible dies whose channel differs from the CWDP target channel when the experiment flag is set.",
+  "verification": "Both cases use the same experimental binary and configuration. All-channels latency samples match the earlier LEPA replay byte for byte.",
+  "source_input": "/home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache-pacs-request-1612_2/experiment.json",
+  "simulator_sha256": "71b84403d28b9c315e7dfc847e9d7cee7db385638926ca8325e2cfe875d0c1a9",
+  "variants": {
+    "all-channels": {
+      "requests_completed": 3402545,
+      "page_programs": 1766328,
+      "gc_executions": 0,
+      "policy_counters": {
+        "Independent_Wordline_Multiplane": "false",
+        "Read_Unit_ns": "130000",
+        "Write_Time_Ratio": "11",
+        "Erase_Time_Ratio": "77",
+        "Write_Selections": "1766328",
+        "Die_Redirections": "601384",
+        "Outstanding_Reads": "0",
+        "Outstanding_Writes": "0",
+        "Outstanding_Erases": "0"
+      },
+      "replay_throughput_mib_s": 17.88054516529959,
+      "latency": {
+        "average_write_latency_ms": 37.46467053762228,
+        "average_read_latency_ms": 5.01048803124875,
+        "p95_write_latency_ms": 106.027615,
+        "p99_write_latency_ms": 959.758239,
+        "p999_write_latency_ms": 2338.282452,
+        "read_p99_latency_ms": 11.107182,
+        "single_page_write_p99_ms": 240.808263,
+        "single_page_write_p999_ms": 1428.552818,
+        "multi_page_write_p99_ms": 1445.084934,
+        "multi_page_write_p999_ms": 2605.739851
+      },
+      "mean_write_transaction_wait_us": 66292
+    },
+    "original-channel": {
+      "requests_completed": 3402545,
+      "page_programs": 1766328,
+      "gc_executions": 0,
+      "policy_counters": {
+        "Independent_Wordline_Multiplane": "false",
+        "Read_Unit_ns": "130000",
+        "Write_Time_Ratio": "11",
+        "Erase_Time_Ratio": "77",
+        "Write_Selections": "1766328",
+        "Die_Redirections": "303461",
+        "Outstanding_Reads": "0",
+        "Outstanding_Writes": "0",
+        "Outstanding_Erases": "0"
+      },
+      "replay_throughput_mib_s": 17.880544848668112,
+      "latency": {
+        "average_write_latency_ms": 44.400367231676775,
+        "average_read_latency_ms": 6.910680104835833,
+        "p95_write_latency_ms": 132.391941,
+        "p99_write_latency_ms": 1122.90159,
+        "p999_write_latency_ms": 2773.119458,
+        "read_p99_latency_ms": 89.49474,
+        "single_page_write_p99_ms": 253.582784,
+        "single_page_write_p999_ms": 1471.122073,
+        "multi_page_write_p99_ms": 1660.938401,
+        "multi_page_write_p999_ms": 3196.909677
+      },
+      "mean_write_transaction_wait_us": 58603
+    }
+  },
+  "die_redirection_fraction": {
+    "original-channel": 0.17180331172919186,
+    "all-channels": 0.3404713054427037
+  },
+  "original_channel_vs_all_channels_percent": {
+    "average_write_latency_ms": 18.512632286702257,
+    "average_read_latency_ms": 37.92429124141632,
+    "p95_write_latency_ms": 24.865527721245083,
+    "p99_write_latency_ms": 16.99837983886272,
+    "p999_write_latency_ms": 18.596427716765863,
+    "read_p99_latency_ms": 705.737584924781,
+    "single_page_write_p99_ms": 5.304851603036553,
+    "single_page_write_p999_ms": 2.9798866701756133,
+    "multi_page_write_p99_ms": 14.937078224358547,
+    "multi_page_write_p999_ms": 22.687215908108715
+  },
+  "experiment_environment": {
+    "all-channels": {},
+    "original-channel": {
+      "PACS_LEPA_SCOPE_ORIGINAL_CHANNEL": "1"
+    }
+  },
+  "source_patch": "--- a/src/ssd/Address_Mapping_Unit_Page_Level.cpp\n+++ b/src/ssd/Address_Mapping_Unit_Page_Level.cpp\n@@ -1,3 +1,4 @@\n+#include <cstdlib>\n #include <cmath>\n #include <assert.h>\n #include <stdexcept>\n@@ -1510,7 +1511,11 @@\n \t\tauto static_target = original;\n \t\tauto best_load = std::numeric_limits<uint64_t>::max();\n \t\tauto static_load = best_load;\n+\t\tstatic const bool original_channel_only = std::getenv(\"PACS_LEPA_SCOPE_ORIGINAL_CHANNEL\") != nullptr;\n \t\tfor (unsigned int c = 0; c < domain.Channel_no; ++c) {\n+\t\t\tif (original_channel_only && domain.Channel_ids[c] != original.ChannelID) {\n+\t\t\t\tcontinue;\n+\t\t\t}\n \t\t\tfor (unsigned int w = 0; w < domain.Chip_no; ++w) {\n \t\t\t\tfor (unsigned int d = 0; d < domain.Die_no; ++d) {\n \t\t\t\t\tPhysical_Page_Address candidate(domain.Channel_ids[c], domain.Chip_ids[w], domain.Die_ids[d], 0, 0, 0);\n",
+  "change_as_percent_of_original_gap_to_request_level_pacs": {
+    "multi_page_write_p99_ms": 83.99183613243906,
+    "multi_page_write_p999_ms": 93.34394874940911
+  },
+  "closed_scope_reference": {
+    "policy": "pacs-request",
+    "metrics": "metrics.json"
+  }
+}

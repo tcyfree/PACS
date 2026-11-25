@@ -38,6 +38,9 @@ namespace SSD_Components
 		bool Suspended;
 		sim_time_type Expected_finish_time;
 		sim_time_type Program_observation_start = INVALID_TIME;
+		sim_time_type PACS_program_start = T0;
+		std::array<sim_time_type, 3> PACS_queued_programs{};
+		sim_time_type PACS_queued_transfer_and_other_execution = 0;
 		sim_time_type RemainingExecTime;
 		sim_time_type DieInterleavedTime;//If the command transfer is done in die-interleaved mode, the transfer time is recorded in this temporary variable
 
@@ -97,8 +100,17 @@ namespace SSD_Components
 	public:
 		NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 			unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
-			bool pacs_enabled = false);
+			bool pacs_enabled = false, bool pacs_request_level = false);
 		PACS* Get_pacs() const { return pacs.get(); }
+		struct PACS_Read_Timing {
+			sim_time_type command, execution, data_out;
+		};
+		void Update_pacs_queue(const NVM_Transaction_Flash& transaction, bool enqueue);
+		double Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address) const;
+		sim_time_type Estimate_pacs_channel_ready(flash_channel_ID_type channel) const;
+		double Estimate_pacs_program(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
+		sim_time_type Estimate_pacs_write_transfer(flash_channel_ID_type channel, unsigned int bytes) const;
+		PACS_Read_Timing Estimate_pacs_read(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int bytes) const;
 		void Setup_triggers();
 		void Validate_simulation_config();
 		void Start_simulation();

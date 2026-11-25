@@ -1,0 +1,20 @@
+<MQSim_IO_Scenarios>
+	<IO_Scenario>				
+		<IO_Flow_Parameter_Set_Trace_Based>
+			<Priority_Class>HIGH</Priority_Class>
+			<Device_Level_Data_Caching_Mode>TURNED_OFF</Device_Level_Data_Caching_Mode>
+			<Channel_IDs>0,1,2,3</Channel_IDs>
+			<Chip_IDs>0,1</Chip_IDs>
+			<Die_IDs>0</Die_IDs>
+			<Plane_IDs>0,1</Plane_IDs>
+			<Initial_Occupancy_Percentage>50</Initial_Occupancy_Percentage>
+			<File_Path>/home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/src2_2.csv</File_Path>
+			<Percentage_To_Be_Executed>100</Percentage_To_Be_Executed>	
+			<Relay_Count>1</Relay_Count>
+			<Total_requests_to_server>1793288461</Total_requests_to_server>
+			<Choose_type>0</Choose_type>
+			<Turn_on>1</Turn_on>
+			<Time_Unit>NANOSECOND</Time_Unit>		
+		</IO_Flow_Parameter_Set_Trace_Based>
+	</IO_Scenario>
+</MQSim_IO_Scenarios>

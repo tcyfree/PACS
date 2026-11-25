@@ -9,6 +9,9 @@
 	</Host_Parameter_Set>
 	<Device_Parameter_Set>
 		<PACS_Enabled>false</PACS_Enabled>
+		<LEPA_Enabled>false</LEPA_Enabled>
+		<QSTR_MED_Enabled>false</QSTR_MED_Enabled>
+		<Independent_Wordline_Multiplane>false</Independent_Wordline_Multiplane>
 		<Seed>321</Seed>
 		<Enabled_Preconditioning>true</Enabled_Preconditioning>		 <!--预处理开关-->
 		<Memory_Type>FLASH</Memory_Type>		 <!--存储类型-->

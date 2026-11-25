@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <ctime>
 #include <cmath>
+#include <memory>
 #include <numeric>
 #include "SSD_Device.h"
 #include "../ssd/ONFI_Channel_Base.h"
@@ -34,9 +35,22 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 	{
 	case NVM::NVM_Type::FLASH:
 	{
-		if (parameters->PACS_Enabled && (parameters->Address_Mapping != SSD_Components::Flash_Address_Mapping_Type::PAGE_LEVEL
+		const unsigned int policies = parameters->PACS_Enabled + parameters->LEPA_Enabled + parameters->QSTR_MED_Enabled;
+		if (policies > 1) {
+			throw std::invalid_argument("Enable only one of PACS, LEPA and QSTR-MED");
+		}
+		if (parameters->PACS_Request_Level_Enabled
+			&& (!parameters->PACS_Enabled || parameters->Independent_Wordline_Multiplane
+				|| parameters->Flash_Parameters.CMD_Suspension_Support != NVM::FlashMemory::Command_Suspension_Mode::NONE)) {
+			throw std::invalid_argument("Request-level allocation requires PACS with single-plane commands and no command suspension");
+		}
+		if (policies && (parameters->Address_Mapping != SSD_Components::Flash_Address_Mapping_Type::PAGE_LEVEL
 			|| parameters->Plane_Allocation_Scheme != SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP)) {
-			throw std::invalid_argument("PACS requires page-level mapping with CWDP striping");
+			throw std::invalid_argument("PACS, LEPA and QSTR-MED require page-level mapping with CWDP striping");
+		}
+		if ((parameters->LEPA_Enabled || parameters->QSTR_MED_Enabled)
+			&& parameters->Transaction_Scheduling_Policy != SSD_Components::Flash_Scheduling_Type::PRIORITY_OUT_OF_ORDER) {
+			throw std::invalid_argument("LEPA and QSTR-MED with CWDP require the priority out-of-order scheduler in this MQSim");
 		}
 
 		sim_time_type *read_latencies, *write_latencies;
@@ -84,6 +98,16 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 				wordline_program_latencies.begin(), wordline_program_latencies.end(), 0.0L) / wordline_program_latencies.size());
 			PRINT_MESSAGE("Using program latencies for " << wordline_program_latencies.size() << " wordlines")
 		}
+		using NVM::FlashMemory::Block_Latency_Profile;
+		std::shared_ptr<const Block_Latency_Profile> block_profiles;
+		const auto& profile_file = parameters->Flash_Parameters.Block_Latency_Profile_File;
+		if (parameters->QSTR_MED_Enabled || !profile_file.empty()) {
+			block_profiles = std::make_shared<Block_Latency_Profile>(parameters->Flash_Channel_Count,
+				parameters->Chip_No_Per_Channel, parameters->Flash_Parameters.Die_No_Per_Chip,
+				parameters->Flash_Parameters.Plane_No_Per_Die, parameters->Flash_Parameters.Block_No_Per_Plane,
+				wordline_program_latencies, parameters->Flash_Parameters.Block_Erase_Latency, profile_file);
+			PRINT_MESSAGE("Loaded " << block_profiles->Override_count() << " per-block NAND latency profiles")
+		}
 
 		//Step 2: create memory channels to connect chips to the controller
 		this->Channel_count = parameters->Flash_Channel_Count;
@@ -103,10 +127,14 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 																		parameters->Flash_Parameters.Block_No_Per_Plane, parameters->Flash_Parameters.Page_No_Per_Block,
 																read_latencies, write_latencies, wordline_program_latencies, parameters->Flash_Parameters.Block_Erase_Latency,
 																		parameters->Flash_Parameters.Suspend_Program_Time, parameters->Flash_Parameters.Suspend_Erase_Time);
+					if (block_profiles) {
+						chips[chip_cntr]->Set_block_latency_profile(block_profiles);
+					}
 					Simulator->AddObject(chips[chip_cntr]); //Each simulation object (a child of MQSimEngine::Sim_Object) should be added to the engine
 				}
 				channels[channel_cntr] = new SSD_Components::ONFI_Channel_NVDDR2(channel_cntr, parameters->Chip_No_Per_Channel,
 																				 chips, parameters->Flash_Channel_Width,
+																				 parameters->Flash_Parameters.Plane_No_Per_Die,
 																				 (sim_time_type)((double)1000 / parameters->Channel_Transfer_Rate) * 2, (sim_time_type)((double)1000 / parameters->Channel_Transfer_Rate) * 2);
 				device->Channels.push_back(channels[channel_cntr]); //Channels should not be added to the simulator core, they are passive object that do not handle any simulation event
 			}
@@ -114,7 +142,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 			//Step 3: create channel controller and connect channels to it
 			device->PHY = new SSD_Components::NVM_PHY_ONFI_NVDDR2(device->ID() + ".PHY", channels, parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
 																 parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
-																 parameters->PACS_Enabled);
+																 parameters->PACS_Enabled, parameters->PACS_Request_Level_Enabled);
 			Simulator->AddObject(device->PHY);
 			break;
 		}
@@ -193,6 +221,11 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		}
 		Simulator->AddObject(tsu);
 		ftl->TSU = tsu;
+		tsu->Set_independent_wordline_multiplane(parameters->Independent_Wordline_Multiplane);
+		if (parameters->LEPA_Enabled) {
+			tsu->Enable_lepa(average_flash_read_latency, average_flash_write_latency,
+				parameters->Flash_Parameters.Block_Erase_Latency);
+		}
 
 		//Step 6: create Flash_Block_Manager
 		//SSD_Components::Flash_Block_Manager_Base *fbm;
@@ -281,6 +314,24 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 																					 flow_channel_id_assignments, flow_chip_id_assignments, flow_die_id_assignments, flow_plane_id_assignments,
 																					 parameters->Flash_Parameters.Block_No_Per_Plane, parameters->Flash_Parameters.Page_No_Per_Block,
 																					 parameters->Flash_Parameters.Page_Capacity / SECTOR_SIZE_IN_BYTE, parameters->Overprovisioning_Ratio);
+		if (parameters->QSTR_MED_Enabled) {
+			using SSD_Components::QSTR_MED;
+			std::vector<std::vector<QSTR_MED::Address>> stream_planes(stream_count);
+			for (unsigned int stream = 0; stream < stream_count; ++stream) {
+				for (const auto channel : flow_channel_id_assignments[stream]) {
+					for (const auto chip : flow_chip_id_assignments[stream]) {
+						for (const auto die : flow_die_id_assignments[stream]) {
+							for (const auto plane : flow_plane_id_assignments[stream]) {
+								stream_planes[stream].emplace_back(channel, chip, die, plane, 0, 0);
+							}
+						}
+					}
+				}
+			}
+			const auto pages_per_wordline = static_cast<unsigned int>(parameters->Flash_Parameters.Flash_Technology);
+			tsu->Set_qstr_med(static_cast<SSD_Components::Flash_Block_Manager*>(fbm)->Enable_qstr_med(
+				block_profiles, pages_per_wordline, std::move(stream_planes)));
+		}
 		switch (parameters->Address_Mapping)
 		{
 		case SSD_Components::Flash_Address_Mapping_Type::PAGE_LEVEL:
@@ -454,6 +505,12 @@ void SSD_Device::Report_results_in_XML(std::string name_prefix, Utils::XmlWriter
 		((SSD_Components::FTL *)this->Firmware)->TSU->Report_results_in_XML(ID(), xmlwriter);
 		if (const auto* pacs = static_cast<SSD_Components::NVM_PHY_ONFI_NVDDR2*>(PHY)->Get_pacs()) {
 			pacs->Report_results_in_XML(xmlwriter);
+		}
+		if (const auto* lepa = static_cast<SSD_Components::FTL*>(Firmware)->TSU->Get_lepa()) {
+			lepa->Report_results_in_XML(xmlwriter);
+		}
+		if (const auto* qstr_med = static_cast<SSD_Components::FTL*>(Firmware)->TSU->Get_qstr_med()) {
+			qstr_med->Report_results_in_XML(xmlwriter);
 		}
 		/*****************??****************/
 		unsigned int Die_no_per_chip = SSD_Components::Stats::Die_no_per_Chip;

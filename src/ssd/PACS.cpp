@@ -4,8 +4,8 @@
 
 namespace SSD_Components
 {
-	PACS::PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip)
-		: chips_per_channel(chips_per_channel), dies_per_chip(dies_per_chip),
+	PACS::PACS(unsigned int channels, unsigned int chips_per_channel, unsigned int dies_per_chip, bool request_level)
+		: chips_per_channel(chips_per_channel), dies_per_chip(dies_per_chip), request_level(request_level),
 		dies(static_cast<std::size_t>(channels) * chips_per_channel * dies_per_chip)
 	{
 	}
@@ -52,15 +52,26 @@ namespace SSD_Components
 
 	double PACS::Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
 	{
-		const auto& die = dies[die_index(address)];
-		const auto& profile = die.profiles[page_type];
-		return profile.samples >= minimum_samples ? (1.0 + die.outstanding_programs) * profile.estimated_latency : 0;
+		return (1.0 + dies[die_index(address)].outstanding_programs) * Estimate_program_latency(address, page_type);
+	}
+
+	double PACS::Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
+	{
+		const auto& profile = dies[die_index(address)].profiles[page_type];
+		return profile.samples >= minimum_samples ? profile.estimated_latency : 0;
 	}
 
 	void PACS::Record_ranked_allocation(bool redirected)
 	{
 		++ranked_allocations;
 		redirected_allocations += redirected;
+	}
+
+	void PACS::Record_request_plan(std::size_t redirected_pages)
+	{
+		++planned_requests;
+		redirected_requests += redirected_pages != 0;
+		redirected_request_pages += redirected_pages;
 	}
 
 	void PACS::Report_results_in_XML(Utils::XmlWriter& xmlwriter) const
@@ -78,6 +89,11 @@ namespace SSD_Components
 		xmlwriter.Write_attribute_string("Ranked_Write_Allocations", std::to_string(ranked_allocations));
 		xmlwriter.Write_attribute_string("Redirected_Write_Allocations", std::to_string(redirected_allocations));
 		xmlwriter.Write_attribute_string("Outstanding_Programs_At_End", std::to_string(outstanding_programs));
+		if (request_level) {
+			xmlwriter.Write_attribute_string("Planned_Multipage_Write_Requests", std::to_string(planned_requests));
+			xmlwriter.Write_attribute_string("Redirected_Multipage_Write_Requests", std::to_string(redirected_requests));
+			xmlwriter.Write_attribute_string("Redirected_Multipage_Write_Pages", std::to_string(redirected_request_pages));
+		}
 		for (unsigned int page_type = 0; page_type < max_page_types; ++page_type) {
 			std::vector<double> estimates;
 			for (const auto& die : dies) {

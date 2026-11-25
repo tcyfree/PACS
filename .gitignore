@@ -1,1 +1,9 @@
 MQSim
+/outputs/**/MQSim-lepa
+
+Micron_B47R_TLC_40C_All_Wordlines.xlsx
+
+/outputs/**/sortedTrace/
+/outputs/**/*_latency_*.csv
+/outputs/**/*.png
+/outputs/**/*.pdf

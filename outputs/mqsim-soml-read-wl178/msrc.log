@@ -1,0 +1,26 @@
+hm_0 prepared: 1,417,748 reads, 2,575,568 writes
+hm_0 baseline running
+hm_0 pacs running
+proj_3 prepared: 2,128,303 reads, 116,341 writes
+proj_3 baseline running
+proj_3 pacs running
+web_0 prepared: 606,487 reads, 1,423,458 writes
+src2_2 prepared: 350,930 reads, 805,955 writes
+mds_0 prepared: 143,973 reads, 1,067,061 writes
+proj_3 baseline verified, 2,244,644 requests in 9.1 s
+web_0 baseline running
+proj_3 pacs verified, 2,244,644 requests in 9.6 s
+web_0 pacs running
+hm_0 pacs verified, 3,993,316 requests in 12.9 s
+src2_2 baseline running
+hm_0 baseline verified, 3,993,316 requests in 15.6 s
+src2_2 pacs running
+web_0 baseline verified, 2,029,945 requests in 9.9 s
+mds_0 baseline running
+web_0 pacs verified, 2,029,945 requests in 10.5 s
+mds_0 pacs running
+mds_0 baseline verified, 1,211,034 requests in 4.1 s
+mds_0 pacs verified, 1,211,034 requests in 3.4 s
+src2_2 baseline verified, 1,156,885 requests in 21.0 s
+src2_2 pacs verified, 1,156,885 requests in 21.5 s
+Wrote /home/network/Desktop/Project/PACS/outputs/mqsim-soml-read-wl178/msrc/comparison.json

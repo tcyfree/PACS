@@ -1,0 +1,33 @@
+{
+  "binary_sha256": "bcd1c44ed90502626cdddb0207246a7c205a95a6fddd5e6004675912c6ec770d",
+  "config_sha256": "5ed07d0238c544f3f3763f4106ba1cb7cc9a03c4a015505b46d0c19bee4ade5a",
+  "workload_sha256": "b70f258a36105657a0188d13c32942c0ea95c1bc63e42b9bdf0fb1149f81d776",
+  "sources": {
+    "hm_0": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/hm_0.csv",
+      "size": 134128220,
+      "mtime_ns": 1698486662000000000
+    },
+    "mds_0": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/mds_0.csv",
+      "size": 41394310,
+      "mtime_ns": 1625194908000000000
+    },
+    "proj_3": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/proj_3.csv",
+      "size": 80507862,
+      "mtime_ns": 1625195364000000000
+    },
+    "src2_2": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/src2_2.csv",
+      "size": 41614435,
+      "mtime_ns": 1625196072000000000
+    },
+    "web_0": {
+      "path": "/home/HDD/abtrace/Trace/sortedTrace/web_0.csv",
+      "size": 68361889,
+      "mtime_ns": 1597644622000000000
+    }
+  },
+  "timestamp_scale_ns": 100
+}
