@@ -1288,6 +1288,7 @@ namespace SSD_Components
 		const auto stream = first->Stream_id;
 		auto& domain = *domains[stream];
 		const bool cross_channel = pacs->Cross_channel_enabled() && domain.Channel_no > 1;
+		const bool online_profiling = pacs->Uses_online_program_profiling();
 		if (domain.PlaneAllocationScheme != Flash_Plane_Allocation_Scheme_Type::CWDP
 			|| (domain.Chip_no < 2 && !cross_channel)) {
 			return {};
@@ -1354,17 +1355,20 @@ namespace SSD_Components
 			}
 		}
 		auto frontier = initial_frontier;
-		const auto next_page_type = [&](const Physical_Page_Address& address) {
+		const auto take_next_page = [&](const Physical_Page_Address& address) {
 			auto& next_page = frontier[plane_index(address)];
-			const auto type = flash_controller->Get_chip(address.ChannelID, address.ChipID)->Get_page_type(next_page);
+			const auto page_id = next_page;
 			next_page = (next_page + 1) % pages_no_per_block;
-			return type;
+			return page_id;
+		};
+		const auto page_type_at = [this](const Physical_Page_Address& address, flash_page_ID_type page_id) {
+			return flash_controller->Get_chip(address.ChannelID, address.ChipID)->Get_page_type(page_id);
 		};
 		for (auto& page : pages) {
 			if (blocked[plane_index(page.original)]) {
 				return {};
 			}
-			page.reference_type = next_page_type(page.original);
+			page.reference_type = page_type_at(page.original, take_next_page(page.original));
 		}
 
 		enum class Pending { READ_COMMAND, READ_DATA_OUT, PROGRAM, DONE };
@@ -1377,13 +1381,14 @@ namespace SSD_Components
 			channel_ready = initial_channel_ready;
 			std::fill(data_ready.begin(), data_ready.end(), 0.0);
 			for (std::size_t i = 0; i < pages.size(); ++i) {
-				const auto type = next_page_type(plan[i]);
+				const auto page_id = take_next_page(plan[i]);
+				const auto type = page_type_at(plan[i], page_id);
 				const auto& original = pages[i].original;
 				if ((plan[i].ChannelID != original.ChannelID || plan[i].ChipID != original.ChipID)
-					&& (type != pages[i].reference_type || pacs->Estimate_program_latency(plan[i], type) == 0)) {
+					&& (type != pages[i].reference_type || (online_profiling && pacs->Estimate_program_latency(plan[i], type) == 0))) {
 					return impossible;
 				}
-				program_times[i] = phy->Estimate_pacs_program(plan[i], type);
+				program_times[i] = phy->Estimate_pacs_page_program(plan[i], page_id);
 				pending[i] = pages[i].read.command ? Pending::READ_COMMAND : Pending::PROGRAM;
 			}
 
@@ -1447,7 +1452,7 @@ namespace SSD_Components
 		std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) { return finish[a] > finish[b]; });
 		for (const auto i : order) {
 			const auto& page = pages[i];
-			if (pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
+			if (online_profiling && pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
 				continue;
 			}
 			auto best_chip = page.original.ChipID;
@@ -1499,6 +1504,14 @@ namespace SSD_Components
 			std::size_t best_crossed_pages = 0;
 			best_finish = local_finish;
 			if (target_finish > 0) {
+				const auto page_after_prefix = [&](const Physical_Page_Address& address, std::size_t i) {
+					const auto lane = plane_index(address);
+					std::size_t next_page = initial_frontier[lane];
+					for (std::size_t earlier = 0; earlier < i; ++earlier) {
+						next_page += plane_index(plan[earlier]) == lane;
+					}
+					return static_cast<flash_page_ID_type>(next_page % pages_no_per_block);
+				};
 				for (auto& critical : critical_pages) {
 					const auto i = critical.index;
 					const auto& page = pages[i];
@@ -1508,18 +1521,16 @@ namespace SSD_Components
 							+ phy->Estimate_pacs_write_transfer(address.ChannelID, page.write_bytes) + program_time;
 					};
 					critical.candidates.push_back({local_address, candidate_time(local_address, program_times[i]), false});
-					if (pacs->Estimate_program_latency(page.original, page.reference_type) > 0) {
-						for (unsigned int c = 0; c < domain.Channel_no; ++c) {
-							const auto channel = domain.Channel_ids[c];
-							if (channel == local_address.ChannelID) {
-								continue;
-							}
-							for (unsigned int w = 0; w < domain.Chip_no; ++w) {
-								const Physical_Page_Address address(channel, domain.Chip_ids[w], local_address.DieID, local_address.PlaneID);
-								const double program = pacs->Estimate_program_latency(address, page.reference_type);
-								if (!blocked[plane_index(address)] && program > 0) {
-									critical.candidates.push_back({address, candidate_time(address, program), true});
-								}
+					for (unsigned int c = 0; c < domain.Channel_no; ++c) {
+						const auto channel = domain.Channel_ids[c];
+						if (channel == local_address.ChannelID) {
+							continue;
+						}
+						for (unsigned int w = 0; w < domain.Chip_no; ++w) {
+							const Physical_Page_Address address(channel, domain.Chip_ids[w], local_address.DieID, local_address.PlaneID);
+							if (!blocked[plane_index(address)]) {
+								const double program = phy->Estimate_pacs_page_program(address, page_after_prefix(address, i));
+								critical.candidates.push_back({address, candidate_time(address, program), true});
 							}
 						}
 					}
@@ -1555,17 +1566,10 @@ namespace SSD_Components
 						if (exhausted) {
 							break;
 						}
-						if (candidate.crosses_channel) {
-							// The earlier placements are fixed in this prefix and determine the page type.
-							const auto lane = plane_index(candidate.address);
-							std::size_t next_page = initial_frontier[lane];
-							for (std::size_t earlier = 0; earlier < i; ++earlier) {
-								next_page += plane_index(plan[earlier]) == lane;
-							}
-							const auto* chip = flash_controller->Get_chip(candidate.address.ChannelID, candidate.address.ChipID);
-							if (chip->Get_page_type(next_page % pages_no_per_block) != pages[i].reference_type) {
-								continue;
-							}
+						// Earlier placements determine the next page type on a candidate plane.
+						if (candidate.crosses_channel
+							&& page_type_at(candidate.address, page_after_prefix(candidate.address, i)) != pages[i].reference_type) {
+							continue;
 						}
 						plan[i] = candidate.address;
 						search(position + 1, crossed_pages + candidate.crosses_channel);
@@ -1627,12 +1631,21 @@ namespace SSD_Components
 			}
 		}
 
-		const auto page_type = [this, transaction](const NVM::FlashMemory::Physical_Page_Address& address) {
+		const auto next_page = [this, transaction](const Physical_Page_Address& address) {
 			const auto* frontier = block_manager->Get_plane_bookkeeping_entry(address)->Data_wf[transaction->Stream_id];
-			return flash_controller->Get_chip(address.ChannelID, address.ChipID)->Get_page_type(frontier->Current_page_write_index);
+			return frontier->Current_page_write_index;
 		};
-		const unsigned int baseline_page_type = page_type(baseline);
-		double best_cost = pacs->Estimate_completion_cost(baseline, baseline_page_type);
+		const auto page_type_at = [this](const Physical_Page_Address& address, flash_page_ID_type page_id) {
+			return flash_controller->Get_chip(address.ChannelID, address.ChipID)->Get_page_type(page_id);
+		};
+		const auto* phy = static_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller);
+		const auto baseline_page_id = next_page(baseline);
+		const auto baseline_page_type = page_type_at(baseline, baseline_page_id);
+		const auto estimate_cost = [&](const Physical_Page_Address& address, flash_page_ID_type page_id) {
+			return pacs->Uses_online_program_profiling() ? pacs->Estimate_completion_cost(address, baseline_page_type)
+				: pacs->Estimate_completion_cost(address, phy->Estimate_pacs_page_program(address, page_id));
+		};
+		double best_cost = estimate_cost(baseline, baseline_page_id);
 		if (best_cost == 0) {
 			return;
 		}
@@ -1645,10 +1658,14 @@ namespace SSD_Components
 				continue;
 			}
 			const NVM::FlashMemory::Physical_Page_Address candidate(baseline.ChannelID, chip, baseline.DieID, baseline.PlaneID, 0, 0);
-			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(candidate) || page_type(candidate) != baseline_page_type) {
+			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(candidate)) {
 				continue;
 			}
-			const double cost = pacs->Estimate_completion_cost(candidate, baseline_page_type);
+			const auto candidate_page_id = next_page(candidate);
+			if (page_type_at(candidate, candidate_page_id) != baseline_page_type) {
+				continue;
+			}
+			const double cost = estimate_cost(candidate, candidate_page_id);
 			if (cost == 0) {
 				return;
 			}

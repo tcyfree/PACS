@@ -134,11 +134,19 @@ namespace SSD_Components {
 			NVDDR2DataOutTransferTime(bytes, channel)};
 	}
 
-	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_program(
+	double NVM_PHY_ONFI_NVDDR2::estimate_pacs_program_for_type(
 		const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
 	{
 		const auto learned = pacs->Estimate_program_latency(address, page_type);
 		return learned > 0 ? learned : channels[address.ChannelID]->Chips[address.ChipID]->Get_nominal_program_latency(page_type);
+	}
+
+	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_page_program(
+		const NVM::FlashMemory::Physical_Page_Address& address, flash_page_ID_type page_id) const
+	{
+		const auto* chip = channels[address.ChannelID]->Chips[address.ChipID];
+		return pacs->Uses_online_program_profiling() ? estimate_pacs_program_for_type(address, chip->Get_page_type(page_id))
+			: chip->Get_configured_program_latency(page_id);
 	}
 
 	void NVM_PHY_ONFI_NVDDR2::Update_pacs_queue(const NVM_Transaction_Flash& transaction, bool enqueue)
@@ -161,11 +169,15 @@ namespace SSD_Components {
 				break;
 			}
 			case Transaction_Type::WRITE:
-				update(die.PACS_queued_programs[chip->Get_page_type(address.PageID)], 1);
 				if (static_cast<const NVM_Transaction_Flash_WR&>(transaction).ExecutionMode == WriteExecutionModeType::COPYBACK) {
 					work = channel->ReadCommandTime[1] + chip->Get_read_latency(address.PageID) + channel->ProgramCommandTime[1];
 				} else {
 					work = Estimate_pacs_write_transfer(address.ChannelID, transaction.Data_and_metadata_size_in_byte);
+				}
+				if (pacs->Uses_online_program_profiling()) {
+					update(die.PACS_queued_programs[chip->Get_page_type(address.PageID)], 1);
+				} else {
+					work += chip->Get_configured_program_latency(address.PageID);
 				}
 				break;
 			case Transaction_Type::ERASE:
@@ -174,7 +186,7 @@ namespace SSD_Components {
 			default:
 				throw std::logic_error("Unexpected transaction type in PACS");
 		}
-		update(die.PACS_queued_transfer_and_other_execution, work);
+		update(die.PACS_queued_fixed_work, work);
 	}
 
 	sim_time_type NVM_PHY_ONFI_NVDDR2::Estimate_pacs_channel_ready(flash_channel_ID_type channel) const
@@ -193,10 +205,10 @@ namespace SSD_Components {
 	{
 		const auto& chip = bookKeepingTable[address.ChannelID][address.ChipID];
 		const auto& die = chip.Die_book_keeping_records[address.DieID];
-		double remaining = die.PACS_queued_transfer_and_other_execution;
+		double remaining = die.PACS_queued_fixed_work;
 		for (unsigned int type = 0; type < die.PACS_queued_programs.size(); ++type) {
 			if (die.PACS_queued_programs[type]) {
-				remaining += die.PACS_queued_programs[type] * Estimate_pacs_program(address, type);
+				remaining += die.PACS_queued_programs[type] * estimate_pacs_program_for_type(address, type);
 			}
 		}
 		if (die.Free) {
@@ -206,9 +218,7 @@ namespace SSD_Components {
 		const auto* command = die.ActiveCommand;
 		if (command->CommandCode == CMD_PROGRAM_PAGE || command->CommandCode == CMD_PROGRAM_PAGE_COPYBACK) {
 			const auto& active = command->Address.front();
-			const auto type = channels[active.ChannelID]->Chips[active.ChipID]->Get_page_type(active.PageID);
-			// Estimate the outstanding array time from the issue time and learned page class.
-			return remaining + std::max(0.0, double(die.PACS_program_start) - now + Estimate_pacs_program(active, type));
+			return remaining + std::max(0.0, double(die.PACS_program_start) - now + Estimate_pacs_page_program(active, active.PageID));
 		}
 		const auto array_remaining = std::max(die.Expected_finish_time, now) - now;
 		if (command->CommandCode == CMD_READ_PAGE) {
@@ -221,9 +231,8 @@ namespace SSD_Components {
 		}
 		if (command->CommandCode == CMD_READ_PAGE_COPYBACK) {
 			const auto& active = command->Address.front();
-			const auto* flash = channels[active.ChannelID]->Chips[active.ChipID];
 			return remaining + array_remaining + channels[active.ChannelID]->ProgramCommandTime[1]
-				+ Estimate_pacs_program(active, flash->Get_page_type(active.PageID));
+				+ Estimate_pacs_page_program(active, active.PageID);
 		}
 		return remaining + array_remaining;
 	}
@@ -274,7 +283,7 @@ namespace SSD_Components {
 			PRINT_ERROR("Bus " << target_channel->ChannelID << ": starting communication on a busy flash channel!");
 		}
 
-		if (pacs) {
+		if (pacs && pacs->Uses_online_program_profiling()) {
 			// A new command on this chip can overlap or suspend a program already being observed.
 			for (unsigned int die_id = 0; die_id < die_no_per_chip; ++die_id) {
 				chipBKE->Die_book_keeping_records[die_id].Program_observation_start = INVALID_TIME;
@@ -526,7 +535,8 @@ namespace SSD_Components {
 			case NVDDR2_SimEventType::PROGRAM_CMD_ADDR_DATA_TRANSFERRED:
 			case NVDDR2_SimEventType::PROGRAM_COPYBACK_CMD_ADDR_TRANSFERRED:
 				//DEBUG2("Chip " << targetChip->ChannelID << ", " << targetChip->ChipID << ", " << dieBKE->ActiveTransactions.front()->Address.DieID <<  ": PROGRAM_CMD_ADDR_DATA_TRANSFERRED " )
-				if (pacs && dieBKE->ActiveCommand->CommandCode == CMD_PROGRAM_PAGE && chipBKE->No_of_active_dies == 0
+				if (pacs && pacs->Uses_online_program_profiling() && dieBKE->ActiveCommand->CommandCode == CMD_PROGRAM_PAGE
+					&& chipBKE->No_of_active_dies == 0
 					&& chipBKE->OngoingDieCMDTransfers.size() == 1 && !chipBKE->HasSuspend && !dieBKE->Suspended) {
 					// NAND begins executing at the end of the command and data transfer.
 					dieBKE->Program_observation_start = Simulator->Time();
@@ -743,10 +753,12 @@ namespace SSD_Components {
 			DEBUG("Chip " << chip->ChannelID << ", " << chip->ChipID << ": finished program command")
 
 			if (auto* pacs = _my_instance->Get_pacs()) {
-				const auto& address = command->Address.front();
-				// A multi-plane ready signal gives the maximum time and cannot identify individual page timings.
-				const auto start = command->Address.size() == 1 ? dieBKE->Program_observation_start : INVALID_TIME;
-				pacs->Observe_program(address, chip->Get_page_type(address.PageID), start, Simulator->Time());
+				if (pacs->Uses_online_program_profiling()) {
+					const auto& address = command->Address.front();
+					// A multi-plane ready signal gives the maximum time and cannot identify individual page timings.
+					const auto start = command->Address.size() == 1 ? dieBKE->Program_observation_start : INVALID_TIME;
+					pacs->Observe_program(address, chip->Get_page_type(address.PageID), start, Simulator->Time());
+				}
 				for (const auto* transaction : dieBKE->ActiveTransactions) {
 					pacs->Complete_program(transaction->Address);
 					if (pacs->Adaptive_options().enabled && transaction->Source == Transaction_Source_Type::USERIO && transaction->UserIORequest) {

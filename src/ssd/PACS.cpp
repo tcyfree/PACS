@@ -55,7 +55,12 @@ namespace SSD_Components
 
 	double PACS::Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
 	{
-		return (1.0 + dies[die_index(address)].outstanding_programs) * Estimate_program_latency(address, page_type);
+		return Estimate_completion_cost(address, Estimate_program_latency(address, page_type));
+	}
+
+	double PACS::Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, double program_latency) const
+	{
+		return (1.0 + dies[die_index(address)].outstanding_programs) * program_latency;
 	}
 
 	double PACS::Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
@@ -138,9 +143,13 @@ namespace SSD_Components
 			outstanding_programs += die.outstanding_programs;
 		}
 		xmlwriter.Write_open_tag("PACS");
-		xmlwriter.Write_attribute_string("Median_Batch_Size", std::to_string(batch_size));
-		xmlwriter.Write_attribute_string("Minimum_Samples", std::to_string(minimum_samples));
-		xmlwriter.Write_attribute_string("EWMA_Alpha", std::to_string(alpha));
+		if (Uses_online_program_profiling()) {
+			xmlwriter.Write_attribute_string("Median_Batch_Size", std::to_string(batch_size));
+			xmlwriter.Write_attribute_string("Minimum_Samples", std::to_string(minimum_samples));
+			xmlwriter.Write_attribute_string("EWMA_Alpha", std::to_string(alpha));
+		} else {
+			xmlwriter.Write_attribute_string("Program_Latency_Source", "CONFIGURED");
+		}
 		xmlwriter.Write_attribute_string("Qualified_Program_Observations", std::to_string(qualified_observations));
 		xmlwriter.Write_attribute_string("Discarded_Program_Observations", std::to_string(discarded_observations));
 		xmlwriter.Write_attribute_string("Ranked_Write_Allocations", std::to_string(ranked_allocations));

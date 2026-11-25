@@ -115,6 +115,11 @@ namespace NVM
 				return _programLatency[page_type] + _RBSignalDelayWrite;
 			}
 
+			sim_time_type Get_configured_program_latency(flash_page_ID_type page_id) const
+			{
+				return get_configured_program_time(page_id) + _RBSignalDelayWrite;
+			}
+
 			sim_time_type Get_nominal_erase_latency() const { return _eraseLatency + _RBSignalDelayErase; }
 
 			sim_time_type Get_command_execution_latency(const Flash_Command& command)
@@ -141,9 +146,7 @@ namespace NVM
 						for (const auto& address : command.Address) {
 							const auto page_time = block_latency_profile
 								? block_latency_profile->Program_times(address)[address.PageID / pages_per_wordline]
-								: _wordlineProgramLatencies.empty()
-								? _programLatency[Get_page_type(address.PageID)]
-								: _wordlineProgramLatencies[address.PageID / pages_per_wordline];
+								: get_configured_program_time(address.PageID);
 							latency = std::max(latency, page_time);
 						}
 						return latency + _RBSignalDelayWrite;
@@ -180,6 +183,12 @@ namespace NVM
 			/**/unsigned int get_block_no_in_plane();
 				
 		private:
+			sim_time_type get_configured_program_time(flash_page_ID_type page_id) const
+			{
+				return _wordlineProgramLatencies.empty() ? _programLatency[Get_page_type(page_id)]
+					: _wordlineProgramLatencies[page_id / static_cast<unsigned int>(flash_technology)];
+			}
+
 			Flash_Technology_Type flash_technology;
 			Internal_Status status;
 			unsigned int idleDieNo;

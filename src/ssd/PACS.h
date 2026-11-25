@@ -27,11 +27,13 @@ namespace SSD_Components
 		bool Request_level_enabled() const { return request_level; }
 		bool Cross_channel_enabled() const { return cross_channel; }
 		const PACS_Adaptive_Options& Adaptive_options() const { return adaptive; }
+		bool Uses_online_program_profiling() const { return !adaptive.enabled; }
 		void Queue_program(const NVM::FlashMemory::Physical_Page_Address& address);
 		void Complete_program(const NVM::FlashMemory::Physical_Page_Address& address);
 		void Observe_program(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type,
 			sim_time_type program_start, sim_time_type ready_time);
 		double Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
+		double Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, double program_latency) const;
 		double Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
 		void Record_ranked_allocation(bool redirected);
 		void Record_request_plan(std::size_t redirected_pages, std::size_t crossed_pages);
