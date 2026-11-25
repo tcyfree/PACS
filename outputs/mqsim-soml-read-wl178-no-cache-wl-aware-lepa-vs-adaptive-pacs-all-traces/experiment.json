@@ -1,0 +1,209 @@
+{
+  "policies": [
+    "lepa-wl-aware",
+    "pacs-adaptive"
+  ],
+  "settings": {
+    "flash_channels": 4,
+    "page_capacity_bytes": 16384,
+    "flash_technology": "TLC",
+    "wordline_timings": 256,
+    "device_data_caching": "TURNED_OFF",
+    "independent_wordline_multiplane": false
+  },
+  "traces": {
+    "1612_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_2.csv",
+      "size": 106663146,
+      "mtime_ns": 1795503522581223568,
+      "reads": 2449506,
+      "writes": 953039,
+      "multi_page_writes": 361144,
+      "bytes": 63527034368,
+      "span_ns": 3388269092096,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1612_4": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv",
+      "size": 74646306,
+      "mtime_ns": 1795503513203572227,
+      "reads": 2049890,
+      "writes": 338102,
+      "multi_page_writes": 147112,
+      "bytes": 79803046400,
+      "span_ns": 3391819047936,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1613_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1613_2.csv",
+      "size": 143865963,
+      "mtime_ns": 1795503517669882958,
+      "reads": 3395852,
+      "writes": 1201201,
+      "multi_page_writes": 445711,
+      "bytes": 111645986816,
+      "span_ns": 3595856192768,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1614_6": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1614_6.csv",
+      "size": 35045322,
+      "mtime_ns": 1795503529787721319,
+      "reads": 691854,
+      "writes": 441716,
+      "multi_page_writes": 160435,
+      "bytes": 26806895616,
+      "span_ns": 3592594665728,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1615_1": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1615_1.csv",
+      "size": 16558727,
+      "mtime_ns": 1795503530573775465,
+      "reads": 178742,
+      "writes": 355787,
+      "multi_page_writes": 115355,
+      "bytes": 8143726592,
+      "span_ns": 3590026216192,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1616_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1616_2.csv",
+      "size": 33017136,
+      "mtime_ns": 1795503532054877418,
+      "reads": 707522,
+      "writes": 354837,
+      "multi_page_writes": 114706,
+      "bytes": 18268618240,
+      "span_ns": 3596878829056,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1617_3": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1617_3.csv",
+      "size": 24149251,
+      "mtime_ns": 1795503533027944343,
+      "reads": 387173,
+      "writes": 394165,
+      "multi_page_writes": 132444,
+      "bytes": 14784683520,
+      "span_ns": 3593209507072,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1618_3": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1618_3.csv",
+      "size": 30534950,
+      "mtime_ns": 1795503533993010675,
+      "reads": 498867,
+      "writes": 484740,
+      "multi_page_writes": 144221,
+      "bytes": 16459380736,
+      "span_ns": 3599677884672,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1619_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1619_0.csv",
+      "size": 44503864,
+      "mtime_ns": 1795503528134607353,
+      "reads": 842953,
+      "writes": 587722,
+      "multi_page_writes": 202567,
+      "bytes": 30145441280,
+      "span_ns": 3599968976896,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1620_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1620_2.csv",
+      "size": 35756880,
+      "mtime_ns": 1795503535360104561,
+      "reads": 794067,
+      "writes": 353097,
+      "multi_page_writes": 114679,
+      "bytes": 23840062464,
+      "span_ns": 3593135805952,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1708_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1708_0.csv",
+      "size": 76921839,
+      "mtime_ns": 1795503526083465770,
+      "reads": 1984024,
+      "writes": 480257,
+      "multi_page_writes": 161648,
+      "bytes": 62142549504,
+      "span_ns": 3599931663104,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "hm_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/hm_0.csv",
+      "size": 121519461,
+      "mtime_ns": 1795503514532664792,
+      "reads": 1417748,
+      "writes": 2575568,
+      "multi_page_writes": 435020,
+      "bytes": 32683298304,
+      "span_ns": 604795895097200,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    },
+    "mds_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/mds_0.csv",
+      "size": 36324616,
+      "mtime_ns": 1795503520048048033,
+      "reads": 143973,
+      "writes": 1067061,
+      "multi_page_writes": 175485,
+      "bytes": 11403751424,
+      "span_ns": 604803410067000,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    },
+    "proj_3": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/proj_3.csv",
+      "size": 70902359,
+      "mtime_ns": 1795503516276786139,
+      "reads": 2128303,
+      "writes": 116341,
+      "multi_page_writes": 66226,
+      "bytes": 22402553344,
+      "span_ns": 604797295766300,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    },
+    "src2_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/src2_2.csv",
+      "size": 36974651,
+      "mtime_ns": 1795503519042978303,
+      "reads": 350930,
+      "writes": 805955,
+      "multi_page_writes": 692087,
+      "bytes": 66644063744,
+      "span_ns": 633579753331300,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    },
+    "web_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/web_0.csv",
+      "size": 61911593,
+      "mtime_ns": 1795503518003906164,
+      "reads": 606487,
+      "writes": 1423458,
+      "multi_page_writes": 638056,
+      "bytes": 31163521536,
+      "span_ns": 604804141265500,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    }
+  },
+  "policy_options": {
+    "lepa-wl-aware": {
+      "LEPA_WL_Aware_Enabled": "true"
+    },
+    "pacs-adaptive": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256"
+    }
+  },
+  "template_sha256": {
+    "MQSim": "1907e9eba2617431bd01b69ccf1e5a415914a0a0d3a00689266414cf70780c64",
+    "ssdconfig.xml": "bf519b3e7eeb63942114c2f01bc070156ab088ba284b0c27f81ab61303432b09",
+    "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+  }
+}
