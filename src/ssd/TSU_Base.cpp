@@ -50,10 +50,10 @@ namespace SSD_Components
 		}
 	}
 
-	void TSU_Base::Enable_lepa(sim_time_type read_time, sim_time_type program_time, sim_time_type erase_time)
+	void TSU_Base::Enable_lepa(sim_time_type read_time, sim_time_type program_time, sim_time_type erase_time, bool wordline_aware)
 	{
 		lepa.reset(new LEPA(channel_count, chip_no_per_channel, die_no_per_chip, plane_no_per_die,
-			read_time, program_time, erase_time, independent_wordline_multiplane));
+			read_time, program_time, erase_time, independent_wordline_multiplane, *_NVMController, wordline_aware));
 	}
 
 	void TSU_Base::handle_channel_idle_signal(flash_channel_ID_type channelID)

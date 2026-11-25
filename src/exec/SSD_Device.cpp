@@ -50,6 +50,9 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		if (parameters->PACS_Adaptive.enabled && !parameters->PACS_Cross_Channel_Enabled) {
 			throw std::invalid_argument("PACS_Cross_Channel_Adaptive_Enabled requires PACS_Cross_Channel_Enabled");
 		}
+		if (parameters->LEPA_WL_Aware_Enabled && (!parameters->LEPA_Enabled || parameters->Independent_Wordline_Multiplane)) {
+			throw std::invalid_argument("WL-aware LEPA requires LEPA with single-plane commands");
+		}
 		if (policies && (parameters->Address_Mapping != SSD_Components::Flash_Address_Mapping_Type::PAGE_LEVEL
 			|| parameters->Plane_Allocation_Scheme != SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP)) {
 			throw std::invalid_argument("PACS, LEPA and QSTR-MED require page-level mapping with CWDP striping");
@@ -231,7 +234,7 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		tsu->Set_independent_wordline_multiplane(parameters->Independent_Wordline_Multiplane);
 		if (parameters->LEPA_Enabled) {
 			tsu->Enable_lepa(average_flash_read_latency, average_flash_write_latency,
-				parameters->Flash_Parameters.Block_Erase_Latency);
+				parameters->Flash_Parameters.Block_Erase_Latency, parameters->LEPA_WL_Aware_Enabled);
 		}
 
 		//Step 6: create Flash_Block_Manager

@@ -30,6 +30,7 @@ bool Device_Parameter_Set::PACS_Request_Level_Enabled = false;
 bool Device_Parameter_Set::PACS_Cross_Channel_Enabled = false;
 SSD_Components::PACS_Adaptive_Options Device_Parameter_Set::PACS_Adaptive;
 bool Device_Parameter_Set::LEPA_Enabled = false;
+bool Device_Parameter_Set::LEPA_WL_Aware_Enabled = false;
 bool Device_Parameter_Set::QSTR_MED_Enabled = false;
 bool Device_Parameter_Set::Independent_Wordline_Multiplane = false;
 SSD_Components::Flash_Scheduling_Type Device_Parameter_Set::Transaction_Scheduling_Policy = SSD_Components::Flash_Scheduling_Type::OUT_OF_ORDER;
@@ -76,6 +77,7 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Gain_Beta", std::to_string(PACS_Adaptive.gain_beta));
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Search_Budget", std::to_string(PACS_Adaptive.search_budget));
 	xmlwriter.Write_attribute_string("LEPA_Enabled", LEPA_Enabled ? "true" : "false");
+	xmlwriter.Write_attribute_string("LEPA_WL_Aware_Enabled", LEPA_WL_Aware_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("QSTR_MED_Enabled", QSTR_MED_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("Independent_Wordline_Multiplane", Independent_Wordline_Multiplane ? "true" : "false");
 
@@ -402,6 +404,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 	PACS_Cross_Channel_Enabled = false;
 	PACS_Adaptive = SSD_Components::PACS_Adaptive_Options{};
 	LEPA_Enabled = false;
+	LEPA_WL_Aware_Enabled = false;
 	QSTR_MED_Enabled = false;
 	Independent_Wordline_Multiplane = false;
 	try
@@ -425,6 +428,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				|| strcmp(param->name(), "PACS_Cross_Channel_Enabled") == 0
 				|| strcmp(param->name(), "PACS_Cross_Channel_Adaptive_Enabled") == 0
 				|| strcmp(param->name(), "LEPA_Enabled") == 0
+				|| strcmp(param->name(), "LEPA_WL_Aware_Enabled") == 0
 				|| strcmp(param->name(), "QSTR_MED_Enabled") == 0
 				|| strcmp(param->name(), "Independent_Wordline_Multiplane") == 0) {
 				const std::string name = param->name();
@@ -442,6 +446,8 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 					PACS_Adaptive.enabled = enabled;
 				} else if (name == "LEPA_Enabled") {
 					LEPA_Enabled = enabled;
+				} else if (name == "LEPA_WL_Aware_Enabled") {
+					LEPA_WL_Aware_Enabled = enabled;
 				} else if (name == "QSTR_MED_Enabled") {
 					QSTR_MED_Enabled = enabled;
 				} else {

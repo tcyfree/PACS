@@ -74,7 +74,7 @@ public:
 	}
 
 	void Set_independent_wordline_multiplane(bool enabled) { independent_wordline_multiplane = enabled; }
-	void Enable_lepa(sim_time_type read_time, sim_time_type program_time, sim_time_type erase_time);
+	void Enable_lepa(sim_time_type read_time, sim_time_type program_time, sim_time_type erase_time, bool wordline_aware);
 	LEPA* Get_lepa() const { return lepa.get(); }
 	void Set_qstr_med(QSTR_MED* policy) { qstr_med = policy; }
 	const QSTR_MED* Get_qstr_med() const { return qstr_med; }

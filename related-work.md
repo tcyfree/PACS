@@ -75,4 +75,17 @@ LEPA 以平均 NAND 读时延为单位，按已分配且尚未完成的读、写
 
 结果 XML 内的 `LEPA` 记录时延比、改址次数和回放结束时的未完成事务计数。
 
+### WL-aware LEPA
+
+在单平面配置中启用下面两项，即可按 WL 查表估计编程时延。
+
+```xml
+<LEPA_Enabled>true</LEPA_Enabled>
+<LEPA_WL_Aware_Enabled>true</LEPA_WL_Aware_Enabled>
+```
+
+每个 die 按写 plane 指针取得候选页。估计成本包含按原权重计算的读和擦除负载、所有未完成写各自的 tPROG，以及候选 plane 当前写指针所指页的 tPROG。TLC 页按 `PageID / 3` 查询配置的 `Wordline_Program_Latencies`。当最优目标的估计成本比原目标至少低一次原目标候选页的编程时延时，选择最优目标。
+
+`LEPA_WL_Aware_Enabled` 默认为 `false`。结果 XML 用 `WL_Aware` 标记此模式，并用 `Outstanding_Program_Time_ns` 记录回放结束时的未完成编程负载。
+
 [Wu 等，IEICE Electronics Express 2025，§3](https://doi.org/10.1587/elex.22.20250435)

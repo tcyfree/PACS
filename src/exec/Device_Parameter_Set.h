@@ -42,6 +42,7 @@ public:
 	static bool PACS_Cross_Channel_Enabled;
 	static SSD_Components::PACS_Adaptive_Options PACS_Adaptive;
 	static bool LEPA_Enabled;
+	static bool LEPA_WL_Aware_Enabled;
 	static bool QSTR_MED_Enabled;
 	static bool Independent_Wordline_Multiplane;
 	static SSD_Components::Flash_Scheduling_Type Transaction_Scheduling_Policy;

@@ -15,6 +15,7 @@
 		<PACS_Cross_Channel_Gain_Beta>1</PACS_Cross_Channel_Gain_Beta>
 		<PACS_Cross_Channel_Search_Budget>256</PACS_Cross_Channel_Search_Budget>
 		<LEPA_Enabled>false</LEPA_Enabled>
+		<LEPA_WL_Aware_Enabled>false</LEPA_WL_Aware_Enabled>
 		<QSTR_MED_Enabled>false</QSTR_MED_Enabled>
 		<Independent_Wordline_Multiplane>false</Independent_Wordline_Multiplane>
 		<Seed>321</Seed>

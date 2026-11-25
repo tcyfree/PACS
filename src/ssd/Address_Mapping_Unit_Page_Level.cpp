@@ -1712,7 +1712,11 @@ namespace SSD_Components
 					if (nearest_distance == plane_no_per_die) {
 						continue;
 					}
-					const auto load = lepa.Die_load(candidate);
+					if (lepa.Wordline_aware()) {
+						const auto* plane = block_manager->Get_plane_bookkeeping_entry(candidate);
+						candidate.PageID = plane->Data_wf[transaction->Stream_id]->Current_page_write_index;
+					}
+					const auto load = lepa.Write_allocation_cost(candidate);
 					if (candidate.ChannelID == original.ChannelID && candidate.ChipID == original.ChipID
 						&& candidate.DieID == original.DieID) {
 						static_target = candidate;
@@ -1729,7 +1733,7 @@ namespace SSD_Components
 			return; // The mapping unit will wait for GC on the static target.
 		}
 		const bool redirect = static_load == std::numeric_limits<uint64_t>::max()
-			|| static_load - best_load >= lepa.Write_time_ratio();
+			|| (best_load < static_load && static_load - best_load >= lepa.Redirection_threshold(static_target));
 		transaction->Address = redirect ? best : static_target;
 		lepa.Record_selection(redirect);
 	}
