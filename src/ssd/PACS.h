@@ -33,10 +33,10 @@ namespace SSD_Components
 		void Observe_program(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type,
 			sim_time_type program_start, sim_time_type ready_time);
 		double Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
-		double Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, double program_latency) const;
 		double Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const;
 		void Record_ranked_allocation(bool redirected);
-		void Record_request_plan(std::size_t redirected_pages, std::size_t crossed_pages);
+		void Record_single_page_plan(bool crossed_channel, bool changed_plane);
+		void Record_request_plan(std::size_t redirected_pages, std::size_t crossed_pages, std::size_t changed_planes);
 		void Record_adaptive_search(std::size_t critical_pages, unsigned int evaluations, bool budget_exhausted);
 		void Track_request_prediction(const User_Request* request, std::size_t pages, sim_time_type start,
 			double estimated_duration, bool crossed_channel);
@@ -90,6 +90,9 @@ namespace SSD_Components
 		uint64_t cross_channel_requests = 0;
 		uint64_t cross_channel_pages = 0;
 		uint64_t joint_cross_channel_requests = 0;
+		uint64_t single_page_cross_channel_writes = 0;
+		uint64_t single_page_cross_plane_writes = 0;
+		uint64_t multipage_cross_plane_pages = 0;
 		std::map<std::size_t, uint64_t> critical_page_counts;
 		std::map<unsigned int, uint64_t> search_evaluation_counts;
 		uint64_t search_budget_exhaustions = 0;

@@ -45,11 +45,11 @@ QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORD
 <PACS_Cross_Channel_Search_Budget>256</PACS_Cross_Channel_Search_Budget>
 ```
 
-先预测同通道方案中每一页的完成时间。以 β 乘以最晚完成页的预计编程时延作为最低收益门槛 θ，把超过目标时间 `T_local - θ` 的页纳入联合搜索。β 为 0 时从并列最晚的页开始搜索。每个关键页可沿用原方案或跨通道选址。每次预测覆盖整笔请求，通过完整方案的预计收益决定是否采用。预计完成时间相同时优先选跨通道页数较少的方案。
+单页写和跨页写都使用请求级预测。先在原通道搜索各个可写 Plane，预计整笔请求能提前完成时才调整地址。以 β 乘以同通道方案中最晚完成页的预计编程时延作为最低收益门槛 θ，把超过目标时间 `T_local - θ` 的页纳入联合搜索。β 为 0 时从并列最晚的页开始搜索。每个关键页可沿用原方案，也可尝试其他通道中各个可写 Plane。整笔请求预计完成时间缩短且收益达到 θ 时才采用跨通道方案。预计完成时间相同时优先选跨通道页数较少的方案。
 
-自适应模式从配置的 `Wordline_Program_Latencies` 取 tPROG，TLC 按预计写入的物理 `PageID / 3` 查表。缺少 WL 表时取配置的页类型编程时延。候选页、排队及在途编程和收益门槛使用同一套配置时延。结果 XML 中自适应模式的 `Program_Latency_Source` 为 `CONFIGURED`，在线编程样本数为 0。
+自适应模式从配置的 `Wordline_Program_Latencies` 取 tPROG，TLC 按预计写入的物理 `PageID / 3` 查表。缺少 WL 表时取配置的页类型编程时延。候选 Plane 使用各自的写前沿，按同请求内的分配顺序推进 PageID。候选页允许不同 TLC 页类型。同一 Die 上的各 Plane 共用 Die 就绪时间。预测逐页累加排队写入各自的 tPROG，并计入在途操作的剩余时间、读擦负载、通道传输和部分页覆盖写的读依赖。结果 XML 中自适应模式的 `Program_Latency_Source` 为 `CONFIGURED`，在线编程样本数为 0。
 
-结果 XML 的 `Adaptive_Search` 记录关键页数分布、组合预测次数分布和预算耗尽次数。预测误差取预计时长减去从分配决策到最后一个 NAND program 完成的实际时长。统计样本为按所选地址完成分配的跨页写请求。
+结果 XML 的 `Adaptive_Search` 记录跨页写的关键页数分布、组合预测次数分布和预算耗尽次数。`Single_Page_Cross_Channel_Writes` 记录单页写的跨通道次数。`Single_Page_Cross_Plane_Writes` 和 `Cross_Plane_Multipage_Write_Pages` 分别记录单页写和跨页写中 Plane ID 相对 CWDP 初始地址发生变化的页数。预测误差取预计时长减去从分配决策到最后一个 NAND program 完成的实际时长。统计样本为按所选地址完成分配的跨页写请求。
 
 ## QSTR-MED
 

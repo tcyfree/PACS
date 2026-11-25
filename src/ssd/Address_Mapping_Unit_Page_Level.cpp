@@ -540,9 +540,10 @@ namespace SSD_Components
 	void Address_Mapping_Unit_Page_Level::Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList)
 	{
 		const auto decision_time = Simulator->Time();
-		const auto plan = pacs && pacs->Request_level_enabled() && transactionList.size() > 1
+		const bool adaptive_single_page = transactionList.size() == 1 && pacs && pacs->Adaptive_options().enabled;
+		const auto plan = pacs && pacs->Request_level_enabled() && (transactionList.size() > 1 || adaptive_single_page)
 			? plan_pacs_request(transactionList) : PACS_Write_Plan{};
-		std::size_t next_target = 0, redirected_pages = 0, crossed_pages = 0, placed_as_planned = 0;
+		std::size_t next_target = 0, redirected_pages = 0, crossed_pages = 0, changed_planes = 0, placed_as_planned = 0;
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 			it != transactionList.end(); ) {
 			auto* transaction = static_cast<NVM_Transaction_Flash*>(*(it++));
@@ -553,14 +554,18 @@ namespace SSD_Components
 				const auto original = cwdp_target(transaction->LPA, *domains[transaction->Stream_id]);
 				const auto& address = transaction->Address;
 				const bool channel_changed = address.ChannelID != original.ChannelID;
+				const bool plane_changed = address.PlaneID != original.PlaneID;
 				crossed_pages += channel_changed;
-				redirected_pages += channel_changed || address.ChipID != original.ChipID;
+				changed_planes += plane_changed;
+				redirected_pages += channel_changed || address.ChipID != original.ChipID || plane_changed;
 				placed_as_planned += address.ChannelID == target->ChannelID && address.ChipID == target->ChipID
 					&& address.DieID == target->DieID && address.PlaneID == target->PlaneID;
 			}
 		}
-		if (!plan.addresses.empty()) {
-			pacs->Record_request_plan(redirected_pages, crossed_pages);
+		if (!plan.addresses.empty() && adaptive_single_page) {
+			pacs->Record_single_page_plan(crossed_pages != 0, changed_planes != 0);
+		} else if (!plan.addresses.empty()) {
+			pacs->Record_request_plan(redirected_pages, crossed_pages, changed_planes);
 			if (plan.estimated_duration > 0 && placed_as_planned == plan.addresses.size()) {
 				pacs->Track_request_prediction(transactionList.front()->UserIORequest, placed_as_planned,
 					decision_time, plan.estimated_duration, crossed_pages != 0);
@@ -1289,8 +1294,9 @@ namespace SSD_Components
 		auto& domain = *domains[stream];
 		const bool cross_channel = pacs->Cross_channel_enabled() && domain.Channel_no > 1;
 		const bool online_profiling = pacs->Uses_online_program_profiling();
+		const auto plane_options = online_profiling ? 1U : domain.Plane_no;
 		if (domain.PlaneAllocationScheme != Flash_Plane_Allocation_Scheme_Type::CWDP
-			|| (domain.Chip_no < 2 && !cross_channel)) {
+			|| (domain.Chip_no < 2 && plane_options < 2 && !cross_channel)) {
 			return {};
 		}
 
@@ -1368,7 +1374,9 @@ namespace SSD_Components
 			if (blocked[plane_index(page.original)]) {
 				return {};
 			}
-			page.reference_type = page_type_at(page.original, take_next_page(page.original));
+			if (online_profiling) {
+				page.reference_type = page_type_at(page.original, take_next_page(page.original));
+			}
 		}
 
 		enum class Pending { READ_COMMAND, READ_DATA_OUT, PROGRAM, DONE };
@@ -1382,11 +1390,12 @@ namespace SSD_Components
 			std::fill(data_ready.begin(), data_ready.end(), 0.0);
 			for (std::size_t i = 0; i < pages.size(); ++i) {
 				const auto page_id = take_next_page(plan[i]);
-				const auto type = page_type_at(plan[i], page_id);
 				const auto& original = pages[i].original;
-				if ((plan[i].ChannelID != original.ChannelID || plan[i].ChipID != original.ChipID)
-					&& (type != pages[i].reference_type || (online_profiling && pacs->Estimate_program_latency(plan[i], type) == 0))) {
-					return impossible;
+				if (online_profiling && (plan[i].ChannelID != original.ChannelID || plan[i].ChipID != original.ChipID)) {
+					const auto type = page_type_at(plan[i], page_id);
+					if (type != pages[i].reference_type || pacs->Estimate_program_latency(plan[i], type) == 0) {
+						return impossible;
+					}
 				}
 				program_times[i] = phy->Estimate_pacs_page_program(plan[i], page_id);
 				pending[i] = pages[i].read.command ? Pending::READ_COMMAND : Pending::PROGRAM;
@@ -1455,19 +1464,24 @@ namespace SSD_Components
 			if (online_profiling && pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
 				continue;
 			}
-			auto best_chip = page.original.ChipID;
+			auto best_address = page.original;
 			for (unsigned int chip = 0; chip < domain.Chip_no; ++chip) {
-				plan[i].ChipID = domain.Chip_ids[chip];
-				if (plan[i].ChipID == page.original.ChipID || blocked[plane_index(plan[i])]) {
-					continue;
-				}
-				const auto trial_finish = estimate_plan(finish);
-				if (trial_finish < best_finish) {
-					best_finish = trial_finish;
-					best_chip = plan[i].ChipID;
+				for (unsigned int plane = 0; plane < plane_options; ++plane) {
+					const auto plane_id = online_profiling ? page.original.PlaneID : domain.Plane_ids[plane];
+					const Physical_Page_Address candidate(page.original.ChannelID, domain.Chip_ids[chip], page.original.DieID, plane_id);
+					if (plane_index(candidate) == plane_index(page.original) || blocked[plane_index(candidate)]) {
+						continue;
+					}
+					plan[i] = candidate;
+					const auto trial_finish = estimate_plan(finish);
+					if (trial_finish < best_finish || (trial_finish == best_finish
+						&& candidate.PlaneID == page.original.PlaneID && best_address.PlaneID != page.original.PlaneID)) {
+						best_finish = trial_finish;
+						best_address = candidate;
+					}
 				}
 			}
-			plan[i].ChipID = best_chip;
+			plan[i] = best_address;
 		}
 		if (!cross_channel) {
 			return {std::move(plan), 0};
@@ -1527,10 +1541,12 @@ namespace SSD_Components
 							continue;
 						}
 						for (unsigned int w = 0; w < domain.Chip_no; ++w) {
-							const Physical_Page_Address address(channel, domain.Chip_ids[w], local_address.DieID, local_address.PlaneID);
-							if (!blocked[plane_index(address)]) {
-								const double program = phy->Estimate_pacs_page_program(address, page_after_prefix(address, i));
-								critical.candidates.push_back({address, candidate_time(address, program), true});
+							for (unsigned int p = 0; p < domain.Plane_no; ++p) {
+								const Physical_Page_Address address(channel, domain.Chip_ids[w], local_address.DieID, domain.Plane_ids[p]);
+								if (!blocked[plane_index(address)]) {
+									const double program = phy->Estimate_pacs_page_program(address, page_after_prefix(address, i));
+									critical.candidates.push_back({address, candidate_time(address, program), true});
+								}
 							}
 						}
 					}
@@ -1566,11 +1582,6 @@ namespace SSD_Components
 						if (exhausted) {
 							break;
 						}
-						// Earlier placements determine the next page type on a candidate plane.
-						if (candidate.crosses_channel
-							&& page_type_at(candidate.address, page_after_prefix(candidate.address, i)) != pages[i].reference_type) {
-							continue;
-						}
 						plan[i] = candidate.address;
 						search(position + 1, crossed_pages + candidate.crosses_channel);
 					}
@@ -1578,7 +1589,9 @@ namespace SSD_Components
 				};
 				search(0, 0);
 			}
-			pacs->Record_adaptive_search(critical_pages.size(), evaluations, exhausted);
+			if (pages.size() > 1) {
+				pacs->Record_adaptive_search(critical_pages.size(), evaluations, exhausted);
+			}
 			if (!best_plan.empty()) {
 				return {std::move(best_plan), best_finish};
 			}
@@ -1619,7 +1632,9 @@ namespace SSD_Components
 	void Address_Mapping_Unit_Page_Level::select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain)
 	{
 		auto& baseline = transaction->Address;
-		if (domain.Chip_no < 2 || ftl->GC_and_WL_Unit->Stop_servicing_writes(baseline)) {
+		const bool online_profiling = pacs->Uses_online_program_profiling();
+		const auto plane_options = online_profiling ? 1U : domain.Plane_no;
+		if ((domain.Chip_no < 2 && plane_options < 2) || ftl->GC_and_WL_Unit->Stop_servicing_writes(baseline)) {
 			return;
 		}
 
@@ -1642,42 +1657,43 @@ namespace SSD_Components
 		const auto baseline_page_id = next_page(baseline);
 		const auto baseline_page_type = page_type_at(baseline, baseline_page_id);
 		const auto estimate_cost = [&](const Physical_Page_Address& address, flash_page_ID_type page_id) {
-			return pacs->Uses_online_program_profiling() ? pacs->Estimate_completion_cost(address, baseline_page_type)
-				: pacs->Estimate_completion_cost(address, phy->Estimate_pacs_page_program(address, page_id));
+			return online_profiling ? pacs->Estimate_completion_cost(address, baseline_page_type)
+				: phy->Estimate_pacs_die_ready(address) + phy->Estimate_pacs_page_program(address, page_id);
 		};
 		double best_cost = estimate_cost(baseline, baseline_page_id);
 		if (best_cost == 0) {
 			return;
 		}
 
-		unsigned int eligible_chips = 1;
-		flash_chip_ID_type best_chip = baseline.ChipID;
+		unsigned int eligible_targets = 1;
+		auto best_address = baseline;
 		for (unsigned int index = 0; index < domain.Chip_no; ++index) {
 			const auto chip = domain.Chip_ids[index];
-			if (chip == baseline.ChipID) {
-				continue;
-			}
-			const NVM::FlashMemory::Physical_Page_Address candidate(baseline.ChannelID, chip, baseline.DieID, baseline.PlaneID, 0, 0);
-			if (ftl->GC_and_WL_Unit->Stop_servicing_writes(candidate)) {
-				continue;
-			}
-			const auto candidate_page_id = next_page(candidate);
-			if (page_type_at(candidate, candidate_page_id) != baseline_page_type) {
-				continue;
-			}
-			const double cost = estimate_cost(candidate, candidate_page_id);
-			if (cost == 0) {
-				return;
-			}
-			++eligible_chips;
-			if (cost < best_cost) {
-				best_cost = cost;
-				best_chip = chip;
+			for (unsigned int plane = 0; plane < plane_options; ++plane) {
+				const auto plane_id = online_profiling ? baseline.PlaneID : domain.Plane_ids[plane];
+				const Physical_Page_Address candidate(baseline.ChannelID, chip, baseline.DieID, plane_id);
+				if ((chip == baseline.ChipID && plane_id == baseline.PlaneID)
+					|| ftl->GC_and_WL_Unit->Stop_servicing_writes(candidate)) {
+					continue;
+				}
+				const auto candidate_page_id = next_page(candidate);
+				if (online_profiling && page_type_at(candidate, candidate_page_id) != baseline_page_type) {
+					continue;
+				}
+				const double cost = estimate_cost(candidate, candidate_page_id);
+				if (cost == 0) {
+					return;
+				}
+				++eligible_targets;
+				if (cost < best_cost) {
+					best_cost = cost;
+					best_address = candidate;
+				}
 			}
 		}
-		if (eligible_chips > 1) {
-			pacs->Record_ranked_allocation(best_chip != baseline.ChipID);
-			baseline.ChipID = best_chip;
+		if (eligible_targets > 1) {
+			pacs->Record_ranked_allocation(best_address.ChipID != baseline.ChipID || best_address.PlaneID != baseline.PlaneID);
+			baseline = best_address;
 		}
 	}
 

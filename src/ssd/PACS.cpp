@@ -55,12 +55,7 @@ namespace SSD_Components
 
 	double PACS::Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
 	{
-		return Estimate_completion_cost(address, Estimate_program_latency(address, page_type));
-	}
-
-	double PACS::Estimate_completion_cost(const NVM::FlashMemory::Physical_Page_Address& address, double program_latency) const
-	{
-		return (1.0 + dies[die_index(address)].outstanding_programs) * program_latency;
+		return (1.0 + dies[die_index(address)].outstanding_programs) * Estimate_program_latency(address, page_type);
 	}
 
 	double PACS::Estimate_program_latency(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int page_type) const
@@ -75,7 +70,13 @@ namespace SSD_Components
 		redirected_allocations += redirected;
 	}
 
-	void PACS::Record_request_plan(std::size_t redirected_pages, std::size_t crossed_pages)
+	void PACS::Record_single_page_plan(bool crossed_channel, bool changed_plane)
+	{
+		single_page_cross_channel_writes += crossed_channel;
+		single_page_cross_plane_writes += changed_plane;
+	}
+
+	void PACS::Record_request_plan(std::size_t redirected_pages, std::size_t crossed_pages, std::size_t changed_planes)
 	{
 		++planned_requests;
 		redirected_requests += redirected_pages != 0;
@@ -83,6 +84,7 @@ namespace SSD_Components
 		cross_channel_requests += crossed_pages != 0;
 		cross_channel_pages += crossed_pages;
 		joint_cross_channel_requests += crossed_pages > 1;
+		multipage_cross_plane_pages += changed_planes;
 	}
 
 	void PACS::Record_adaptive_search(std::size_t critical_pages, unsigned int evaluations, bool budget_exhausted)
@@ -164,6 +166,9 @@ namespace SSD_Components
 			xmlwriter.Write_attribute_string("Cross_Channel_Multipage_Write_Requests", std::to_string(cross_channel_requests));
 		}
 		if (adaptive.enabled) {
+			xmlwriter.Write_attribute_string("Single_Page_Cross_Channel_Writes", std::to_string(single_page_cross_channel_writes));
+			xmlwriter.Write_attribute_string("Single_Page_Cross_Plane_Writes", std::to_string(single_page_cross_plane_writes));
+			xmlwriter.Write_attribute_string("Cross_Plane_Multipage_Write_Pages", std::to_string(multipage_cross_plane_pages));
 			xmlwriter.Write_attribute_string("Cross_Channel_Write_Pages", std::to_string(cross_channel_pages));
 			xmlwriter.Write_attribute_string("Joint_Cross_Channel_Multipage_Write_Requests", std::to_string(joint_cross_channel_requests));
 			xmlwriter.Write_attribute_string("Open_Request_Predictions_At_End", std::to_string(request_predictions.size()));
