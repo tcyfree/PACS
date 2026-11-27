@@ -26,6 +26,7 @@ unsigned int Device_Parameter_Set::CMT_Capacity = 2 * 1024 * 1024;//Size of SRAM
 SSD_Components::CMT_Sharing_Mode Device_Parameter_Set::CMT_Sharing_Mode = SSD_Components::CMT_Sharing_Mode::SHARED;//How the entire CMT space is shared among concurrently running flows
 SSD_Components::Flash_Plane_Allocation_Scheme_Type Device_Parameter_Set::Plane_Allocation_Scheme = SSD_Components::Flash_Plane_Allocation_Scheme_Type::CWDP;
 bool Device_Parameter_Set::PACS_Enabled = false;
+bool Device_Parameter_Set::Workload_Intensity_Stats_Enabled = false;
 bool Device_Parameter_Set::PACS_Request_Level_Enabled = false;
 bool Device_Parameter_Set::PACS_Cross_Channel_Enabled = false;
 SSD_Components::PACS_Adaptive_Options Device_Parameter_Set::PACS_Adaptive;
@@ -78,6 +79,7 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Search_Budget", std::to_string(PACS_Adaptive.search_budget));
 	xmlwriter.Write_attribute_string("PACS_Use_Average_Program_Latency", PACS_Adaptive.use_average_program_latency ? "true" : "false");
 	xmlwriter.Write_attribute_string("PACS_WL_Decision_Stats", PACS_Adaptive.record_wl_decisions ? "true" : "false");
+	xmlwriter.Write_attribute_string("Workload_Intensity_Stats_Enabled", Workload_Intensity_Stats_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("LEPA_Enabled", LEPA_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("LEPA_WL_Aware_Enabled", LEPA_WL_Aware_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("QSTR_MED_Enabled", QSTR_MED_Enabled ? "true" : "false");
@@ -405,6 +407,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 	PACS_Request_Level_Enabled = false;
 	PACS_Cross_Channel_Enabled = false;
 	PACS_Adaptive = SSD_Components::PACS_Adaptive_Options{};
+	Workload_Intensity_Stats_Enabled = false;
 	LEPA_Enabled = false;
 	LEPA_WL_Aware_Enabled = false;
 	QSTR_MED_Enabled = false;
@@ -431,6 +434,7 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				|| strcmp(param->name(), "PACS_Cross_Channel_Adaptive_Enabled") == 0
 				|| strcmp(param->name(), "PACS_Use_Average_Program_Latency") == 0
 				|| strcmp(param->name(), "PACS_WL_Decision_Stats") == 0
+				|| strcmp(param->name(), "Workload_Intensity_Stats_Enabled") == 0
 				|| strcmp(param->name(), "LEPA_Enabled") == 0
 				|| strcmp(param->name(), "LEPA_WL_Aware_Enabled") == 0
 				|| strcmp(param->name(), "QSTR_MED_Enabled") == 0
@@ -452,6 +456,8 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 					PACS_Adaptive.use_average_program_latency = enabled;
 				} else if (name == "PACS_WL_Decision_Stats") {
 					PACS_Adaptive.record_wl_decisions = enabled;
+				} else if (name == "Workload_Intensity_Stats_Enabled") {
+					Workload_Intensity_Stats_Enabled = enabled;
 				} else if (name == "LEPA_Enabled") {
 					LEPA_Enabled = enabled;
 				} else if (name == "LEPA_WL_Aware_Enabled") {

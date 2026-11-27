@@ -164,7 +164,7 @@ namespace NVM
 		{
 			Die* targetDie = Dies[command->Address[0].DieID];
 
-			targetDie->STAT_TotalReadTime += Get_command_execution_latency(*command);
+			const auto execution_time = Get_command_execution_latency(*command);
 			targetDie->Expected_finish_time = INVALID_TIME;
 			targetDie->CommandFinishEvent = NULL;
 			targetDie->CurrentCMD = NULL;
@@ -184,6 +184,7 @@ namespace NVM
 				case CMD_READ_PAGE_MULTIPLANE:
 				case CMD_READ_PAGE_COPYBACK:
 				case CMD_READ_PAGE_COPYBACK_MULTIPLANE:
+					targetDie->STAT_TotalReadTime += execution_time;
 					DEBUG("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing read command")
 					for (unsigned int planeCntr = 0; planeCntr < command->Address.size(); planeCntr++) {
 						STAT_readCount++;
@@ -195,6 +196,7 @@ namespace NVM
 				case CMD_PROGRAM_PAGE_MULTIPLANE:
 				case CMD_PROGRAM_PAGE_COPYBACK:
 				case CMD_PROGRAM_PAGE_COPYBACK_MULTIPLANE:
+					targetDie->STAT_TotalProgramTime += execution_time;
 					DEBUG("Channel " << this->ChannelID << " Chip " << this->ChipID << "- Finished executing program command")
 					for (unsigned int planeCntr = 0; planeCntr < command->Address.size(); planeCntr++) {
 						STAT_progamCount++;
@@ -205,6 +207,7 @@ namespace NVM
 				case CMD_ERASE_BLOCK:
 				case CMD_ERASE_BLOCK_MULTIPLANE:
 				{
+					targetDie->STAT_TotalEraseTime += execution_time;
 					for (unsigned int planeCntr = 0; planeCntr < command->Address.size(); planeCntr++) {
 						STAT_eraseCount++;
 						targetDie->Planes[command->Address[planeCntr].PlaneID]->Erase_count++;

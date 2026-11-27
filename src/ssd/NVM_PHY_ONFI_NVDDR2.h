@@ -43,6 +43,12 @@ namespace SSD_Components
 		sim_time_type PACS_queued_fixed_work = 0;
 		sim_time_type PACS_queued_program_time = 0;
 		sim_time_type PACS_queued_program_count = 0;
+		struct Queue_Statistics {
+			sim_time_type last_update = 0;
+			uint64_t queued = 0, queued_user_writes = 0, dispatched = 0, dispatched_user_writes = 0;
+			long double area = 0, user_write_area = 0;
+			void Update(bool enqueue, bool user_write, sim_time_type now);
+		} queue_stats;
 		sim_time_type RemainingExecTime;
 		sim_time_type DieInterleavedTime;//If the command transfer is done in die-interleaved mode, the transfer time is recorded in this temporary variable
 
@@ -103,12 +109,19 @@ namespace SSD_Components
 		NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 			unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
 			bool pacs_enabled = false, bool pacs_request_level = false, bool pacs_cross_channel = false,
-			PACS_Adaptive_Options pacs_adaptive = {});
+			PACS_Adaptive_Options pacs_adaptive = {}, bool workload_intensity_stats = false);
 		PACS* Get_pacs() const { return pacs.get(); }
 		struct PACS_Read_Timing {
 			sim_time_type command, execution, data_out;
 		};
-		void Update_pacs_queue(const NVM_Transaction_Flash& transaction, bool enqueue);
+		bool Tracks_flash_queue() const { return track_flash_queue; }
+		bool Workload_intensity_stats_enabled() const { return workload_intensity_stats; }
+		void Update_flash_queue(const NVM_Transaction_Flash& transaction, bool enqueue);
+		struct Die_Load_Snapshot { bool idle; double ready_time; };
+		Die_Load_Snapshot Get_die_load_snapshot(const NVM::FlashMemory::Physical_Page_Address& address) const;
+		void Record_write_load(bool multipage, bool all_idle, double load_gap);
+		void Record_write_placement(bool multipage, std::size_t pages, std::size_t crossed_pages);
+		void Report_workload_intensity(Utils::XmlWriter& xmlwriter) const;
 		double Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address, bool use_average) const;
 		sim_time_type Estimate_pacs_channel_ready(flash_channel_ID_type channel) const;
 		double Estimate_pacs_page_program(const NVM::FlashMemory::Physical_Page_Address& address, flash_page_ID_type page_id,
@@ -154,6 +167,12 @@ namespace SSD_Components
 		static NVM_PHY_ONFI_NVDDR2* _my_instance;
 		ONFI_Channel_NVDDR2** channels;
 		std::unique_ptr<PACS> pacs;
+		const bool workload_intensity_stats, track_flash_queue;
+		struct Write_Load_Statistics {
+			uint64_t observed = 0, all_idle = 0, gap_under_460us = 0;
+			uint64_t placed_requests = 0, placed_pages = 0, crossed_requests = 0, crossed_pages = 0;
+		};
+		std::array<Write_Load_Statistics, 2> write_load_stats;
 		ChipBookKeepingEntry** bookKeepingTable;
 		Flash_Transaction_Queue *WaitingReadTX, *WaitingGCRead_TX, *WaitingMappingRead_TX;
 		std::list<DieBookKeepingEntry*> *WaitingCopybackWrites;

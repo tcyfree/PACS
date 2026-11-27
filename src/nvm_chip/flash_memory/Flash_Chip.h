@@ -122,6 +122,12 @@ namespace NVM
 
 			sim_time_type Get_nominal_erase_latency() const { return _eraseLatency + _RBSignalDelayErase; }
 
+			sim_time_type Get_die_execution_time(flash_die_ID_type die_id) const
+			{
+				const auto* die = Dies[die_id];
+				return die->STAT_TotalReadTime + die->STAT_TotalProgramTime + die->STAT_TotalEraseTime;
+			}
+
 			sim_time_type Get_command_execution_latency(const Flash_Command& command)
 			{
 				switch (command.CommandCode)

@@ -9,10 +9,11 @@ namespace SSD_Components {
 
 	NVM_PHY_ONFI_NVDDR2::NVM_PHY_ONFI_NVDDR2(const sim_object_id_type& id, ONFI_Channel_NVDDR2** channels,
 		unsigned int ChannelCount, unsigned int chip_no_per_channel, unsigned int DieNoPerChip, unsigned int PlaneNoPerDie,
-		bool pacs_enabled, bool pacs_request_level, bool pacs_cross_channel, PACS_Adaptive_Options pacs_adaptive)
+		bool pacs_enabled, bool pacs_request_level, bool pacs_cross_channel, PACS_Adaptive_Options pacs_adaptive, bool workload_intensity_stats)
 		: NVM_PHY_ONFI(id, ChannelCount, chip_no_per_channel, DieNoPerChip, PlaneNoPerDie), channels(channels),
 		pacs(pacs_enabled ? new PACS(ChannelCount, chip_no_per_channel, DieNoPerChip, pacs_request_level,
-			pacs_cross_channel, pacs_adaptive) : nullptr)
+			pacs_cross_channel, pacs_adaptive) : nullptr),
+		workload_intensity_stats(workload_intensity_stats), track_flash_queue(workload_intensity_stats || (pacs_enabled && pacs_request_level))
 	{
 		WaitingReadTX = new Flash_Transaction_Queue[channel_count];
 		WaitingGCRead_TX = new Flash_Transaction_Queue[channel_count];
@@ -148,16 +149,40 @@ namespace SSD_Components {
 			return pacs->Adaptive_options().average_program_latency;
 		}
 		const auto* chip = channels[address.ChannelID]->Chips[address.ChipID];
-		return pacs->Uses_online_program_profiling() ? estimate_pacs_program_for_type(address, chip->Get_page_type(page_id))
+		return pacs && pacs->Uses_online_program_profiling() ? estimate_pacs_program_for_type(address, chip->Get_page_type(page_id))
 			: chip->Get_configured_program_latency(page_id);
 	}
 
-	void NVM_PHY_ONFI_NVDDR2::Update_pacs_queue(const NVM_Transaction_Flash& transaction, bool enqueue)
+	void DieBookKeepingEntry::Queue_Statistics::Update(bool enqueue, bool user_write, sim_time_type now)
+	{
+		const auto elapsed = static_cast<long double>(now - last_update);
+		area += elapsed * queued;
+		user_write_area += elapsed * queued_user_writes;
+		last_update = now;
+		if (enqueue) {
+			++queued;
+			queued_user_writes += user_write;
+		} else {
+			if (queued == 0 || (user_write && queued_user_writes == 0)) {
+				throw std::logic_error("Flash command dispatched without a queued transaction");
+			}
+			--queued;
+			queued_user_writes -= user_write;
+			++dispatched;
+			dispatched_user_writes += user_write;
+		}
+	}
+
+	void NVM_PHY_ONFI_NVDDR2::Update_flash_queue(const NVM_Transaction_Flash& transaction, bool enqueue)
 	{
 		const auto& address = transaction.Address;
 		const auto* channel = channels[address.ChannelID];
 		const auto* chip = channel->Chips[address.ChipID];
 		auto& die = bookKeepingTable[address.ChannelID][address.ChipID].Die_book_keeping_records[address.DieID];
+		if (workload_intensity_stats) {
+			die.queue_stats.Update(enqueue, transaction.Type == Transaction_Type::WRITE && transaction.Source == Transaction_Source_Type::USERIO,
+				Simulator->Time());
+		}
 		const auto update = [enqueue](sim_time_type& count, sim_time_type amount) {
 			if (!enqueue && count < amount) {
 				throw std::logic_error("PACS observed a dispatch without a queued operation");
@@ -177,7 +202,7 @@ namespace SSD_Components {
 				} else {
 					work = Estimate_pacs_write_transfer(address.ChannelID, transaction.Data_and_metadata_size_in_byte);
 				}
-				if (pacs->Uses_online_program_profiling()) {
+				if (pacs && pacs->Uses_online_program_profiling()) {
 					update(die.PACS_queued_programs[chip->Get_page_type(address.PageID)], 1);
 				} else {
 					update(die.PACS_queued_program_time, chip->Get_configured_program_latency(address.PageID));
@@ -241,6 +266,75 @@ namespace SSD_Components {
 				+ Estimate_pacs_page_program(active, active.PageID, use_average);
 		}
 		return remaining + array_remaining;
+	}
+
+	NVM_PHY_ONFI_NVDDR2::Die_Load_Snapshot NVM_PHY_ONFI_NVDDR2::Get_die_load_snapshot(
+		const NVM::FlashMemory::Physical_Page_Address& address) const
+	{
+		const auto& die = bookKeepingTable[address.ChannelID][address.ChipID].Die_book_keeping_records[address.DieID];
+		return {die.Free && !die.Suspended && die.queue_stats.queued == 0, Estimate_pacs_die_ready(address, false)};
+	}
+
+	void NVM_PHY_ONFI_NVDDR2::Record_write_load(bool multipage, bool all_idle, double load_gap)
+	{
+		auto& stats = write_load_stats[multipage];
+		++stats.observed;
+		stats.all_idle += all_idle;
+		stats.gap_under_460us += load_gap < 460000;
+	}
+
+	void NVM_PHY_ONFI_NVDDR2::Record_write_placement(bool multipage, std::size_t pages, std::size_t crossed_pages)
+	{
+		auto& stats = write_load_stats[multipage];
+		++stats.placed_requests;
+		stats.placed_pages += pages;
+		stats.crossed_requests += crossed_pages != 0;
+		stats.crossed_pages += crossed_pages;
+	}
+
+	void NVM_PHY_ONFI_NVDDR2::Report_workload_intensity(Utils::XmlWriter& xmlwriter) const
+	{
+		if (!workload_intensity_stats) {
+			return;
+		}
+		xmlwriter.Write_open_tag("Workload_Intensity");
+		const auto report = [&xmlwriter](const char* tag, uint64_t value) {
+			xmlwriter.Write_attribute_string(tag, std::to_string(value));
+		};
+		const auto now = Simulator->Time();
+		report("Observed_Time_ns", now);
+		for (unsigned int channel = 0; channel < channel_count; ++channel) {
+			for (unsigned int chip = 0; chip < chip_no_per_channel; ++chip) {
+				for (unsigned int die = 0; die < die_no_per_chip; ++die) {
+					const auto& stats = bookKeepingTable[channel][chip].Die_book_keeping_records[die].queue_stats;
+					const auto elapsed = static_cast<long double>(now - stats.last_update);
+					xmlwriter.Write_open_tag("Die");
+					report("Channel", channel);
+					report("Chip", chip);
+					report("Die_Index", die);
+					report("NAND_Execution_ns", channels[channel]->Chips[chip]->Get_die_execution_time(die));
+					xmlwriter.Write_attribute_string("Queue_Integral_ns", std::to_string(stats.area + elapsed * stats.queued));
+					xmlwriter.Write_attribute_string("User_Write_Queue_Integral_ns", std::to_string(stats.user_write_area + elapsed * stats.queued_user_writes));
+					report("Dispatched_Transactions", stats.dispatched);
+					report("Dispatched_User_Writes", stats.dispatched_user_writes);
+					report("Queued_At_End", stats.queued);
+					xmlwriter.Write_close_tag();
+				}
+			}
+		}
+		for (const bool multipage : {false, true}) {
+			const auto& stats = write_load_stats[multipage];
+			xmlwriter.Write_open_tag(multipage ? "Multipage_Write" : "Single_Page_Write");
+			report("Observed_Requests", stats.observed);
+			report("All_Candidate_Dies_Idle_Requests", stats.all_idle);
+			report("Die_Load_Gap_Below_460us_Requests", stats.gap_under_460us);
+			report("Placed_Requests", stats.placed_requests);
+			report("Placed_Pages", stats.placed_pages);
+			report("Cross_Channel_Requests", stats.crossed_requests);
+			report("Cross_Channel_Pages", stats.crossed_pages);
+			xmlwriter.Write_close_tag();
+		}
+		xmlwriter.Write_close_tag();
 	}
 
 	NVM_Transaction_Flash* NVM_PHY_ONFI_NVDDR2::Is_chip_busy_with_stream(NVM_Transaction_Flash* transaction)
@@ -331,8 +425,8 @@ namespace SSD_Components {
 		dieBKE->ActiveCommand = new NVM::FlashMemory::Flash_Command();
 		for (std::list<NVM_Transaction_Flash*>::iterator it = transaction_list.begin();
 			it != transaction_list.end(); it++) {
-			if (pacs && pacs->Request_level_enabled()) {
-				Update_pacs_queue(**it, false);
+			if (Tracks_flash_queue()) {
+				Update_flash_queue(**it, false);
 			}
 			dieBKE->ActiveTransactions.push_back(*it);
 			dieBKE->ActiveCommand->Address.push_back((*it)->Address);

@@ -5,5 +5,6 @@ Micron_B47R_TLC_40C_All_Wordlines.xlsx
 
 /outputs/**/sortedTrace/
 /outputs/**/*_latency_*.csv
+/outputs/**/*_latency_*.csv.gz
 /outputs/**/*.png
 /outputs/**/*.pdf

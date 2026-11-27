@@ -203,6 +203,7 @@ namespace SSD_Components
 			double estimated_duration;
 		};
 		PACS_Write_Plan plan_pacs_request(const std::list<NVM_Transaction*>& transactions);
+		void record_write_load(const std::list<NVM_Transaction*>& transactions, NVM_PHY_ONFI_NVDDR2& phy);
 		void allocate_plane_for_user_write(NVM_Transaction_Flash_WR* transaction,
 			const NVM::FlashMemory::Physical_Page_Address* planned_address = nullptr);
 		void select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain);

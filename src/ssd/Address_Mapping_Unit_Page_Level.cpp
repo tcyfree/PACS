@@ -537,20 +537,68 @@ namespace SSD_Components
 			domain.Plane_ids[(lpa / (domain.Die_no * domain.Chip_no * domain.Channel_no)) % domain.Plane_no]);
 	}
 
+	void Address_Mapping_Unit_Page_Level::record_write_load(
+		const std::list<NVM_Transaction*>& transactions, NVM_PHY_ONFI_NVDDR2& phy)
+	{
+		const auto& domain = *domains[transactions.front()->Stream_id];
+		std::vector<bool> candidate_dies;
+		if (domain.Die_no > 1) {
+			candidate_dies.resize(die_no_per_chip);
+			for (const auto* transaction : transactions) {
+				candidate_dies[cwdp_target(static_cast<const NVM_Transaction_Flash*>(transaction)->LPA, domain).DieID] = true;
+			}
+		}
+		double min_load = std::numeric_limits<double>::infinity(), max_load = 0;
+		bool all_idle = true;
+		for (unsigned int c = 0; c < domain.Channel_no; ++c) {
+			for (unsigned int w = 0; w < domain.Chip_no; ++w) {
+				for (unsigned int d = 0; d < domain.Die_no; ++d) {
+					const auto die = domain.Die_ids[d];
+					if (!candidate_dies.empty() && !candidate_dies[die]) {
+						continue;
+					}
+					for (unsigned int p = 0; p < domain.Plane_no; ++p) {
+						const Physical_Page_Address address(domain.Channel_ids[c], domain.Chip_ids[w], die, domain.Plane_ids[p]);
+						if (ftl->GC_and_WL_Unit->Stop_servicing_writes(address)) {
+							continue;
+						}
+						const auto snapshot = phy.Get_die_load_snapshot(address);
+						min_load = std::min(min_load, snapshot.ready_time);
+						max_load = std::max(max_load, snapshot.ready_time);
+						all_idle = all_idle && snapshot.idle;
+						break;
+					}
+				}
+			}
+		}
+		if (std::isfinite(min_load)) {
+			phy.Record_write_load(transactions.size() > 1, all_idle, max_load - min_load);
+		}
+	}
+
 	void Address_Mapping_Unit_Page_Level::Translate_lpa_to_ppa_and_dispatch(const std::list<NVM_Transaction*>& transactionList)
 	{
 		const auto decision_time = Simulator->Time();
+		auto* phy = static_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller);
+		const auto* first = transactionList.empty() ? nullptr : transactionList.front();
+		const bool observe_write = phy->Workload_intensity_stats_enabled() && first
+			&& first->Type == Transaction_Type::WRITE && first->Source == Transaction_Source_Type::USERIO
+			&& first->UserIORequest && &transactionList == &first->UserIORequest->Transaction_list
+			&& domains[first->Stream_id]->PlaneAllocationScheme == Flash_Plane_Allocation_Scheme_Type::CWDP;
+		if (observe_write) {
+			record_write_load(transactionList, *phy);
+		}
 		const bool adaptive_single_page = transactionList.size() == 1 && pacs && pacs->Adaptive_options().enabled;
 		const auto plan = pacs && pacs->Request_level_enabled() && (transactionList.size() > 1 || adaptive_single_page)
 			? plan_pacs_request(transactionList) : PACS_Write_Plan{};
-		std::size_t next_target = 0, redirected_pages = 0, crossed_pages = 0, changed_planes = 0, placed_as_planned = 0;
+		std::size_t next_target = 0, redirected_pages = 0, crossed_pages = 0, changed_planes = 0, placed_as_planned = 0, placed_pages = 0;
 		for (std::list<NVM_Transaction*>::const_iterator it = transactionList.begin();
 			it != transactionList.end(); ) {
 			auto* transaction = static_cast<NVM_Transaction_Flash*>(*(it++));
 			const auto* target = plan.addresses.empty() ? nullptr : &plan.addresses[next_target++];
 			if (is_lpa_locked_for_gc(transaction->Stream_id, transaction->LPA)) {
 				manage_user_transaction_facing_barrier(transaction);
-			} else if (query_cmt(transaction, target) && target) {
+			} else if (query_cmt(transaction, target) && (target || observe_write)) {
 				const auto original = cwdp_target(transaction->LPA, *domains[transaction->Stream_id]);
 				const auto& address = transaction->Address;
 				const bool channel_changed = address.ChannelID != original.ChannelID;
@@ -558,7 +606,8 @@ namespace SSD_Components
 				crossed_pages += channel_changed;
 				changed_planes += plane_changed;
 				redirected_pages += channel_changed || address.ChipID != original.ChipID || plane_changed;
-				placed_as_planned += address.ChannelID == target->ChannelID && address.ChipID == target->ChipID
+				++placed_pages;
+				placed_as_planned += target && address.ChannelID == target->ChannelID && address.ChipID == target->ChipID
 					&& address.DieID == target->DieID && address.PlaneID == target->PlaneID;
 			}
 		}
@@ -573,6 +622,9 @@ namespace SSD_Components
 		}
 		if (!plan.addresses.empty() && pacs->Adaptive_options().record_wl_decisions) {
 			pacs->Record_wl_plan_commit(plan.addresses.size() > 1, placed_as_planned == plan.addresses.size());
+		}
+		if (observe_write && placed_pages == transactionList.size()) {
+			phy->Record_write_placement(placed_pages > 1, placed_pages, crossed_pages);
 		}
 
 		if (transactionList.size() > 0) {

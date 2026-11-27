@@ -59,6 +59,18 @@ QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORD
 
 候选差值按 CWDP 的请求内前序分配推进写前沿。每页在所有可写的候选地址上计算最大值减最小值。编程差来自候选物理页的逐 WL tPROG，负载差来自候选 Channel 和 Die 就绪时间两者的较晚值。两种差值均用上界包含的直方图区间。已评估的跨通道方案有正收益且收益低于门槛时计为 `Rejected_By_Beta`。整笔请求的反事实收益用同一逐 WL 模型重估三种方案的完工时间。对单页改址进一步拆分编程时间差和开始编程前的时间差。
 
+### 负载强度实验
+
+负载实验沿用无缓存的 16 KiB TLC 设备和逐 WL NAND 时延表。预处理仅将 trace 第一个字段变换为 `t0 + k × (t − t0)`，其中 `k` 为 1、2、5、10、20 或 50。相同时间戳和其余四列按原顺序复制。每个倍率回放 Baseline、LEPA、WL-aware LEPA、PACS-NoWL 和 PACS-Full。
+
+实验配置启用 `Workload_Intensity_Stats_Enabled`。Die 利用率取 NAND 阵列执行时间占完整回放时间的比例。平均队列长度取 TSU 中等待派发的事务数的时间平均值。写排队时延从提交 TSU 算至派发 NAND 命令。候选 Die 空闲率及负载差在完整主机写请求进入 FTL 的地址分配前采样。各策略使用共同的可写候选 Die 池。空闲条件为 Die 无活跃命令且队列为空，负载差取候选 Die 预计就绪时间的最大值减最小值。跨通道比例以实际置页相对 CWDP 的通道变化计算。WL 决策改变率取 PACS-Full 的同快照对照。
+
+在 MQSim 目录可生成 trace 并回放该批实验。首次回放使用当前已编译的 MQSim，或以 `--simulator` 指定二进制。延迟样本按 gzip 无损保存，脚本用 `pigz` 压缩并校验。
+
+```bash
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-intensity/run_experiment.py --jobs 8
+```
+
 ## QSTR-MED
 
 主机写入和 GC 迁移各使用自己的块组。策略按块的字线编程时延总和，在每个 plane 的空闲块池中取最快或最慢的四个候选。它选出全组最快或最慢的参考块，再用字线签名的 Hamming 距离从每个其余 plane 选出成员。每层按四个连续逻辑 WL 构建签名，最快两项记为 0。块编程完成后更新签名，模拟器为未映射的读请求预置的页也按其配置时延记入。主机写使用快组，GC 迁移使用慢组。预处理先填充初始数据，前沿块续配时启用 QSTR-MED。MQSim 逐平面推进写入和 GC，先填满的 plane 可补配一个本地块。

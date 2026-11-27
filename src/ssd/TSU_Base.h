@@ -64,9 +64,9 @@ public:
 			if (transaction->Type == Transaction_Type::WRITE) {
 				pacs->Queue_program(transaction->Address);
 			}
-			if (pacs->Request_level_enabled()) {
-				_NVMController->Update_pacs_queue(*transaction, true);
-			}
+		}
+		if (_NVMController->Tracks_flash_queue()) {
+			_NVMController->Update_flash_queue(*transaction, true);
 		}
 		if (lepa) {
 			lepa->Submit(*transaction);

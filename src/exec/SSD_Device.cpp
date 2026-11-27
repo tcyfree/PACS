@@ -158,7 +158,8 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 			device->PHY = new SSD_Components::NVM_PHY_ONFI_NVDDR2(device->ID() + ".PHY", channels, parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
 																 parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
 																 parameters->PACS_Enabled, parameters->PACS_Request_Level_Enabled,
-																 parameters->PACS_Cross_Channel_Enabled, pacs_adaptive);
+																 parameters->PACS_Cross_Channel_Enabled, pacs_adaptive,
+																 parameters->Workload_Intensity_Stats_Enabled);
 			Simulator->AddObject(device->PHY);
 			break;
 		}
@@ -519,7 +520,9 @@ void SSD_Device::Report_results_in_XML(std::string name_prefix, Utils::XmlWriter
 	{
 		((SSD_Components::FTL *)this->Firmware)->Report_results_in_XML(ID(), xmlwriter);
 		((SSD_Components::FTL *)this->Firmware)->TSU->Report_results_in_XML(ID(), xmlwriter);
-		if (const auto* pacs = static_cast<SSD_Components::NVM_PHY_ONFI_NVDDR2*>(PHY)->Get_pacs()) {
+		const auto* nvm_controller = static_cast<SSD_Components::NVM_PHY_ONFI_NVDDR2*>(PHY);
+		nvm_controller->Report_workload_intensity(xmlwriter);
+		if (const auto* pacs = nvm_controller->Get_pacs()) {
 			pacs->Report_results_in_XML(xmlwriter);
 		}
 		if (const auto* lepa = static_cast<SSD_Components::FTL*>(Firmware)->TSU->Get_lepa()) {

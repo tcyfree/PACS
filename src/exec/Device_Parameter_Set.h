@@ -38,6 +38,7 @@ public:
 	static SSD_Components::CMT_Sharing_Mode CMT_Sharing_Mode;//How the entire CMT space is shared among concurrently running flows
 	static SSD_Components::Flash_Plane_Allocation_Scheme_Type Plane_Allocation_Scheme;
 	static bool PACS_Enabled;
+	static bool Workload_Intensity_Stats_Enabled;
 	static bool PACS_Request_Level_Enabled;
 	static bool PACS_Cross_Channel_Enabled;
 	static SSD_Components::PACS_Adaptive_Options PACS_Adaptive;
