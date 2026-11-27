@@ -50,6 +50,10 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		if (parameters->PACS_Adaptive.enabled && !parameters->PACS_Cross_Channel_Enabled) {
 			throw std::invalid_argument("PACS_Cross_Channel_Adaptive_Enabled requires PACS_Cross_Channel_Enabled");
 		}
+		if ((parameters->PACS_Adaptive.use_average_program_latency || parameters->PACS_Adaptive.record_wl_decisions)
+			&& !parameters->PACS_Adaptive.enabled) {
+			throw std::invalid_argument("PACS average program prediction and WL decision statistics require Adaptive PACS");
+		}
 		if (parameters->LEPA_WL_Aware_Enabled && (!parameters->LEPA_Enabled || parameters->Independent_Wordline_Multiplane)) {
 			throw std::invalid_argument("WL-aware LEPA requires LEPA with single-plane commands");
 		}
@@ -149,10 +153,12 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 			}
 
 			//Step 3: create channel controller and connect channels to it
+			auto pacs_adaptive = parameters->PACS_Adaptive;
+			pacs_adaptive.average_program_latency = average_flash_write_latency;
 			device->PHY = new SSD_Components::NVM_PHY_ONFI_NVDDR2(device->ID() + ".PHY", channels, parameters->Flash_Channel_Count, parameters->Chip_No_Per_Channel,
 																 parameters->Flash_Parameters.Die_No_Per_Chip, parameters->Flash_Parameters.Plane_No_Per_Die,
 																 parameters->PACS_Enabled, parameters->PACS_Request_Level_Enabled,
-																 parameters->PACS_Cross_Channel_Enabled, parameters->PACS_Adaptive);
+																 parameters->PACS_Cross_Channel_Enabled, pacs_adaptive);
 			Simulator->AddObject(device->PHY);
 			break;
 		}

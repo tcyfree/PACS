@@ -76,6 +76,8 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Adaptive_Enabled", PACS_Adaptive.enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Gain_Beta", std::to_string(PACS_Adaptive.gain_beta));
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Search_Budget", std::to_string(PACS_Adaptive.search_budget));
+	xmlwriter.Write_attribute_string("PACS_Use_Average_Program_Latency", PACS_Adaptive.use_average_program_latency ? "true" : "false");
+	xmlwriter.Write_attribute_string("PACS_WL_Decision_Stats", PACS_Adaptive.record_wl_decisions ? "true" : "false");
 	xmlwriter.Write_attribute_string("LEPA_Enabled", LEPA_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("LEPA_WL_Aware_Enabled", LEPA_WL_Aware_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("QSTR_MED_Enabled", QSTR_MED_Enabled ? "true" : "false");
@@ -427,6 +429,8 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 			} else if (strcmp(param->name(), "PACS_Request_Level_Enabled") == 0
 				|| strcmp(param->name(), "PACS_Cross_Channel_Enabled") == 0
 				|| strcmp(param->name(), "PACS_Cross_Channel_Adaptive_Enabled") == 0
+				|| strcmp(param->name(), "PACS_Use_Average_Program_Latency") == 0
+				|| strcmp(param->name(), "PACS_WL_Decision_Stats") == 0
 				|| strcmp(param->name(), "LEPA_Enabled") == 0
 				|| strcmp(param->name(), "LEPA_WL_Aware_Enabled") == 0
 				|| strcmp(param->name(), "QSTR_MED_Enabled") == 0
@@ -444,6 +448,10 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 					PACS_Cross_Channel_Enabled = enabled;
 				} else if (name == "PACS_Cross_Channel_Adaptive_Enabled") {
 					PACS_Adaptive.enabled = enabled;
+				} else if (name == "PACS_Use_Average_Program_Latency") {
+					PACS_Adaptive.use_average_program_latency = enabled;
+				} else if (name == "PACS_WL_Decision_Stats") {
+					PACS_Adaptive.record_wl_decisions = enabled;
 				} else if (name == "LEPA_Enabled") {
 					LEPA_Enabled = enabled;
 				} else if (name == "LEPA_WL_Aware_Enabled") {

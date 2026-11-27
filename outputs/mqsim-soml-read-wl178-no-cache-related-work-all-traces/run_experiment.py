@@ -209,7 +209,7 @@ def run_case(template, binary, trace, mode, details):
     issued_gc = int(ftl['Total_GC_Executions'])
     gc_moved = round(issued_gc * float(ftl['Average_Page_Movement_For_GC'])) if issued_gc else 0
 
-    present = [result.find('./SSDDevice/' + key) for key in MODES.values() if key]
+    present = [result.find('./SSDDevice/' + key) for key in dict.fromkeys(MODES.values()) if key]
     present = [node for node in present if node is not None]
     assert [node.tag for node in present] == ([policy] if policy else [])
     counters = {child.tag: child.text for node in present for child in node if not len(child)}

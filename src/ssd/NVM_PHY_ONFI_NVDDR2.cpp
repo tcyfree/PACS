@@ -142,8 +142,11 @@ namespace SSD_Components {
 	}
 
 	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_page_program(
-		const NVM::FlashMemory::Physical_Page_Address& address, flash_page_ID_type page_id) const
+		const NVM::FlashMemory::Physical_Page_Address& address, flash_page_ID_type page_id, bool use_average) const
 	{
+		if (use_average) {
+			return pacs->Adaptive_options().average_program_latency;
+		}
 		const auto* chip = channels[address.ChannelID]->Chips[address.ChipID];
 		return pacs->Uses_online_program_profiling() ? estimate_pacs_program_for_type(address, chip->Get_page_type(page_id))
 			: chip->Get_configured_program_latency(page_id);
@@ -177,7 +180,8 @@ namespace SSD_Components {
 				if (pacs->Uses_online_program_profiling()) {
 					update(die.PACS_queued_programs[chip->Get_page_type(address.PageID)], 1);
 				} else {
-					work += chip->Get_configured_program_latency(address.PageID);
+					update(die.PACS_queued_program_time, chip->Get_configured_program_latency(address.PageID));
+					update(die.PACS_queued_program_count, 1);
 				}
 				break;
 			case Transaction_Type::ERASE:
@@ -201,11 +205,13 @@ namespace SSD_Components {
 		return finish - now;
 	}
 
-	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address) const
+	double NVM_PHY_ONFI_NVDDR2::Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address, bool use_average) const
 	{
 		const auto& chip = bookKeepingTable[address.ChannelID][address.ChipID];
 		const auto& die = chip.Die_book_keeping_records[address.DieID];
-		double remaining = die.PACS_queued_fixed_work;
+		const auto queued_program = use_average ? die.PACS_queued_program_count * pacs->Adaptive_options().average_program_latency
+			: die.PACS_queued_program_time;
+		double remaining = die.PACS_queued_fixed_work + queued_program;
 		for (unsigned int type = 0; type < die.PACS_queued_programs.size(); ++type) {
 			if (die.PACS_queued_programs[type]) {
 				remaining += die.PACS_queued_programs[type] * estimate_pacs_program_for_type(address, type);
@@ -218,7 +224,7 @@ namespace SSD_Components {
 		const auto* command = die.ActiveCommand;
 		if (command->CommandCode == CMD_PROGRAM_PAGE || command->CommandCode == CMD_PROGRAM_PAGE_COPYBACK) {
 			const auto& active = command->Address.front();
-			return remaining + std::max(0.0, double(die.PACS_program_start) - now + Estimate_pacs_page_program(active, active.PageID));
+			return remaining + std::max(0.0, double(die.PACS_program_start) - now + Estimate_pacs_page_program(active, active.PageID, use_average));
 		}
 		const auto array_remaining = std::max(die.Expected_finish_time, now) - now;
 		if (command->CommandCode == CMD_READ_PAGE) {
@@ -232,7 +238,7 @@ namespace SSD_Components {
 		if (command->CommandCode == CMD_READ_PAGE_COPYBACK) {
 			const auto& active = command->Address.front();
 			return remaining + array_remaining + channels[active.ChannelID]->ProgramCommandTime[1]
-				+ Estimate_pacs_page_program(active, active.PageID);
+				+ Estimate_pacs_page_program(active, active.PageID, use_average);
 		}
 		return remaining + array_remaining;
 	}

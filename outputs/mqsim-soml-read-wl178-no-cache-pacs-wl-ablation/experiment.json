@@ -1,0 +1,102 @@
+{
+  "traces": {
+    "1612_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_2.csv",
+      "size": 106663146,
+      "mtime_ns": 1795503522581223568,
+      "reads": 2449506,
+      "writes": 953039,
+      "multi_page_writes": 361144,
+      "bytes": 63527034368,
+      "span_ns": 3388269092096,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "1612_4": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun/sortedTrace/1612_4.csv",
+      "size": 74646306,
+      "mtime_ns": 1795503513203572227,
+      "reads": 2049890,
+      "writes": 338102,
+      "multi_page_writes": 147112,
+      "bytes": 79803046400,
+      "span_ns": 3391819047936,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/lun"
+    },
+    "src2_2": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/src2_2.csv",
+      "size": 36974651,
+      "mtime_ns": 1795503519042978303,
+      "reads": 350930,
+      "writes": 805955,
+      "multi_page_writes": 692087,
+      "bytes": 66644063744,
+      "span_ns": 633579753331300,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    },
+    "hm_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/hm_0.csv",
+      "size": 121519461,
+      "mtime_ns": 1795503514532664792,
+      "reads": 1417748,
+      "writes": 2575568,
+      "multi_page_writes": 435020,
+      "bytes": 32683298304,
+      "span_ns": 604795895097200,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    },
+    "web_0": {
+      "path": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc/sortedTrace/web_0.csv",
+      "size": 61911593,
+      "mtime_ns": 1795503518003906164,
+      "reads": 606487,
+      "writes": 1423458,
+      "multi_page_writes": 638056,
+      "bytes": 31163521536,
+      "span_ns": 604804141265500,
+      "history_batch": "/home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache/msrc"
+    }
+  },
+  "settings": {
+    "flash_channels": 4,
+    "page_capacity_bytes": 16384,
+    "flash_technology": "TLC",
+    "wordline_timings": 256,
+    "device_data_caching": "TURNED_OFF",
+    "independent_wordline_multiplane": false
+  },
+  "policy_options": {
+    "baseline": {},
+    "lepa": {
+      "LEPA_WL_Aware_Enabled": "false"
+    },
+    "lepa-wl-aware": {
+      "LEPA_WL_Aware_Enabled": "true"
+    },
+    "pacs-nowl": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "true",
+      "PACS_WL_Decision_Stats": "false"
+    },
+    "pacs-full": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true"
+    }
+  },
+  "template_sha256": {
+    "MQSim": "00146488df60c4b7d7c80315f0ea656c27d8c168c3dc5b1b1481d76a1f204892",
+    "ssdconfig.xml": "bf519b3e7eeb63942114c2f01bc070156ab088ba284b0c27f81ab61303432b09",
+    "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+  },
+  "physical_program_latency": "Same configured WL table for all five policies",
+  "average_program_latency_ns": 1440856,
+  "decision_snapshot_source": "PACS-Full replay before committing its selected plan"
+}

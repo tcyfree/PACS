@@ -571,6 +571,9 @@ namespace SSD_Components
 					decision_time, plan.estimated_duration, crossed_pages != 0);
 			}
 		}
+		if (!plan.addresses.empty() && pacs->Adaptive_options().record_wl_decisions) {
+			pacs->Record_wl_plan_commit(plan.addresses.size() > 1, placed_as_planned == plan.addresses.size());
+		}
 
 		if (transactionList.size() > 0) {
 			ftl->TSU->Prepare_for_transaction_submit();
@@ -1294,6 +1297,7 @@ namespace SSD_Components
 		auto& domain = *domains[stream];
 		const bool cross_channel = pacs->Cross_channel_enabled() && domain.Channel_no > 1;
 		const bool online_profiling = pacs->Uses_online_program_profiling();
+		const auto& adaptive = pacs->Adaptive_options();
 		const auto plane_options = online_profiling ? 1U : domain.Plane_no;
 		if (domain.PlaneAllocationScheme != Flash_Plane_Allocation_Scheme_Type::CWDP
 			|| (domain.Chip_no < 2 && plane_options < 2 && !cross_channel)) {
@@ -1308,9 +1312,9 @@ namespace SSD_Components
 		};
 		const auto* phy = static_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller);
 		std::vector<Page> pages;
-		std::vector<Physical_Page_Address> plan;
+		std::vector<Physical_Page_Address> original_plan;
 		pages.reserve(transactions.size());
-		plan.reserve(transactions.size());
+		original_plan.reserve(transactions.size());
 		std::unordered_set<LPA_type> logical_pages;
 		for (const auto* transaction : transactions) {
 			if (transaction->Type != Transaction_Type::WRITE || transaction->Source != Transaction_Source_Type::USERIO
@@ -1331,7 +1335,7 @@ namespace SSD_Components
 				page.old_page = Convert_ppa_to_address(old_ppa);
 				page.read = phy->Estimate_pacs_read(page.old_page, count_sector_no_from_status_bitmap(read_sectors) * SECTOR_SIZE_IN_BYTE);
 			}
-			plan.push_back(page.original);
+			original_plan.push_back(page.original);
 			pages.push_back(page);
 		}
 
@@ -1342,7 +1346,11 @@ namespace SSD_Components
 			return die_index(address) * plane_no_per_die + address.PlaneID;
 		};
 		const auto die_count = std::size_t(channel_count) * chip_no_per_channel * die_no_per_chip;
-		std::vector<double> initial_die_ready(die_count), initial_channel_ready(channel_count);
+		const bool need_average = adaptive.use_average_program_latency || adaptive.record_wl_decisions;
+		const bool need_configured = !adaptive.use_average_program_latency || adaptive.record_wl_decisions;
+		std::vector<double> configured_die_ready(need_configured ? die_count : 0);
+		std::vector<double> average_die_ready(need_average ? die_count : 0);
+		std::vector<double> initial_channel_ready(channel_count);
 		std::vector<flash_page_ID_type> initial_frontier(die_count * plane_no_per_die);
 		std::vector<bool> blocked(initial_frontier.size());
 		for (unsigned int channel = 0; channel < channel_count; ++channel) {
@@ -1350,7 +1358,12 @@ namespace SSD_Components
 			for (unsigned int chip = 0; chip < chip_no_per_channel; ++chip) {
 				for (unsigned int die = 0; die < die_no_per_chip; ++die) {
 					Physical_Page_Address address(channel, chip, die);
-					initial_die_ready[die_index(address)] = phy->Estimate_pacs_die_ready(address);
+					if (need_configured) {
+						configured_die_ready[die_index(address)] = phy->Estimate_pacs_die_ready(address, false);
+					}
+					if (need_average) {
+						average_die_ready[die_index(address)] = phy->Estimate_pacs_die_ready(address, true);
+					}
 					for (unsigned int plane = 0; plane < plane_no_per_die; ++plane) {
 						address.PlaneID = plane;
 						const auto index = plane_index(address);
@@ -1383,9 +1396,9 @@ namespace SSD_Components
 		std::vector<Pending> pending(pages.size());
 		std::vector<double> program_times(pages.size()), data_ready(pages.size()), die_ready, channel_ready;
 		const auto impossible = std::numeric_limits<double>::infinity();
-		const auto estimate_plan = [&](std::vector<double>& finish) {
+		const auto estimate_plan = [&](const std::vector<Physical_Page_Address>& plan, std::vector<double>& finish, bool use_average) {
 			frontier = initial_frontier;
-			die_ready = initial_die_ready;
+			die_ready = use_average ? average_die_ready : configured_die_ready;
 			channel_ready = initial_channel_ready;
 			std::fill(data_ready.begin(), data_ready.end(), 0.0);
 			for (std::size_t i = 0; i < pages.size(); ++i) {
@@ -1397,7 +1410,7 @@ namespace SSD_Components
 						return impossible;
 					}
 				}
-				program_times[i] = phy->Estimate_pacs_page_program(plan[i], page_id);
+				program_times[i] = phy->Estimate_pacs_page_program(plan[i], page_id, use_average);
 				pending[i] = pages[i].read.command ? Pending::READ_COMMAND : Pending::PROGRAM;
 			}
 
@@ -1453,180 +1466,259 @@ namespace SSD_Components
 		};
 
 		std::vector<double> finish(pages.size());
-		double best_finish = estimate_plan(finish);
-		std::vector<std::size_t> order;
-		for (std::size_t i = 0; i < pages.size(); ++i) {
-			order.push_back(i);
-		}
-		std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) { return finish[a] > finish[b]; });
-		for (const auto i : order) {
-			const auto& page = pages[i];
-			if (online_profiling && pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
-				continue;
+		const auto optimize_plan = [&](bool use_average, PACS_Search_Statistics& search_stats) -> PACS_Write_Plan {
+			auto plan = original_plan;
+			const auto& initial_die_ready = use_average ? average_die_ready : configured_die_ready;
+			double best_finish = estimate_plan(plan, finish, use_average);
+			std::vector<std::size_t> order;
+			for (std::size_t i = 0; i < pages.size(); ++i) {
+				order.push_back(i);
 			}
-			auto best_address = page.original;
-			for (unsigned int chip = 0; chip < domain.Chip_no; ++chip) {
-				for (unsigned int plane = 0; plane < plane_options; ++plane) {
-					const auto plane_id = online_profiling ? page.original.PlaneID : domain.Plane_ids[plane];
-					const Physical_Page_Address candidate(page.original.ChannelID, domain.Chip_ids[chip], page.original.DieID, plane_id);
-					if (plane_index(candidate) == plane_index(page.original) || blocked[plane_index(candidate)]) {
+			std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) { return finish[a] > finish[b]; });
+			for (const auto i : order) {
+				const auto& page = pages[i];
+				if (online_profiling && pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
+					continue;
+				}
+				auto best_address = page.original;
+				for (unsigned int chip = 0; chip < domain.Chip_no; ++chip) {
+					for (unsigned int plane = 0; plane < plane_options; ++plane) {
+						const auto plane_id = online_profiling ? page.original.PlaneID : domain.Plane_ids[plane];
+						const Physical_Page_Address candidate(page.original.ChannelID, domain.Chip_ids[chip], page.original.DieID, plane_id);
+						if (plane_index(candidate) == plane_index(page.original) || blocked[plane_index(candidate)]) {
+							continue;
+						}
+						plan[i] = candidate;
+						const auto trial_finish = estimate_plan(plan, finish, use_average);
+						if (trial_finish < best_finish || (trial_finish == best_finish
+							&& candidate.PlaneID == page.original.PlaneID && best_address.PlaneID != page.original.PlaneID)) {
+							best_finish = trial_finish;
+							best_address = candidate;
+						}
+					}
+				}
+				plan[i] = best_address;
+			}
+			if (!cross_channel) {
+				return {std::move(plan), 0};
+			}
+
+			const double local_finish = estimate_plan(plan, finish, use_average);
+			if (!std::isfinite(local_finish)) {
+				return {std::move(plan), 0};
+			}
+			const auto critical_page = std::max_element(finish.begin(), finish.end()) - finish.begin();
+			if (adaptive.enabled) {
+				const double minimum_gain = adaptive.gain_beta * program_times[critical_page];
+				const double target_finish = local_finish - minimum_gain;
+				struct Candidate {
+					Physical_Page_Address address;
+					double estimated_finish;
+					bool crosses_channel;
+				};
+				struct Critical_Page {
+					std::size_t index;
+					std::vector<Candidate> candidates;
+				};
+				std::vector<Critical_Page> critical_pages;
+				for (std::size_t i = 0; i < finish.size(); ++i) {
+					// A zero threshold uses all pages tied for the last finish as the starting set.
+					if (finish[i] > target_finish || finish[i] == local_finish) {
+						critical_pages.push_back({i, {}});
+					}
+				}
+				unsigned int evaluations = 0;
+				bool exhausted = false;
+				std::vector<Physical_Page_Address> best_plan;
+				std::size_t best_crossed_pages = 0;
+				best_finish = local_finish;
+				if (target_finish > 0) {
+					const auto page_after_prefix = [&](const Physical_Page_Address& address, std::size_t i) {
+						const auto lane = plane_index(address);
+						std::size_t next_page = initial_frontier[lane];
+						for (std::size_t earlier = 0; earlier < i; ++earlier) {
+							next_page += plane_index(plan[earlier]) == lane;
+						}
+						return static_cast<flash_page_ID_type>(next_page % pages_no_per_block);
+					};
+					for (auto& critical : critical_pages) {
+						const auto i = critical.index;
+						const auto& page = pages[i];
+						const auto local_address = plan[i];
+						const auto candidate_time = [&](const Physical_Page_Address& address, double program_time) {
+							return std::max(initial_channel_ready[address.ChannelID], initial_die_ready[die_index(address)])
+								+ phy->Estimate_pacs_write_transfer(address.ChannelID, page.write_bytes) + program_time;
+						};
+						critical.candidates.push_back({local_address, candidate_time(local_address, program_times[i]), false});
+						for (unsigned int c = 0; c < domain.Channel_no; ++c) {
+							const auto channel = domain.Channel_ids[c];
+							if (channel == local_address.ChannelID) {
+								continue;
+							}
+							for (unsigned int w = 0; w < domain.Chip_no; ++w) {
+								for (unsigned int p = 0; p < domain.Plane_no; ++p) {
+									const Physical_Page_Address address(channel, domain.Chip_ids[w], local_address.DieID, domain.Plane_ids[p]);
+									if (!blocked[plane_index(address)]) {
+										const double program = phy->Estimate_pacs_page_program(address, page_after_prefix(address, i), use_average);
+										critical.candidates.push_back({address, candidate_time(address, program), true});
+									}
+								}
+							}
+						}
+						std::stable_sort(critical.candidates.begin(), critical.candidates.end(), [](const Candidate& a, const Candidate& b) {
+							return a.estimated_finish < b.estimated_finish;
+						});
+					}
+
+					const std::function<void(std::size_t, std::size_t)> search = [&](std::size_t position, std::size_t crossed_pages) {
+						if (position == critical_pages.size()) {
+							if (crossed_pages == 0) {
+								return;
+							}
+							if (evaluations == adaptive.search_budget) {
+								exhausted = true;
+								return;
+							}
+							++evaluations;
+							const double candidate_finish = estimate_plan(plan, finish, use_average);
+							const double gain = local_finish - candidate_finish;
+							search_stats.rejected_by_beta += gain > 0 && gain < minimum_gain;
+							if (gain >= minimum_gain &&
+								(candidate_finish < best_finish || (candidate_finish == best_finish && crossed_pages < best_crossed_pages))) {
+								best_finish = candidate_finish;
+								best_crossed_pages = crossed_pages;
+								best_plan = plan;
+							}
+							return;
+						}
+
+						const auto& critical = critical_pages[position];
+						const auto i = critical.index;
+						const auto local_address = plan[i];
+						for (const auto& candidate : critical.candidates) {
+							if (exhausted) {
+								break;
+							}
+							plan[i] = candidate.address;
+							search(position + 1, crossed_pages + candidate.crosses_channel);
+						}
+						plan[i] = local_address;
+					};
+					search(0, 0);
+				}
+				search_stats.critical_pages = critical_pages.size();
+				search_stats.evaluations = evaluations;
+				search_stats.budget_exhausted = exhausted;
+				search_stats.only_below_beta = best_plan.empty() && search_stats.rejected_by_beta > 0;
+				if (!best_plan.empty()) {
+					return {std::move(best_plan), best_finish};
+				}
+				return {std::move(plan), local_finish};
+			}
+
+			// In the original hybrid mode only the last-finishing page can cross a channel.
+			const auto& page = pages[critical_page];
+			if (pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
+				return {std::move(plan), 0};
+			}
+			const auto local_address = plan[critical_page];
+			auto best_address = local_address;
+			const double minimum_gain = program_times[critical_page];
+			best_finish = local_finish;
+			for (unsigned int c = 0; c < domain.Channel_no; ++c) {
+				const auto channel = domain.Channel_ids[c];
+				if (channel == local_address.ChannelID) {
+					continue;
+				}
+				for (unsigned int w = 0; w < domain.Chip_no; ++w) {
+					const Physical_Page_Address candidate(channel, domain.Chip_ids[w], local_address.DieID, local_address.PlaneID);
+					if (blocked[plane_index(candidate)]) {
 						continue;
 					}
-					plan[i] = candidate;
-					const auto trial_finish = estimate_plan(finish);
-					if (trial_finish < best_finish || (trial_finish == best_finish
-						&& candidate.PlaneID == page.original.PlaneID && best_address.PlaneID != page.original.PlaneID)) {
-						best_finish = trial_finish;
+					plan[critical_page] = candidate;
+					const auto candidate_finish = estimate_plan(plan, finish, use_average);
+					if (candidate_finish < best_finish && local_finish - candidate_finish >= minimum_gain) {
+						best_finish = candidate_finish;
 						best_address = candidate;
 					}
 				}
 			}
-			plan[i] = best_address;
-		}
-		if (!cross_channel) {
+			plan[critical_page] = best_address;
 			return {std::move(plan), 0};
+		};
+		PACS_Search_Statistics selected_search;
+		const bool use_average = adaptive.use_average_program_latency;
+		auto selected = optimize_plan(use_average, selected_search);
+		if (pages.size() > 1 && selected_search.critical_pages) {
+			pacs->Record_adaptive_search(selected_search.critical_pages, selected_search.evaluations, selected_search.budget_exhausted);
+		}
+		if (!adaptive.record_wl_decisions) {
+			return selected;
 		}
 
-		const double local_finish = estimate_plan(finish);
-		if (!std::isfinite(local_finish)) {
-			return {std::move(plan), 0};
-		}
-		const auto critical_page = std::max_element(finish.begin(), finish.end()) - finish.begin();
-		const auto& adaptive = pacs->Adaptive_options();
-		if (adaptive.enabled) {
-			const double minimum_gain = adaptive.gain_beta * program_times[critical_page];
-			const double target_finish = local_finish - minimum_gain;
-			struct Candidate {
-				Physical_Page_Address address;
-				double estimated_finish;
-				bool crosses_channel;
-			};
-			struct Critical_Page {
-				std::size_t index;
-				std::vector<Candidate> candidates;
-			};
-			std::vector<Critical_Page> critical_pages;
-			for (std::size_t i = 0; i < finish.size(); ++i) {
-				// A zero threshold uses all pages tied for the last finish as the starting set.
-				if (finish[i] > target_finish || finish[i] == local_finish) {
-					critical_pages.push_back({i, {}});
-				}
-			}
-			unsigned int evaluations = 0;
-			bool exhausted = false;
-			std::vector<Physical_Page_Address> best_plan;
-			std::size_t best_crossed_pages = 0;
-			best_finish = local_finish;
-			if (target_finish > 0) {
-				const auto page_after_prefix = [&](const Physical_Page_Address& address, std::size_t i) {
-					const auto lane = plane_index(address);
-					std::size_t next_page = initial_frontier[lane];
-					for (std::size_t earlier = 0; earlier < i; ++earlier) {
-						next_page += plane_index(plan[earlier]) == lane;
-					}
-					return static_cast<flash_page_ID_type>(next_page % pages_no_per_block);
-				};
-				for (auto& critical : critical_pages) {
-					const auto i = critical.index;
-					const auto& page = pages[i];
-					const auto local_address = plan[i];
-					const auto candidate_time = [&](const Physical_Page_Address& address, double program_time) {
-						return std::max(initial_channel_ready[address.ChannelID], initial_die_ready[die_index(address)])
-							+ phy->Estimate_pacs_write_transfer(address.ChannelID, page.write_bytes) + program_time;
-					};
-					critical.candidates.push_back({local_address, candidate_time(local_address, program_times[i]), false});
-					for (unsigned int c = 0; c < domain.Channel_no; ++c) {
-						const auto channel = domain.Channel_ids[c];
-						if (channel == local_address.ChannelID) {
+		PACS_Search_Statistics shadow_search;
+		const auto shadow = optimize_plan(!use_average, shadow_search);
+		const auto& mean_plan = use_average ? selected.addresses : shadow.addresses;
+		const auto& full_plan = use_average ? shadow.addresses : selected.addresses;
+
+		// Score all three placements with real WL times on the shared snapshot.
+		PACS_Decision_Comparison comparison{};
+		comparison.pages = pages.size();
+		comparison.mean_search = use_average ? selected_search : shadow_search;
+		comparison.full_search = use_average ? shadow_search : selected_search;
+		comparison.cwdp_finish = estimate_plan(original_plan, finish, false);
+		comparison.mean_plan_finish = estimate_plan(mean_plan, finish, false);
+		comparison.full_finish = estimate_plan(full_plan, finish, false);
+
+		// A slot is identified by its plane and unwrapped write ordinal, including
+		// any extra allocation caused by a preceding page moving to that plane.
+		std::vector<std::size_t> original_slots(initial_frontier.begin(), initial_frontier.end());
+		auto mean_slots = original_slots;
+		auto full_slots = original_slots;
+		for (std::size_t i = 0; i < pages.size(); ++i) {
+			const auto& a = original_plan[i];
+			const auto& b = mean_plan[i];
+			const auto& c = full_plan[i];
+			const auto a_lane = plane_index(a), b_lane = plane_index(b), c_lane = plane_index(c);
+			const auto a_slot = original_slots[a_lane], b_slot = mean_slots[b_lane]++, c_slot = full_slots[c_lane]++;
+			comparison.cwdp_to_mean += a_lane != b_lane || a_slot != b_slot;
+			comparison.cwdp_to_full += a_lane != c_lane || a_slot != c_slot;
+			comparison.mean_to_full += b_lane != c_lane || b_slot != c_slot;
+			comparison.mean_to_full_lanes += b_lane != c_lane;
+			comparison.same_die_plane_changes += die_index(a) == die_index(c) && a.PlaneID != c.PlaneID;
+
+			const double original_program = phy->Estimate_pacs_page_program(a, a_slot % pages_no_per_block, false);
+			const double selected_program = phy->Estimate_pacs_page_program(c, c_slot % pages_no_per_block, false);
+			double min_program = impossible, max_program = 0, min_load = impossible, max_load = 0;
+			// Use the CWDP prefix for every candidate so the measured gap has a
+			// common write frontier even when the two optimizers diverge.
+			for (unsigned int ci = 0; ci < domain.Channel_no; ++ci) {
+				for (unsigned int wi = 0; wi < domain.Chip_no; ++wi) {
+					for (unsigned int pi = 0; pi < domain.Plane_no; ++pi) {
+						const Physical_Page_Address candidate(domain.Channel_ids[ci], domain.Chip_ids[wi], a.DieID, domain.Plane_ids[pi]);
+						const auto lane = plane_index(candidate);
+						if (blocked[lane]) {
 							continue;
 						}
-						for (unsigned int w = 0; w < domain.Chip_no; ++w) {
-							for (unsigned int p = 0; p < domain.Plane_no; ++p) {
-								const Physical_Page_Address address(channel, domain.Chip_ids[w], local_address.DieID, domain.Plane_ids[p]);
-								if (!blocked[plane_index(address)]) {
-									const double program = phy->Estimate_pacs_page_program(address, page_after_prefix(address, i));
-									critical.candidates.push_back({address, candidate_time(address, program), true});
-								}
-							}
-						}
+						const auto page_id = original_slots[lane] % pages_no_per_block;
+						const double program = phy->Estimate_pacs_page_program(candidate, page_id, false);
+						const double load = std::max(initial_channel_ready[candidate.ChannelID], configured_die_ready[die_index(candidate)]);
+						min_program = std::min(min_program, program);
+						max_program = std::max(max_program, program);
+						min_load = std::min(min_load, load);
+						max_load = std::max(max_load, load);
 					}
-					std::stable_sort(critical.candidates.begin(), critical.candidates.end(), [](const Candidate& a, const Candidate& b) {
-						return a.estimated_finish < b.estimated_finish;
-					});
-				}
-
-				const std::function<void(std::size_t, std::size_t)> search = [&](std::size_t position, std::size_t crossed_pages) {
-					if (position == critical_pages.size()) {
-						if (crossed_pages == 0) {
-							return;
-						}
-						if (evaluations == adaptive.search_budget) {
-							exhausted = true;
-							return;
-						}
-						++evaluations;
-						const double candidate_finish = estimate_plan(finish);
-						if (local_finish - candidate_finish >= minimum_gain &&
-							(candidate_finish < best_finish || (candidate_finish == best_finish && crossed_pages < best_crossed_pages))) {
-							best_finish = candidate_finish;
-							best_crossed_pages = crossed_pages;
-							best_plan = plan;
-						}
-						return;
-					}
-
-					const auto& critical = critical_pages[position];
-					const auto i = critical.index;
-					const auto local_address = plan[i];
-					for (const auto& candidate : critical.candidates) {
-						if (exhausted) {
-							break;
-						}
-						plan[i] = candidate.address;
-						search(position + 1, crossed_pages + candidate.crosses_channel);
-					}
-					plan[i] = local_address;
-				};
-				search(0, 0);
-			}
-			if (pages.size() > 1) {
-				pacs->Record_adaptive_search(critical_pages.size(), evaluations, exhausted);
-			}
-			if (!best_plan.empty()) {
-				return {std::move(best_plan), best_finish};
-			}
-			return {std::move(plan), local_finish};
-		}
-
-		// In the original hybrid mode only the last-finishing page can cross a channel.
-		const auto& page = pages[critical_page];
-		if (pacs->Estimate_program_latency(page.original, page.reference_type) == 0) {
-			return {std::move(plan), 0};
-		}
-		const auto local_address = plan[critical_page];
-		auto best_address = local_address;
-		const double minimum_gain = program_times[critical_page];
-		best_finish = local_finish;
-		for (unsigned int c = 0; c < domain.Channel_no; ++c) {
-			const auto channel = domain.Channel_ids[c];
-			if (channel == local_address.ChannelID) {
-				continue;
-			}
-			for (unsigned int w = 0; w < domain.Chip_no; ++w) {
-				const Physical_Page_Address candidate(channel, domain.Chip_ids[w], local_address.DieID, local_address.PlaneID);
-				if (blocked[plane_index(candidate)]) {
-					continue;
-				}
-				plan[critical_page] = candidate;
-				const auto candidate_finish = estimate_plan(finish);
-				if (candidate_finish < best_finish && local_finish - candidate_finish >= minimum_gain) {
-					best_finish = candidate_finish;
-					best_address = candidate;
 				}
 			}
+			++original_slots[a_lane];
+			pacs->Record_wl_candidates(pages.size() > 1, max_program - min_program, max_load - min_load,
+				original_program, selected_program);
+			if (pages.size() == 1) {
+				comparison.single_page_program_gain = original_program - selected_program;
+			}
 		}
-		plan[critical_page] = best_address;
-		return {std::move(plan), 0};
+		pacs->Record_wl_decision(comparison);
+		return selected;
 	}
 
 	void Address_Mapping_Unit_Page_Level::select_pacs_write_target(NVM_Transaction_Flash_WR* transaction, const AddressMappingDomain& domain)
@@ -1656,9 +1748,10 @@ namespace SSD_Components
 		const auto* phy = static_cast<NVM_PHY_ONFI_NVDDR2*>(flash_controller);
 		const auto baseline_page_id = next_page(baseline);
 		const auto baseline_page_type = page_type_at(baseline, baseline_page_id);
+		const bool use_average = pacs->Adaptive_options().use_average_program_latency;
 		const auto estimate_cost = [&](const Physical_Page_Address& address, flash_page_ID_type page_id) {
 			return online_profiling ? pacs->Estimate_completion_cost(address, baseline_page_type)
-				: phy->Estimate_pacs_die_ready(address) + phy->Estimate_pacs_page_program(address, page_id);
+				: phy->Estimate_pacs_die_ready(address, use_average) + phy->Estimate_pacs_page_program(address, page_id, use_average);
 		};
 		double best_cost = estimate_cost(baseline, baseline_page_id);
 		if (best_cost == 0) {

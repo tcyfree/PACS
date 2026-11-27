@@ -51,6 +51,14 @@ QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORD
 
 结果 XML 的 `Adaptive_Search` 记录跨页写的关键页数分布、组合预测次数分布和预算耗尽次数。`Single_Page_Cross_Channel_Writes` 记录单页写的跨通道次数。`Single_Page_Cross_Plane_Writes` 和 `Cross_Plane_Multipage_Write_Pages` 分别记录单页写和跨页写中 Plane ID 相对 CWDP 初始地址发生变化的页数。预测误差取预计时长减去从分配决策到最后一个 NAND program 完成的实际时长。统计样本为按所选地址完成分配的跨页写请求。
 
+### WL 感知消融
+
+在自适应模式中启用 `PACS_Use_Average_Program_Latency` 可运行 PACS-NoWL。等待的编程、在途编程的预计剩余时间、候选页编程和收益门槛都使用统一的平均 tPROG。均值取设备时延表，NAND 仍按物理 WL 执行。默认使用 PACS-Full 的逐 WL 预测。
+
+启用 `PACS_WL_Decision_Stats` 后，在主策略分配前，对同一资源状态比较 CWDP、PACS-NoWL 和 PACS-Full。两个优化器的物理候选池、β 和搜索预算一致。关键页集合和搜索顺序按各自的预测时间计算。以 Plane 和该 Plane 内的写入序号比较页的目标位置，可识别同一 Plane 上因请求内前序页改址而改变的目标页。结果 XML 的 `WL_Decision_Stats` 分别记录单页和跨页请求、与实际选址一致的计划数、五类选址结果、改变页数分布和同 Die 改 Plane 数。
+
+候选差值按 CWDP 的请求内前序分配推进写前沿。每页在所有可写的候选地址上计算最大值减最小值。编程差来自候选物理页的逐 WL tPROG，负载差来自候选 Channel 和 Die 就绪时间两者的较晚值。两种差值均用上界包含的直方图区间。已评估的跨通道方案有正收益且收益低于门槛时计为 `Rejected_By_Beta`。整笔请求的反事实收益用同一逐 WL 模型重估三种方案的完工时间。对单页改址进一步拆分编程时间差和开始编程前的时间差。
+
 ## QSTR-MED
 
 主机写入和 GC 迁移各使用自己的块组。策略按块的字线编程时延总和，在每个 plane 的空闲块池中取最快或最慢的四个候选。它选出全组最快或最慢的参考块，再用字线签名的 Hamming 距离从每个其余 plane 选出成员。每层按四个连续逻辑 WL 构建签名，最快两项记为 0。块编程完成后更新签名，模拟器为未映射的读请求预置的页也按其配置时延记入。主机写使用快组，GC 迁移使用慢组。预处理先填充初始数据，前沿块续配时启用 QSTR-MED。MQSim 逐平面推进写入和 GC，先填满的 plane 可补配一个本地块。

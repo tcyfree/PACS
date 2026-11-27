@@ -41,6 +41,8 @@ namespace SSD_Components
 		sim_time_type PACS_program_start = T0;
 		std::array<sim_time_type, 3> PACS_queued_programs{};
 		sim_time_type PACS_queued_fixed_work = 0;
+		sim_time_type PACS_queued_program_time = 0;
+		sim_time_type PACS_queued_program_count = 0;
 		sim_time_type RemainingExecTime;
 		sim_time_type DieInterleavedTime;//If the command transfer is done in die-interleaved mode, the transfer time is recorded in this temporary variable
 
@@ -107,9 +109,10 @@ namespace SSD_Components
 			sim_time_type command, execution, data_out;
 		};
 		void Update_pacs_queue(const NVM_Transaction_Flash& transaction, bool enqueue);
-		double Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address) const;
+		double Estimate_pacs_die_ready(const NVM::FlashMemory::Physical_Page_Address& address, bool use_average) const;
 		sim_time_type Estimate_pacs_channel_ready(flash_channel_ID_type channel) const;
-		double Estimate_pacs_page_program(const NVM::FlashMemory::Physical_Page_Address& address, flash_page_ID_type page_id) const;
+		double Estimate_pacs_page_program(const NVM::FlashMemory::Physical_Page_Address& address, flash_page_ID_type page_id,
+			bool use_average) const;
 		sim_time_type Estimate_pacs_write_transfer(flash_channel_ID_type channel, unsigned int bytes) const;
 		PACS_Read_Timing Estimate_pacs_read(const NVM::FlashMemory::Physical_Page_Address& address, unsigned int bytes) const;
 		void Setup_triggers();
