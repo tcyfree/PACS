@@ -47,6 +47,8 @@ QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORD
 
 单页写和跨页写都使用请求级预测。先在原通道搜索各个可写 Plane，预计整笔请求能提前完成时才调整地址。以 β 乘以同通道方案中最晚完成页的预计编程时延作为最低收益门槛 θ，把超过目标时间 `T_local - θ` 的页纳入联合搜索。β 为 0 时从并列最晚的页开始搜索。每个关键页可沿用原方案，也可尝试其他通道中各个可写 Plane。整笔请求预计完成时间缩短且收益达到 θ 时才采用跨通道方案。预计完成时间相同时优先选跨通道页数较少的方案。
 
+可用 `PACS_Cross_Channel_Screening_Beta` 为关键页筛选设置独立系数。显式配置后，筛选目标为 `T_local - Screening_Beta × tPROG_critical`，并列最晚的页始终纳入搜索。省略时筛选系数沿用收益门槛的 β。
+
 自适应模式从配置的 `Wordline_Program_Latencies` 取 tPROG，TLC 按预计写入的物理 `PageID / 3` 查表。缺少 WL 表时取配置的页类型编程时延。候选 Plane 使用各自的写前沿，按同请求内的分配顺序推进 PageID。候选页允许不同 TLC 页类型。同一 Die 上的各 Plane 共用 Die 就绪时间。预测逐页累加排队写入各自的 tPROG，并计入在途操作的剩余时间、读擦负载、通道传输和部分页覆盖写的读依赖。结果 XML 中自适应模式的 `Program_Latency_Source` 为 `CONFIGURED`，在线编程样本数为 0。
 
 结果 XML 的 `Adaptive_Search` 记录跨页写的关键页数分布、组合预测次数分布和预算耗尽次数。`Single_Page_Cross_Channel_Writes` 记录单页写的跨通道次数。`Single_Page_Cross_Plane_Writes` 和 `Cross_Plane_Multipage_Write_Pages` 分别记录单页写和跨页写中 Plane ID 相对 CWDP 初始地址发生变化的页数。预测误差取预计时长减去从分配决策到最后一个 NAND program 完成的实际时长。统计样本为按所选地址完成分配的跨页写请求。
@@ -69,6 +71,42 @@ QSTR-MED 和 LEPA 使用当前的 `PAGE_LEVEL`、`CWDP` 和 `PRIORITY_OUT_OF_ORD
 
 ```bash
 python3 -B outputs/mqsim-soml-read-wl178-no-cache-intensity/run_experiment.py --jobs 8
+```
+
+### 全部 16 条 trace 的长间隔回放
+
+按全量 trace 清单回放 1×、100×、1000× 和 10000×，每条 trace 对比 Baseline、LEPA、WL-aware LEPA、PACS-NoWL 和 PACS-Full。使用上面负载实验的二进制和设备模板。沿用已验证的 20 组 1× 对照，其余组合使用相同的开环回放和统计配置。输出写入 `outputs/mqsim-soml-read-wl178-no-cache-intensity-all-traces`。
+
+```bash
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-intensity/run_all_traces.py --jobs 16
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-intensity/report_all_traces.py
+```
+
+### 七种请求间隔的全量对照
+
+补跑 12 条 trace 在 5×、10× 和 50× 的 180 组，合并同配置归档中的 380 组。完整对照覆盖 16 条 trace、五种策略和 1×、5×、10×、50×、100×、1000×、10000×，共 560 组。图中按同一条 trace 和同一倍率的 Baseline 归一化。数据和图表位于 `outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors`。
+
+```bash
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-intensity/run_missing_factors.py --jobs 16
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-intensity/report_missing_factors.py
+```
+
+### 50× 门槛扫描与串行回放
+
+门槛扫描使用 `1612_2`、`src2_2`、`hm_0` 和 `web_0` 的 50× trace。PACS-Full 的关键页筛选系数固定为 1，每笔请求的搜索预算为 256，跨通道接受门槛 β 取 0、0.05、0.1、0.25、0.5 和 1。β=1 的控制组逐样本核对上一轮 50× 实验。
+
+串行回放在单个 trace 流上启用 `<Completion_Driven_Replay>true</Completion_Driven_Replay>`。首笔请求按 trace 的首个时间戳提交，随后在主机收到上一笔完成通知的同一仿真时刻提交下一笔。实验回放 Baseline、LEPA、WL-aware LEPA、PACS-NoWL 和 PACS-Full。两组 PACS 的筛选和接受系数均为 1。每组核对请求总数、最大在途请求数、结束时的未完成数以及完成到下次提交的最大间隔。
+
+在 MQSim 目录执行以下命令，结果汇总至脚本所在目录的 `metrics.json`。
+
+```bash
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-beta-serial/run_experiments.py --jobs 8
+```
+
+QD1 补充实验在同一设备和相同 trace 序列上回放 PACS-Full，接受系数 β 取 0、0.05、0.1 和 0.25，关键页筛选系数为 1。与上面的 QD1 β=1 和 LEPA 结果对比。结果汇总到 `qd1-beta-sweep/metrics.json`。
+
+```bash
+python3 -B outputs/mqsim-soml-read-wl178-no-cache-beta-serial/run_qd1_beta_sweep.py --jobs 8
 ```
 
 ## QSTR-MED

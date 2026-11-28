@@ -65,6 +65,7 @@ public:
 	unsigned long long Total_requests_to_server;
 	int Choose_type;
 	Trace_Time_Unit Time_Unit;
+	bool Completion_Driven_Replay = false;
 	
 	void XML_serialize(Utils::XmlWriter& xmlwriter);
 	void XML_deserialize(rapidxml::xml_node<> *node);

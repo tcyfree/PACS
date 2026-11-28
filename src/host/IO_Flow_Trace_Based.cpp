@@ -1,4 +1,6 @@
 #include "IO_Flow_Trace_Based.h"
+#include <algorithm>
+#include <stdexcept>
 #include "../utils/StringTools.h"
 #include "ASCII_Trace_Definition.h"
 #include "../utils/DistributionTypes.h"
@@ -10,9 +12,9 @@ IO_Flow_Trace_Based::IO_Flow_Trace_Based(const sim_object_id_type &name, uint16_
 										 uint16_t nvme_submission_queue_size, uint16_t nvme_completion_queue_size, IO_Flow_Priority_Class::Priority priority_class, double initial_occupancy_ratio,
 										 std::string trace_file_path, Trace_Time_Unit time_unit, unsigned int total_replay_count, unsigned int percentage_to_be_simulated,
 										 HostInterface_Types SSD_device_type, PCIe_Root_Complex *pcie_root_complex, SATA_HBA *sata_hba,
-										 bool enabled_logging, sim_time_type logging_period, std::string logging_file_path) : IO_Flow_Base(name, flow_id, start_lsa_on_device, end_lsa_on_device, io_queue_id, nvme_submission_queue_size, nvme_completion_queue_size, priority_class, 0, initial_occupancy_ratio, 0, SSD_device_type, pcie_root_complex, sata_hba, enabled_logging, logging_period, logging_file_path),
+										 bool enabled_logging, sim_time_type logging_period, std::string logging_file_path, bool completion_driven_replay) : IO_Flow_Base(name, flow_id, start_lsa_on_device, end_lsa_on_device, io_queue_id, nvme_submission_queue_size, nvme_completion_queue_size, priority_class, 0, initial_occupancy_ratio, 0, SSD_device_type, pcie_root_complex, sata_hba, enabled_logging, logging_period, logging_file_path),
 																															  trace_file_path(trace_file_path), time_unit(time_unit), total_replay_no(total_replay_count), percentage_to_be_simulated(percentage_to_be_simulated),
-																															  total_requests_in_file(0), time_offset(0)
+																															  total_requests_in_file(0), time_offset(0), completion_driven_replay(completion_driven_replay)
 {
 	if (percentage_to_be_simulated > 100)
 	{
@@ -57,7 +59,7 @@ Host_IO_Request *IO_Flow_Trace_Based::Generate_next_request()
 		request->Start_LBA = start_lsa_on_device + request->Start_LBA % (end_lsa_on_device - start_lsa_on_device);
 	}
 
-	request->Arrival_time = time_offset + Simulator->Time();
+	request->Arrival_time = Simulator->Time() + (completion_driven_replay ? 0 : time_offset);
 	//if (request->Arrival_time == 1455618852660009984) {
 	//	std::cout << "追踪事务-generate_next_request" << std::endl;
 	//}
@@ -71,11 +73,25 @@ void IO_Flow_Trace_Based::NVMe_consume_io_request(Completion_Queue_Entry *io_req
 {
 	IO_Flow_Base::NVMe_consume_io_request(io_request);
 	IO_Flow_Base::NVMe_update_and_submit_completion_queue_tail();
+	schedule_after_completion();
 }
 
 void IO_Flow_Trace_Based::SATA_consume_io_request(Host_IO_Request *io_request)
 {
 	IO_Flow_Base::SATA_consume_io_request(io_request);
+	schedule_after_completion();
+}
+
+void IO_Flow_Trace_Based::schedule_after_completion()
+{
+	if (!completion_driven_replay) {
+		return;
+	}
+	if (STAT_generated_request_count != STAT_serviced_request_count || STAT_generated_request_count == 0) {
+		throw std::logic_error("Completion-driven replay completed an unexpected I/O");
+	}
+	last_completion_time = Simulator->Time();
+	schedule_next_request();
 }
 
 void IO_Flow_Trace_Based::Start_simulation()
@@ -136,12 +152,25 @@ void IO_Flow_Trace_Based::Validate_simulation_config()
 
 void IO_Flow_Trace_Based::Execute_simulator_event(MQSimEngine::Sim_Event *)
 {
-	Host_IO_Request *request = Generate_next_request();
-	if (request != NULL)
-	{
+	if (completion_driven_replay && STAT_generated_request_count != STAT_serviced_request_count) {
+		throw std::logic_error("Completion-driven replay attempted to submit overlapping I/O");
+	}
+	if (auto* request = Generate_next_request()) {
+		if (completion_driven_replay) {
+			peak_outstanding_requests = std::max(peak_outstanding_requests, STAT_generated_request_count - STAT_serviced_request_count);
+			if (STAT_serviced_request_count) {
+				max_completion_to_submission = std::max(max_completion_to_submission, Simulator->Time() - last_completion_time);
+			}
+		}
 		Submit_io_request(request);
 	}
+	if (!completion_driven_replay) {
+		schedule_next_request();
+	}
+}
 
+void IO_Flow_Trace_Based::schedule_next_request()
+{
 	if (STAT_generated_request_count < total_requests_to_be_generated)
 	{
 		std::string trace_line;
@@ -166,7 +195,7 @@ void IO_Flow_Trace_Based::Execute_simulator_event(MQSimEngine::Sim_Event *)
 		}
 		char *pEnd;
 		char* pEnd_tmp;
-		if (UINT64_MAX - time_offset < std::strtoll(current_trace_line[ASCIITraceTimeColumn].c_str(), &pEnd, 10)) {
+		if (!completion_driven_replay && UINT64_MAX - time_offset < std::strtoll(current_trace_line[ASCIITraceTimeColumn].c_str(), &pEnd, 10)) {
 			//此时时间溢出。等待所有事件执行完毕后再创建新的请求
 			std::cout << "time out......" << std::endl;
 
@@ -185,7 +214,21 @@ void IO_Flow_Trace_Based::Execute_simulator_event(MQSimEngine::Sim_Event *)
 			return;
 		}
 		
-		Simulator->Register_sim_event(time_offset + std::strtoll(current_trace_line[ASCIITraceTimeColumn].c_str(), &pEnd, 10), this);
+		const auto arrival = completion_driven_replay ? Simulator->Time()
+			: time_offset + std::strtoll(current_trace_line[ASCIITraceTimeColumn].c_str(), &pEnd, 10);
+		Simulator->Register_sim_event(arrival, this);
+	}
+}
+
+void IO_Flow_Trace_Based::Report_replay_statistics(Utils::XmlWriter& xmlwriter) const
+{
+	if (completion_driven_replay) {
+		xmlwriter.Write_open_tag("Completion_Driven_Replay");
+		xmlwriter.Write_attribute_string("Max_Outstanding_Requests", std::to_string(peak_outstanding_requests));
+		xmlwriter.Write_attribute_string("Outstanding_At_End",
+			std::to_string(STAT_generated_request_count - STAT_serviced_request_count));
+		xmlwriter.Write_attribute_string("Max_Completion_To_Next_Submission_ns", std::to_string(max_completion_to_submission));
+		xmlwriter.Write_close_tag();
 	}
 }
 

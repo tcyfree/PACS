@@ -335,6 +335,7 @@ namespace SSD_Components
 			xmlwriter.Write_attribute_string("Open_Request_Predictions_At_End", std::to_string(request_predictions.size()));
 			xmlwriter.Write_open_tag("Adaptive_Search");
 			xmlwriter.Write_attribute_string("Gain_Beta", std::to_string(adaptive.gain_beta));
+			xmlwriter.Write_attribute_string("Screening_Beta", std::to_string(adaptive.Effective_screening_beta()));
 			xmlwriter.Write_attribute_string("Search_Budget", std::to_string(adaptive.search_budget));
 			xmlwriter.Write_attribute_string("Budget_Exhausted_Requests", std::to_string(search_budget_exhaustions));
 			for (const auto& entry : critical_page_counts) {

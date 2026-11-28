@@ -434,6 +434,7 @@ void IO_Flow_Parameter_Set_Trace_Based::XML_serialize(Utils::XmlWriter& xmlwrite
 	attr = "Relay_Count";
 	val = std::to_string(Relay_Count);
 	xmlwriter.Write_attribute_string(attr, val);
+	xmlwriter.Write_attribute_string("Completion_Driven_Replay", Completion_Driven_Replay ? "true" : "false");
 
 	attr = "Time_Unit";
 	switch (Time_Unit) {
@@ -455,12 +456,20 @@ void IO_Flow_Parameter_Set_Trace_Based::XML_serialize(Utils::XmlWriter& xmlwrite
 void IO_Flow_Parameter_Set_Trace_Based::XML_deserialize(rapidxml::xml_node<> *node)
 {
 	IO_Flow_Parameter_Set::XML_deserialize(node);
+	Completion_Driven_Replay = false;
 
 	try {
 		for (auto param = node->first_node(); param; param = param->next_sibling()) {
 			if (strcmp(param->name(), "Relay_Count") == 0) {
 				std::string val = param->value();
 				Relay_Count = std::stoi(val);
+			} else if (strcmp(param->name(), "Completion_Driven_Replay") == 0) {
+				std::string val = param->value();
+				std::transform(val.begin(), val.end(), val.begin(), ::toupper);
+				if (val != "TRUE" && val != "FALSE") {
+					PRINT_ERROR("Completion_Driven_Replay must be true or false")
+				}
+				Completion_Driven_Replay = val == "TRUE";
 			} else if(strcmp(param->name(), "Total_requests_to_server") == 0){
 				std::string val = param->value();
 				SSD_Components::Stats::total_requests_to_server=std::stoi(val);

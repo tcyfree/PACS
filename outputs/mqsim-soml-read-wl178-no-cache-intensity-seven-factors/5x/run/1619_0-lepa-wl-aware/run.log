@@ -1,0 +1,70 @@
+MQSim started at Sat Nov 28 14:58:56 2026
+
+******************************
+Executing scenario 1 out of 1 .......
+Using program latencies for 256 wordlines
+log2(total_physical_pages_no):24.0738
+sector_no_per_page:32
+CMTentrysize:5
+CMTentrycount:6710886
+GTD_entry_size:8
+translation_entries_per_page:2048
+Investigating input trace file: /home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+Trace file: /home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv seems healthy
+SSD Device preconditioning started .........
+6621696
+413856
+Finished preconditioning. Duration of preconditioning: 0:0:0
+[>                   ]  0% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[=>                  ]  5% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[==>                 ]  10% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[===>                ]  15% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[====>               ]  20% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[=====>              ]  25% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[======>             ]  30% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[=======>            ]  35% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[========>           ]  40% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[=========>          ]  45% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[==========>         ]  50% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[===========>        ]  55% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[============>       ]  60% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[=============>      ]  65% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[==============>     ]  70% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[===============>    ]  75% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[================>   ]  80% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[=================>  ]  85% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[==================> ]  90% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[===================>]  95% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+[====================]  100% progress in Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv
+
+MQSim finished at Sat Nov 28 14:59:10 2026
+
+Total simulation time: 0:0:14
+
+Writing results to output file .......
+set的大小是4
+1430675
+17999846607588
+Flow Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1619_0.csv - total requests generated: 1430675 total requests serviced:1430675
+                   - device response time: 1140 (us) end-to-end request delay:1140 (us)
+Simulation complete; Press any key to exit.

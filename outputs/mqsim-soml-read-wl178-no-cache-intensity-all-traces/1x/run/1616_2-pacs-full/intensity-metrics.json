@@ -1,0 +1,511 @@
+{
+  "requests_completed": 1062359,
+  "reads": 707522,
+  "writes": 354837,
+  "single_page_writes": 240131,
+  "multi_page_writes": 114706,
+  "latency": {
+    "average_write_latency_ms": 4.8298437511589825,
+    "average_read_latency_ms": 0.37415949174583973,
+    "p95_write_latency_ms": 9.311069,
+    "p99_write_latency_ms": 47.348913,
+    "p999_write_latency_ms": 474.622153,
+    "read_p99_latency_ms": 1.738509,
+    "single_page_write_p99_ms": 31.505206,
+    "single_page_write_p999_ms": 79.924613,
+    "multi_page_write_p99_ms": 205.988331,
+    "multi_page_write_p999_ms": 658.958683
+  },
+  "simulated_duration_ns": 3596882043043,
+  "replay_throughput_mib_s": 4.843726261587186,
+  "gc_executions": 0,
+  "gc_moved_pages": 0,
+  "host_write_page_transactions": 557738,
+  "page_programs": 557738,
+  "page_program_amplification": 1.0,
+  "mean_write_transaction_wait_us": 9999,
+  "multiplane_commands": {
+    "Issued_Flash_Multiplane_Read_CMD": 0,
+    "Issued_Flash_Multiplane_Program_CMD": 0,
+    "Issued_Flash_Multiplane_Erase_CMD": 0,
+    "Issued_Flash_Multiplane_Copyback_Program_CMD": 0,
+    "Issued_Flash_Interleaved_Multiplane_Program_CMD": 0,
+    "Issued_Flash_Interleaved_Multiplane_Erase_CMD": 0
+  },
+  "policy_counters": {
+    "Program_Latency_Source": "CONFIGURED",
+    "Average_Program_Latency_ns": "1440856",
+    "Qualified_Program_Observations": "0",
+    "Discarded_Program_Observations": "0",
+    "Ranked_Write_Allocations": "0",
+    "Redirected_Write_Allocations": "0",
+    "Outstanding_Programs_At_End": "0",
+    "Planned_Multipage_Write_Requests": "114706",
+    "Redirected_Multipage_Write_Requests": "89269",
+    "Redirected_Multipage_Write_Pages": "115932",
+    "Cross_Channel_Multipage_Write_Requests": "3660",
+    "Single_Page_Cross_Channel_Writes": "3948",
+    "Single_Page_Cross_Plane_Writes": "103254",
+    "Cross_Plane_Multipage_Write_Pages": "61393",
+    "Cross_Channel_Write_Pages": "6109",
+    "Joint_Cross_Channel_Multipage_Write_Requests": "2191",
+    "Open_Request_Predictions_At_End": "0"
+  },
+  "result_xml": "1x/run/1616_2-pacs-full/w_1616_2_setsize4_reply_1.xml",
+  "log": "1x/run/1616_2-pacs-full/run.log",
+  "latency_samples": "1x/run/1616_2-pacs-full/1616_2",
+  "simulator_binary": "MQSim",
+  "wall_seconds": 18.524156940169632,
+  "sample_format": "gzip",
+  "arrival_rate_iops": 295.35579331117356,
+  "reference_samples_match": false,
+  "workload_intensity": {
+    "mean_die_utilization_percent": 3.5862327339902405,
+    "mean_tsu_queue_length_per_die": 0.2078911279704525,
+    "mean_tsu_wait_us": 2479.738466420548,
+    "mean_tsu_write_wait_us": 9999.209445458262,
+    "dies": [
+      {
+        "Channel": 0,
+        "Chip": 0,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 131721707365,
+        "Queue_Integral_ns": 736514776489.0,
+        "User_Write_Queue_Integral_ns": 692863676561.0,
+        "Dispatched_Transactions": 309710,
+        "Dispatched_User_Writes": 70911,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 0,
+        "Chip": 1,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 133432347686,
+        "Queue_Integral_ns": 750207088076.0,
+        "User_Write_Queue_Integral_ns": 707845034142.0,
+        "Dispatched_Transactions": 309358,
+        "Dispatched_User_Writes": 72289,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 1,
+        "Chip": 0,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 151633618896,
+        "Queue_Integral_ns": 760897581351.0,
+        "User_Write_Queue_Integral_ns": 709806473967.0,
+        "Dispatched_Transactions": 329093,
+        "Dispatched_User_Writes": 84560,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 1,
+        "Chip": 1,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 152249897492,
+        "Queue_Integral_ns": 770233228482.0,
+        "User_Write_Queue_Integral_ns": 719040036383.0,
+        "Dispatched_Transactions": 330247,
+        "Dispatched_User_Writes": 84861,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 2,
+        "Chip": 0,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 114804905790,
+        "Queue_Integral_ns": 753744952858.0,
+        "User_Write_Queue_Integral_ns": 693033038316.0,
+        "Dispatched_Transactions": 283283,
+        "Dispatched_User_Writes": 60669,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 2,
+        "Chip": 1,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 113352383236,
+        "Queue_Integral_ns": 731853240552.0,
+        "User_Write_Queue_Integral_ns": 696583935720.0,
+        "Dispatched_Transactions": 281729,
+        "Dispatched_User_Writes": 59599,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 3,
+        "Chip": 0,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 118753050916,
+        "Queue_Integral_ns": 748074461375.0,
+        "User_Write_Queue_Integral_ns": 684428279078.0,
+        "Dispatched_Transactions": 285672,
+        "Dispatched_User_Writes": 63473,
+        "Queued_At_End": 0
+      },
+      {
+        "Channel": 3,
+        "Chip": 1,
+        "Die_Index": 0,
+        "NAND_Execution_ns": 115992578464,
+        "Queue_Integral_ns": 730553591656.0,
+        "User_Write_Queue_Integral_ns": 673338603524.0,
+        "Dispatched_Transactions": 283291,
+        "Dispatched_User_Writes": 61376,
+        "Queued_At_End": 0
+      }
+    ],
+    "single_page": {
+      "Observed_Requests": 240131,
+      "All_Candidate_Dies_Idle_Requests": 69445,
+      "Die_Load_Gap_Below_460us_Requests": 85247,
+      "Placed_Requests": 240131,
+      "Placed_Pages": 240131,
+      "Cross_Channel_Requests": 3948,
+      "Cross_Channel_Pages": 3948,
+      "all_candidate_dies_idle_percent": 28.919631367878367,
+      "die_load_gap_below_460us_percent": 35.50020613748329,
+      "cross_channel_requests_percent": 1.6441025940007745,
+      "cross_channel_pages_percent": 1.6441025940007745
+    },
+    "multipage": {
+      "Observed_Requests": 114706,
+      "All_Candidate_Dies_Idle_Requests": 33790,
+      "Die_Load_Gap_Below_460us_Requests": 40454,
+      "Placed_Requests": 114706,
+      "Placed_Pages": 317607,
+      "Cross_Channel_Requests": 3660,
+      "Cross_Channel_Pages": 6109,
+      "all_candidate_dies_idle_percent": 29.45791850469897,
+      "die_load_gap_below_460us_percent": 35.267553571739924,
+      "cross_channel_requests_percent": 3.1907659581887606,
+      "cross_channel_pages_percent": 1.9234462716501841
+    }
+  },
+  "wl_decisions": {
+    "single_page": {
+      "Compared_Requests": 240131,
+      "Compared_Pages": 240131,
+      "Committed_Plans": 240131,
+      "WL_Decision_Changed_Requests": 153393,
+      "WL_Decision_Changed_Pages": 153393,
+      "WL_Decision_Changed_Page_Lanes": 153393,
+      "Non_WL_Redirections": 28677,
+      "CWDP_Equals_NoWL_Equals_Full": 72820,
+      "Non_WL_Only_Redirections": 13918,
+      "WL_Triggered_Redirections": 138634,
+      "WL_Changed_Redirections": 13749,
+      "WL_Restored_CWDP": 1010,
+      "Same_Die_Plane_Redirections": 51873,
+      "Full_Rejected_By_Beta": 718008,
+      "NoWL_Rejected_By_Beta": 98522,
+      "Full_Requests_Only_Below_Beta": 160740,
+      "NoWL_Requests_Only_Below_Beta": 12475,
+      "Full_Budget_Exhausted_Requests": 0,
+      "NoWL_Budget_Exhausted_Requests": 0,
+      "Changed_Pages_Per_Request": {
+        "0": 86738,
+        "1": 153393
+      },
+      "WL_Decision_Change_Rate_percent": 63.8788827764845,
+      "WL_Page_Change_Rate_percent": 63.8788827764845,
+      "Candidate_WL_Latency_Gap": {
+        "Samples": 240131,
+        "Min_ns": 0.0,
+        "Mean_ns": 362599.659115,
+        "Max_ns": 460000.0,
+        "P50_interval_ns": [
+          300000,
+          460000
+        ],
+        "P95_interval_ns": [
+          300000,
+          460000
+        ],
+        "Counts_by_upper_ns": {
+          "0": 49,
+          "1000": 0,
+          "5000": 0,
+          "10000": 0,
+          "25000": 56,
+          "50000": 101,
+          "100000": 462,
+          "200000": 12329,
+          "300000": 51837,
+          "460000": 175297,
+          "500000": 0,
+          "750000": 0,
+          "1000000": 0,
+          "1500000": 0,
+          "2000000": 0,
+          "5000000": 0,
+          "10000000": 0,
+          "20000000": 0,
+          "50000000": 0,
+          "100000000": 0,
+          "500000000": 0,
+          "1000000000": 0
+        },
+        "Above_Last_Bin": 0
+      },
+      "Candidate_Load_Gap": {
+        "Samples": 240131,
+        "Min_ns": 0.0,
+        "Mean_ns": 1276214.627753,
+        "Max_ns": 35669149.0,
+        "P50_interval_ns": [
+          1000000,
+          1500000
+        ],
+        "P95_interval_ns": [
+          2000000,
+          5000000
+        ],
+        "Counts_by_upper_ns": {
+          "0": 69445,
+          "1000": 20,
+          "5000": 94,
+          "10000": 97,
+          "25000": 367,
+          "50000": 562,
+          "100000": 1518,
+          "200000": 3881,
+          "300000": 3475,
+          "460000": 5788,
+          "500000": 1639,
+          "750000": 12211,
+          "1000000": 17311,
+          "1500000": 48154,
+          "2000000": 24412,
+          "5000000": 45524,
+          "10000000": 5053,
+          "20000000": 520,
+          "50000000": 60,
+          "100000000": 0,
+          "500000000": 0,
+          "1000000000": 0
+        },
+        "Above_Last_Bin": 0
+      },
+      "Original_Program_Latency": {
+        "Samples": 240131,
+        "Min_ns": 1310000.0,
+        "Mean_ns": 1475497.006738,
+        "Max_ns": 1770000.0
+      },
+      "Selected_Program_Latency": {
+        "Samples": 240131,
+        "Min_ns": 1310000.0,
+        "Mean_ns": 1402375.870562,
+        "Max_ns": 1770000.0
+      },
+      "CWDP_Minus_NoWL_Completion": {
+        "Samples": 240131,
+        "Min_ns": -3800637.0,
+        "Mean_ns": 127324.580229,
+        "Max_ns": 33745366.0
+      },
+      "NoWL_Minus_Full_Completion": {
+        "Samples": 240131,
+        "Min_ns": -1555919.0,
+        "Mean_ns": 84607.666399,
+        "Max_ns": 6881878.0
+      },
+      "Single_Gain_Sign_Count": [
+        {
+          "Load_Sign": -1,
+          "Program_Sign": -1,
+          "Requests": 0
+        },
+        {
+          "Load_Sign": -1,
+          "Program_Sign": 0,
+          "Requests": 0
+        },
+        {
+          "Load_Sign": -1,
+          "Program_Sign": 1,
+          "Requests": 658
+        },
+        {
+          "Load_Sign": 0,
+          "Program_Sign": -1,
+          "Requests": 0
+        },
+        {
+          "Load_Sign": 0,
+          "Program_Sign": 0,
+          "Requests": 0
+        },
+        {
+          "Load_Sign": 0,
+          "Program_Sign": 1,
+          "Requests": 137682
+        },
+        {
+          "Load_Sign": 1,
+          "Program_Sign": -1,
+          "Requests": 10007
+        },
+        {
+          "Load_Sign": 1,
+          "Program_Sign": 0,
+          "Requests": 3426
+        },
+        {
+          "Load_Sign": 1,
+          "Program_Sign": 1,
+          "Requests": 14528
+        }
+      ],
+      "Single_Redirected_Load_Gain": {
+        "Samples": 166301,
+        "Min_ns": -382353.0,
+        "Mean_ns": 200436.863062,
+        "Max_ns": 33845366.0
+      },
+      "Single_Redirected_Program_Gain": {
+        "Samples": 166301,
+        "Min_ns": -450000.0,
+        "Mean_ns": 105583.559636,
+        "Max_ns": 460000.0
+      }
+    },
+    "multipage": {
+      "Compared_Requests": 114706,
+      "Compared_Pages": 317607,
+      "Committed_Plans": 114706,
+      "WL_Decision_Changed_Requests": 81766,
+      "WL_Decision_Changed_Pages": 106715,
+      "WL_Decision_Changed_Page_Lanes": 104254,
+      "Non_WL_Redirections": 27036,
+      "CWDP_Equals_NoWL_Equals_Full": 24227,
+      "Non_WL_Only_Redirections": 8713,
+      "WL_Triggered_Redirections": 63443,
+      "WL_Changed_Redirections": 17113,
+      "WL_Restored_CWDP": 1210,
+      "Same_Die_Plane_Redirections": 33322,
+      "Full_Rejected_By_Beta": 3433857,
+      "NoWL_Rejected_By_Beta": 1267875,
+      "Full_Requests_Only_Below_Beta": 84772,
+      "NoWL_Requests_Only_Below_Beta": 15320,
+      "Full_Budget_Exhausted_Requests": 20641,
+      "NoWL_Budget_Exhausted_Requests": 18956,
+      "Changed_Pages_Per_Request": {
+        "0": 32940,
+        "1": 61299,
+        "2": 17529,
+        "3": 1914,
+        "4": 655,
+        "5": 252,
+        "6": 87,
+        "7": 27,
+        "8": 2,
+        "9": 1
+      },
+      "WL_Decision_Change_Rate_percent": 71.28310637630115,
+      "WL_Page_Change_Rate_percent": 33.59970025849556,
+      "Candidate_WL_Latency_Gap": {
+        "Samples": 317607,
+        "Min_ns": 0.0,
+        "Mean_ns": 361832.813175,
+        "Max_ns": 460000.0,
+        "P50_interval_ns": [
+          300000,
+          460000
+        ],
+        "P95_interval_ns": [
+          300000,
+          460000
+        ],
+        "Counts_by_upper_ns": {
+          "0": 36,
+          "1000": 0,
+          "5000": 0,
+          "10000": 0,
+          "25000": 39,
+          "50000": 93,
+          "100000": 695,
+          "200000": 15783,
+          "300000": 69166,
+          "460000": 231795,
+          "500000": 0,
+          "750000": 0,
+          "1000000": 0,
+          "1500000": 0,
+          "2000000": 0,
+          "5000000": 0,
+          "10000000": 0,
+          "20000000": 0,
+          "50000000": 0,
+          "100000000": 0,
+          "500000000": 0,
+          "1000000000": 0
+        },
+        "Above_Last_Bin": 0
+      },
+      "Candidate_Load_Gap": {
+        "Samples": 317607,
+        "Min_ns": 0.0,
+        "Mean_ns": 1698228.203324,
+        "Max_ns": 34346721.0,
+        "P50_interval_ns": [
+          1000000,
+          1500000
+        ],
+        "P95_interval_ns": [
+          2000000,
+          5000000
+        ],
+        "Counts_by_upper_ns": {
+          "0": 82190,
+          "1000": 31,
+          "5000": 76,
+          "10000": 123,
+          "25000": 309,
+          "50000": 552,
+          "100000": 1532,
+          "200000": 4253,
+          "300000": 3486,
+          "460000": 5597,
+          "500000": 1568,
+          "750000": 10961,
+          "1000000": 14908,
+          "1500000": 52089,
+          "2000000": 37532,
+          "5000000": 87276,
+          "10000000": 13198,
+          "20000000": 1653,
+          "50000000": 273,
+          "100000000": 0,
+          "500000000": 0,
+          "1000000000": 0
+        },
+        "Above_Last_Bin": 0
+      },
+      "Original_Program_Latency": {
+        "Samples": 317607,
+        "Min_ns": 1310000.0,
+        "Mean_ns": 1469844.108596,
+        "Max_ns": 1770000.0
+      },
+      "Selected_Program_Latency": {
+        "Samples": 317607,
+        "Min_ns": 1310000.0,
+        "Mean_ns": 1432387.689097,
+        "Max_ns": 1770000.0
+      },
+      "CWDP_Minus_NoWL_Completion": {
+        "Samples": 114706,
+        "Min_ns": -6591295.0,
+        "Mean_ns": 196963.197095,
+        "Max_ns": 29837991.0
+      },
+      "NoWL_Minus_Full_Completion": {
+        "Samples": 114706,
+        "Min_ns": -2779989.0,
+        "Mean_ns": 123172.600378,
+        "Max_ns": 11544258.0
+      }
+    }
+  }
+}

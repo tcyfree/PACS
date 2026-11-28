@@ -50,9 +50,10 @@ SSD_Device::SSD_Device(Device_Parameter_Set *parameters, std::vector<IO_Flow_Par
 		if (parameters->PACS_Adaptive.enabled && !parameters->PACS_Cross_Channel_Enabled) {
 			throw std::invalid_argument("PACS_Cross_Channel_Adaptive_Enabled requires PACS_Cross_Channel_Enabled");
 		}
-		if ((parameters->PACS_Adaptive.use_average_program_latency || parameters->PACS_Adaptive.record_wl_decisions)
+		if ((parameters->PACS_Adaptive.use_average_program_latency || parameters->PACS_Adaptive.record_wl_decisions
+			|| parameters->PACS_Adaptive.screening_beta >= 0)
 			&& !parameters->PACS_Adaptive.enabled) {
-			throw std::invalid_argument("PACS average program prediction and WL decision statistics require Adaptive PACS");
+			throw std::invalid_argument("PACS average prediction, WL decision statistics, and fixed screening require Adaptive PACS");
 		}
 		if (parameters->LEPA_WL_Aware_Enabled && (!parameters->LEPA_Enabled || parameters->Independent_Wordline_Multiplane)) {
 			throw std::invalid_argument("WL-aware LEPA requires LEPA with single-plane commands");

@@ -1,0 +1,77 @@
+{
+  "factors": [
+    1,
+    100,
+    1000,
+    10000
+  ],
+  "trace_names": [
+    "1612_2",
+    "1612_4",
+    "1613_2",
+    "1614_6",
+    "1615_1",
+    "1616_2",
+    "1617_3",
+    "1618_3",
+    "1619_0",
+    "1620_2",
+    "1708_0",
+    "hm_0",
+    "mds_0",
+    "proj_3",
+    "src2_2",
+    "web_0"
+  ],
+  "settings": {
+    "flash_channels": 4,
+    "page_capacity_bytes": 16384,
+    "flash_technology": "TLC",
+    "wordline_timings": 256,
+    "device_data_caching": "TURNED_OFF",
+    "independent_wordline_multiplane": false
+  },
+  "policy_options": {
+    "baseline": {
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "lepa": {
+      "LEPA_WL_Aware_Enabled": "false",
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "lepa-wl-aware": {
+      "LEPA_WL_Aware_Enabled": "true",
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "pacs-nowl": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "true",
+      "PACS_WL_Decision_Stats": "false",
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "pacs-full": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true"
+    }
+  },
+  "template_sha256": {
+    "MQSim": "d6329988c29da76a9d7ec8b42567bb525448f255a81950aa3ce01bd6b46b57a8",
+    "ssdconfig.xml": "bf519b3e7eeb63942114c2f01bc070156ab088ba284b0c27f81ab61303432b09",
+    "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+  },
+  "trace_manifest_sha256": "193b65a7bdda6900c0a1012025434c28a1ded073f2088beafafbbde0da9dc936",
+  "decision_snapshot_source": "PACS-Full replay before committing its selected plan",
+  "reference_experiment": "../mqsim-soml-read-wl178-no-cache-intensity/metrics.json",
+  "reference_metrics_sha256": "0d5e2cc5aeba98bb32d9e6159c30ba769cf8a466c88cf8d54897cefa288a4cc4",
+  "archived_1x_count": 20
+}

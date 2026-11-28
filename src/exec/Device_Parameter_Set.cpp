@@ -76,6 +76,9 @@ void Device_Parameter_Set::XML_serialize(Utils::XmlWriter& xmlwriter)
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Enabled", PACS_Cross_Channel_Enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Adaptive_Enabled", PACS_Adaptive.enabled ? "true" : "false");
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Gain_Beta", std::to_string(PACS_Adaptive.gain_beta));
+	if (PACS_Adaptive.screening_beta >= 0) {
+		xmlwriter.Write_attribute_string("PACS_Cross_Channel_Screening_Beta", std::to_string(PACS_Adaptive.screening_beta));
+	}
 	xmlwriter.Write_attribute_string("PACS_Cross_Channel_Search_Budget", std::to_string(PACS_Adaptive.search_budget));
 	xmlwriter.Write_attribute_string("PACS_Use_Average_Program_Latency", PACS_Adaptive.use_average_program_latency ? "true" : "false");
 	xmlwriter.Write_attribute_string("PACS_WL_Decision_Stats", PACS_Adaptive.record_wl_decisions ? "true" : "false");
@@ -467,14 +470,19 @@ void Device_Parameter_Set::XML_deserialize(rapidxml::xml_node<> *node)
 				} else {
 					Independent_Wordline_Multiplane = enabled;
 				}
-			} else if (strcmp(param->name(), "PACS_Cross_Channel_Gain_Beta") == 0) {
+			} else if (strcmp(param->name(), "PACS_Cross_Channel_Gain_Beta") == 0
+				|| strcmp(param->name(), "PACS_Cross_Channel_Screening_Beta") == 0) {
 				const std::string val = param->value();
 				std::size_t end = 0;
 				const auto beta = std::stod(val, &end);
 				if (!std::isfinite(beta) || beta < 0 || val.find_first_not_of(" \t\r\n", end) != std::string::npos) {
-					PRINT_ERROR("PACS_Cross_Channel_Gain_Beta must be finite and nonnegative")
+					PRINT_ERROR(param->name() << " must be finite and nonnegative")
 				}
-				PACS_Adaptive.gain_beta = beta;
+				if (strcmp(param->name(), "PACS_Cross_Channel_Screening_Beta") == 0) {
+					PACS_Adaptive.screening_beta = beta;
+				} else {
+					PACS_Adaptive.gain_beta = beta;
+				}
 			} else if (strcmp(param->name(), "PACS_Cross_Channel_Search_Budget") == 0) {
 				const std::string val = param->value();
 				std::size_t end = 0;

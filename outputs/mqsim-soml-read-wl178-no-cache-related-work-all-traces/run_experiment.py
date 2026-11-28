@@ -185,7 +185,7 @@ def run_case(template, binary, trace, mode, details):
     time_match = re.search(rf'\n{completed}\n(\d+)\nFlow ', log)
     assert time_match is not None
     simulation_ns = int(time_match.group(1))
-    assert simulation_ns > details['span_ns']
+    assert simulation_ns > 0 and (details.get('completion_driven_replay') or simulation_ns > details['span_ns'])
 
     read, write, multi = [
         sample_array(samples / f'{trace}_latency_{index}.csv', expected)

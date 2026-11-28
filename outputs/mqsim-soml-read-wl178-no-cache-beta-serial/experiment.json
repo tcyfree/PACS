@@ -1,0 +1,130 @@
+{
+  "trace_names": [
+    "1612_2",
+    "src2_2",
+    "hm_0",
+    "web_0"
+  ],
+  "trace_manifest_sha256": "e1ccbde73a17e678b363b0036cada124e1d16d0d3232228df8050f4132aa1f75",
+  "settings": {
+    "flash_channels": 4,
+    "page_capacity_bytes": 16384,
+    "flash_technology": "TLC",
+    "wordline_timings": 256,
+    "device_data_caching": "TURNED_OFF",
+    "independent_wordline_multiplane": false
+  },
+  "template_sha256": {
+    "MQSim": "d0016b3aba52630a06bef25c03032f44a4054d9bd189a562b7fd1ddde67d4542",
+    "ssdconfig.xml": "bf519b3e7eeb63942114c2f01bc070156ab088ba284b0c27f81ab61303432b09",
+    "workload.xml": "477965f8707fd5d8995f1f05410c95d926ce14ee51eb9ac8613eec0711a5cce3"
+  },
+  "screening_beta": 1.0,
+  "search_budget": 256,
+  "open_loop_interval_factor": 50,
+  "beta_options": {
+    "0": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "0",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    },
+    "0.05": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "0.05",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    },
+    "0.1": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "0.1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    },
+    "0.25": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "0.25",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    },
+    "0.5": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "0.5",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    },
+    "1": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    }
+  },
+  "serial_options": {
+    "baseline": {
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "lepa": {
+      "LEPA_WL_Aware_Enabled": "false",
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "lepa-wl-aware": {
+      "LEPA_WL_Aware_Enabled": "true",
+      "Workload_Intensity_Stats_Enabled": "true"
+    },
+    "pacs-nowl": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "true",
+      "PACS_WL_Decision_Stats": "false",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    },
+    "pacs-full": {
+      "PACS_Request_Level_Enabled": "true",
+      "PACS_Cross_Channel_Enabled": "true",
+      "PACS_Cross_Channel_Adaptive_Enabled": "true",
+      "PACS_Cross_Channel_Gain_Beta": "1",
+      "PACS_Cross_Channel_Search_Budget": "256",
+      "PACS_Use_Average_Program_Latency": "false",
+      "PACS_WL_Decision_Stats": "true",
+      "Workload_Intensity_Stats_Enabled": "true",
+      "PACS_Cross_Channel_Screening_Beta": "1"
+    }
+  },
+  "serial_gain_beta": 1.0,
+  "serial_replay": "One outstanding host request. Next request is submitted at the previous host completion."
+}

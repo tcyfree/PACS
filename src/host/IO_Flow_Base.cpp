@@ -724,6 +724,7 @@ IO_Flow_Base::IO_Flow_Base(const sim_object_id_type &name, uint16_t flow_id, LHA
 
 		
 
+		Report_replay_statistics(xmlwriter);
 		xmlwriter.Write_close_tag();
 	}
 }

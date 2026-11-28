@@ -16,10 +16,12 @@ namespace SSD_Components
 	struct PACS_Adaptive_Options {
 		bool enabled = false;
 		double gain_beta = 1.0;
+		double screening_beta = -1.0;
 		unsigned int search_budget = 256;
 		bool use_average_program_latency = false;
 		bool record_wl_decisions = false;
 		sim_time_type average_program_latency = 0;
+		double Effective_screening_beta() const { return screening_beta < 0 ? gain_beta : screening_beta; }
 	};
 
 	struct PACS_Search_Statistics {

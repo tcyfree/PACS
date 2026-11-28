@@ -81,6 +81,7 @@ namespace Host_Components
 		LHA_type start_lsa_on_device, end_lsa_on_device;
 
 		void Submit_io_request(Host_IO_Request*);
+		virtual void Report_replay_statistics(Utils::XmlWriter&) const {}
 
 		//NVMe host-to-device communication variables
 		IO_Flow_Priority_Class::Priority priority_class;

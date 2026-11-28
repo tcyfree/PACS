@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<MQSim_Results>
+	<Host>
+		<Host.IO_Flow>
+				 <Name>Host.IO_Flow.Trace./home/network/Desktop/Project/PACS/MQSim/outputs/mqsim-soml-read-wl178-no-cache-intensity-seven-factors/scaled/5x/sortedTrace/1615_1.csv</Name>
+				 <Repaly_count>1</Repaly_count>
+				 <Sys_Total_Generate_Requests>534529</Sys_Total_Generate_Requests>
+				 <Sys_Total_Serviced_Requests>534529</Sys_Total_Serviced_Requests>
+				 <Total_Serviced_Read_Requests>178742</Total_Serviced_Read_Requests>
+				 <Total_Serviced_Write_Requests>355787</Total_Serviced_Write_Requests>
+				 <online_read_count>259514</online_read_count>
+				 <IOPS>29.778774</IOPS>
+				 <Device_Response_Time>1299</Device_Response_Time>
+				 <Total_Device_Response_Time>694657646091</Total_Device_Response_Time>
+				 <Device_Response_Time_READ>291</Device_Response_Time_READ>
+				 <Min_Device_Response_Time_READ>93</Min_Device_Response_Time_READ>
+				 <Max_Device_Response_Time_READ>6349</Max_Device_Response_Time_READ>
+				 <Device_Response_Time_WRITE>1806</Device_Response_Time_WRITE>
+				 <Min_Device_Response_Time_WRITE>1313</Min_Device_Response_Time_WRITE>
+				 <Max_Device_Response_Time_WRITE>44980</Max_Device_Response_Time_WRITE>
+				 <End_to_End_Request_Delay>1299</End_to_End_Request_Delay>
+				 <write_transaction_count>548189</write_transaction_count>
+				 <write_transaction_wait>1711655</write_transaction_wait>
+				 <write_transaction_avg_wait>3.122381</write_transaction_avg_wait>
+				 <Loss_read_count_sector>488</Loss_read_count_sector>
+				 <total_read_count_sector>1172</total_read_count_sector>
+				 <read_loss_ratio>0.416382</read_loss_ratio>
+		</Host.IO_Flow>
+	</Host>
+	<SSDDevice>
+		<SSDDevice.HostInterface>
+				 <Name>SSDDevice.HostInterface</Name>
+			<SSDDevice.IO_Stream>
+					 <Stream_ID>0</Stream_ID>
+					 <Average_Read_Transaction_Turnaround_Time>445</Average_Read_Transaction_Turnaround_Time>
+					 <Average_Read_Transaction_Execution_Time>202</Average_Read_Transaction_Execution_Time>
+					 <Average_Read_Transaction_Transfer_Time>72</Average_Read_Transaction_Transfer_Time>
+					 <Average_Read_Transaction_Waiting_Time>170</Average_Read_Transaction_Waiting_Time>
+					 <Average_Write_Transaction_Turnaround_Time>2034</Average_Write_Transaction_Turnaround_Time>
+					 <Average_Write_Transaction_Execution_Time>1440</Average_Write_Transaction_Execution_Time>
+					 <Average_Write_Transaction_Transfer_Time>31</Average_Write_Transaction_Transfer_Time>
+					 <Average_Write_Transaction_Waiting_Time>562</Average_Write_Transaction_Waiting_Time>
+					 <Total_Transactions>1010236</Total_Transactions>
+					 <Total_Read_Transactions>462047</Total_Read_Transactions>
+					 <Total_Write_Transactions>548189</Total_Write_Transactions>
+			</SSDDevice.IO_Stream>
+		</SSDDevice.HostInterface>
+		<SSDDevice.FTL Issued_Flash_Read_CMD="722641" Issued_Flash_Interleaved_Read_CMD="0" Issued_Flash_Multiplane_Read_CMD="0" Issued_Flash_Copyback_Read_CMD="0" Issued_Flash_Multiplane_Copyback_Read_CMD="0" Issued_Flash_Program_CMD="548189" Issued_Flash_Interleaved_Program_CMD="0" Issued_Flash_Multiplane_Program_CMD="0" Issued_Flash_Interleaved_Multiplane_Program_CMD="0" Issued_Flash_Copyback_Program_CMD="0" Issued_Flash_Multiplane_Copyback_Program_CMD="0" Issued_Flash_Erase_CMD="0" Issued_Flash_Interleaved_Erase_CMD="0" Issued_Flash_Multiplane_Erase_CMD="0" Issued_Flash_Interleaved_Multiplane_Erase_CMD="0" Issued_Flash_Suspend_Program_CMD="0" Issued_Flash_Suspend_Erase_CMD="0" Issued_Flash_Read_CMD_For_Mapping="0" Issued_Flash_Program_CMD_For_Mapping="0" CMT_Hits="1010236" CMT_Hits_For_Read="462047" CMT_Hits_For_Write="548189" CMT_Misses="0" CMT_Misses_For_Read="0" CMT_Misses_For_Write="0" Total_CMT_Queries="1010236" Total_CMT_Queries_For_Reads="462047" Total_CMT_Queries_For_Writes="548189" CMT_hit_ratio="1.000000" Total_GC_Executions="0" Average_Page_Movement_For_GC="-nan" Total_WL_Executions="0" Average_Page_Movement_For_WL="-nan" CMT_size="0" stage1_end="0" stage2_end="0"/>
+		<SSDDevice.TSU>
+		</SSDDevice.TSU>
+		<Workload_Intensity>
+				 <Observed_Time_ns>17950132824148</Observed_Time_ns>
+			<Die>
+					 <Channel>0</Channel>
+					 <Chip>0</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>126522606826</NAND_Execution_ns>
+					 <Queue_Integral_ns>56890357134.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>45286391315.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>179912</Dispatched_Transactions>
+					 <Dispatched_User_Writes>78833</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>0</Channel>
+					 <Chip>1</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>118718974422</NAND_Execution_ns>
+					 <Queue_Integral_ns>50759850983.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>40696749518.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>169794</Dispatched_Transactions>
+					 <Dispatched_User_Writes>73784</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>1</Channel>
+					 <Chip>0</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>121040502370</NAND_Execution_ns>
+					 <Queue_Integral_ns>48530264487.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>39555815897.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>172540</Dispatched_Transactions>
+					 <Dispatched_User_Writes>75233</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>1</Channel>
+					 <Chip>1</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>135972339641</NAND_Execution_ns>
+					 <Queue_Integral_ns>49634369992.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>40472086784.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>190185</Dispatched_Transactions>
+					 <Dispatched_User_Writes>84920</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>2</Channel>
+					 <Chip>0</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>94708828279</NAND_Execution_ns>
+					 <Queue_Integral_ns>43643548027.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>35837364785.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>138202</Dispatched_Transactions>
+					 <Dispatched_User_Writes>58501</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>2</Channel>
+					 <Chip>1</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>102411135369</NAND_Execution_ns>
+					 <Queue_Integral_ns>44632064347.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>36453622936.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>147456</Dispatched_Transactions>
+					 <Dispatched_User_Writes>63560</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>3</Channel>
+					 <Chip>0</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>93824333506</NAND_Execution_ns>
+					 <Queue_Integral_ns>47599543611.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>35148066406.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>139056</Dispatched_Transactions>
+					 <Dispatched_User_Writes>57822</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Die>
+					 <Channel>3</Channel>
+					 <Chip>1</Chip>
+					 <Die_Index>0</Die_Index>
+					 <NAND_Execution_ns>90052725310</NAND_Execution_ns>
+					 <Queue_Integral_ns>43002297094.000000</Queue_Integral_ns>
+					 <User_Write_Queue_Integral_ns>34961878107.000000</User_Write_Queue_Integral_ns>
+					 <Dispatched_Transactions>133685</Dispatched_Transactions>
+					 <Dispatched_User_Writes>55536</Dispatched_User_Writes>
+					 <Queued_At_End>0</Queued_At_End>
+			</Die>
+			<Single_Page_Write>
+					 <Observed_Requests>240432</Observed_Requests>
+					 <All_Candidate_Dies_Idle_Requests>175286</All_Candidate_Dies_Idle_Requests>
+					 <Die_Load_Gap_Below_460us_Requests>181724</Die_Load_Gap_Below_460us_Requests>
+					 <Placed_Requests>240432</Placed_Requests>
+					 <Placed_Pages>240432</Placed_Pages>
+					 <Cross_Channel_Requests>16955</Cross_Channel_Requests>
+					 <Cross_Channel_Pages>16955</Cross_Channel_Pages>
+			</Single_Page_Write>
+			<Multipage_Write>
+					 <Observed_Requests>115355</Observed_Requests>
+					 <All_Candidate_Dies_Idle_Requests>72031</All_Candidate_Dies_Idle_Requests>
+					 <Die_Load_Gap_Below_460us_Requests>75142</Die_Load_Gap_Below_460us_Requests>
+					 <Placed_Requests>115355</Placed_Requests>
+					 <Placed_Pages>307757</Placed_Pages>
+					 <Cross_Channel_Requests>22470</Cross_Channel_Requests>
+					 <Cross_Channel_Pages>36838</Cross_Channel_Pages>
+			</Multipage_Write>
+		</Workload_Intensity>
+		<LEPA>
+				 <Independent_Wordline_Multiplane>false</Independent_Wordline_Multiplane>
+				 <Read_Unit_ns>130000</Read_Unit_ns>
+				 <Write_Time_Ratio>11</Write_Time_Ratio>
+				 <Erase_Time_Ratio>77</Erase_Time_Ratio>
+				 <Write_Selections>548189</Write_Selections>
+				 <Die_Redirections>67702</Die_Redirections>
+				 <Outstanding_Reads>0</Outstanding_Reads>
+				 <Outstanding_Writes>0</Outstanding_Writes>
+				 <Outstanding_Erases>0</Outstanding_Erases>
+		</LEPA>
+		<channel_erase_count channel_0_erase_count_is_="0.000000"/>
+		<channel_erase_count channel_1_erase_count_is_="0.000000"/>
+		<channel_erase_count channel_2_erase_count_is_="0.000000"/>
+		<channel_erase_count channel_3_erase_count_is_="0.000000"/>
+		<channel_erase_count channel_4_erase_count_is_="0.000000"/>
+		<channel_ori_write channel_0_origin_write_is_="217547"/>
+		<channel_ori_write channel_1_origin_write_is_="225236"/>
+		<channel_ori_write channel_2_origin_write_is_="186787"/>
+		<channel_ori_write channel_3_origin_write_is_="178133"/>
+		<channel_tol_write channel_0_total_write_is_="217547"/>
+		<channel_tol_write channel_1_total_write_is_="225236"/>
+		<channel_tol_write channel_2_total_write_is_="186787"/>
+		<channel_tol_write channel_3_total_write_is_="178133"/>
+	</SSDDevice>
+</MQSim_Results>

@@ -140,7 +140,7 @@ def archive_samples(folder, trace):
     subprocess.run(['pigz', '-t', '-p', '1', '--', *archives], check=True)
 
 
-def verify_case(case, runner, trace, factor, mode, timing, prior, pilot, manifest):
+def verify_case(case, runner, trace, factor, mode, timing, prior, pilot, manifest, artifact_root=OUTPUT):
     folder = runner.EXPERIMENT
     result_path = folder / case['result_xml']
     actual = ET.parse(result_path).find('./SSDDevice')
@@ -173,18 +173,19 @@ def verify_case(case, runner, trace, factor, mode, timing, prior, pilot, manifes
                                             case['host_write_page_transactions'] - single),
         }
     samples = folder / case['latency_samples']
-    if factor == 1:
+    match_reference = factor == 1 and prior is not None
+    if match_reference:
         assert case['latency'] == prior['latency'] and case['policy_counters'] == prior['policy_counters'], (trace, mode)
         for i in range(4):
             name = f'{trace}_latency_{i}.csv'
             assert samples_match(samples / name, PILOT / prior['latency_samples'] / name), (trace, mode, name)
     archive_samples(samples, trace)
     out = {
-        **case, 'result_xml': str(result_path.relative_to(OUTPUT)),
-        'log': str((folder / case['log']).relative_to(OUTPUT)),
-        'latency_samples': str(samples.relative_to(OUTPUT)), 'sample_format': 'gzip',
+        **case, 'result_xml': str(result_path.relative_to(artifact_root)),
+        'log': str((folder / case['log']).relative_to(artifact_root)),
+        'latency_samples': str(samples.relative_to(artifact_root)), 'sample_format': 'gzip',
         'arrival_rate_iops': case['requests_completed'] * 1e9 / timing['span_ns'],
-        'reference_samples_match': factor == 1, 'workload_intensity': load,
+        'reference_samples_match': match_reference, 'workload_intensity': load,
     }
     if decisions is not None:
         out['wl_decisions'] = decisions

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Execution_Parameter_Set>
+	<Host_Parameter_Set>
+		<PCIe_Lane_Bandwidth>1.00000</PCIe_Lane_Bandwidth>    <!--PCIE带宽-->
+		<PCIe_Lane_Count>4</PCIe_Lane_Count>					 <!--PCIE通道数-->
+		<SATA_Processing_Delay>400000</SATA_Processing_Delay>
+		<Enable_ResponseTime_Logging>false</Enable_ResponseTime_Logging>
+		<ResponseTime_Logging_Period_Length>1000000</ResponseTime_Logging_Period_Length>
+	</Host_Parameter_Set>
+	<Device_Parameter_Set>
+		<PACS_Enabled>true</PACS_Enabled>
+		<PACS_Request_Level_Enabled>true</PACS_Request_Level_Enabled>
+		<PACS_Cross_Channel_Enabled>true</PACS_Cross_Channel_Enabled>
+		<PACS_Cross_Channel_Adaptive_Enabled>true</PACS_Cross_Channel_Adaptive_Enabled>
+		<PACS_Cross_Channel_Gain_Beta>1</PACS_Cross_Channel_Gain_Beta>
+		<PACS_Cross_Channel_Search_Budget>256</PACS_Cross_Channel_Search_Budget>
+		<PACS_Use_Average_Program_Latency>true</PACS_Use_Average_Program_Latency>
+		<PACS_WL_Decision_Stats>false</PACS_WL_Decision_Stats>
+		<Workload_Intensity_Stats_Enabled>true</Workload_Intensity_Stats_Enabled>
+		<PACS_Cross_Channel_Screening_Beta>1</PACS_Cross_Channel_Screening_Beta>
+		<LEPA_Enabled>false</LEPA_Enabled>
+		<QSTR_MED_Enabled>false</QSTR_MED_Enabled>
+		<Independent_Wordline_Multiplane>false</Independent_Wordline_Multiplane>
+		<Seed>321</Seed>
+		<Enabled_Preconditioning>true</Enabled_Preconditioning>		 <!--预处理开关-->
+		<Memory_Type>FLASH</Memory_Type>		 <!--存储类型-->
+		<HostInterface_Type>NVME</HostInterface_Type>		 <!--主机端接口-->
+		<IO_Queue_Depth>65535000</IO_Queue_Depth>
+		<Queue_Fetch_Size>512</Queue_Fetch_Size>
+		<Caching_Mechanism>SIMPLE</Caching_Mechanism>				 <!--设备上使用的数据缓存机制-->
+		<Data_Cache_Sharing_Mode>SHARED</Data_Cache_Sharing_Mode>
+		<Data_Cache_Capacity>134217728</Data_Cache_Capacity>        <!--DRAM 数据缓存的大小-->
+		<Data_Cache_DRAM_Row_Size>8192</Data_Cache_DRAM_Row_Size>
+		<Data_Cache_DRAM_Data_Rate>100</Data_Cache_DRAM_Data_Rate>		 <!--DRAM 数据传输速率-->
+		<Data_Cache_DRAM_Data_Busrt_Size>1</Data_Cache_DRAM_Data_Busrt_Size>
+		<Data_Cache_DRAM_tRCD>13</Data_Cache_DRAM_tRCD>
+		<Data_Cache_DRAM_tCL>13</Data_Cache_DRAM_tCL>
+		<Data_Cache_DRAM_tRP>13</Data_Cache_DRAM_tRP>
+		<Address_Mapping>PAGE_LEVEL</Address_Mapping>     <!--映射方式-->
+		<Ideal_Mapping_Table>true</Ideal_Mapping_Table>   <!--映射表是否都在DRAM中-->
+		<CMT_Capacity>33554432</CMT_Capacity>       <!--缓存地址映射表2063856  1032440以字节为单位-->
+		<CMT_Sharing_Mode>SHARED</CMT_Sharing_Mode>
+		<Plane_Allocation_Scheme>CWDP</Plane_Allocation_Scheme>     <!--循环磨损平面分配-->
+		<Transaction_Scheduling_Policy>PRIORITY_OUT_OF_ORDER</Transaction_Scheduling_Policy>    <!--高优先级事务调度策略-->
+		<Overprovisioning_Ratio>0.25</Overprovisioning_Ratio>     <!-- SOML Read Table 1 overprovisioning, applied to raw capacity. -->
+		<GC_Exec_Threshold>0.05000</GC_Exec_Threshold>			<!--GC阈值-->
+		<GC_Block_Selection_Policy>GREEDY</GC_Block_Selection_Policy>		<!--GC选择策略   RGA优先选择与其他垃圾块邻近的存储块进行回收-->
+		<Use_Copyback_for_GC>false</Use_Copyback_for_GC>			<!--是否使用copyback用于GC     copyback数据无需经过主控-->
+		<Preemptible_GC_Enabled>false</Preemptible_GC_Enabled>		<!--启用可抢占 GC 的切换-->
+		<GC_Hard_Threshold>0.01000</GC_Hard_Threshold>				<!--停止抢占式GC执行的阈值-->
+		<Dynamic_Wearleveling_Enabled>false</Dynamic_Wearleveling_Enabled>		<!--启用动态磨损均衡-->
+		<Static_Wearleveling_Enabled>true</Static_Wearleveling_Enabled>			<!--启用静态磨损均衡-->
+		<Static_Wearleveling_Threshold>50</Static_Wearleveling_Threshold>		<!--启动静态磨损均衡的阈值-->
+		<Preferred_suspend_erase_time_for_read>700000</Preferred_suspend_erase_time_for_read>  <!--暂停正在进行的闪存擦除操作以支持最近排队的读取操作的合理时间。-->
+		<Preferred_suspend_erase_time_for_write>700000</Preferred_suspend_erase_time_for_write>
+		<Preferred_suspend_write_time_for_read>100000</Preferred_suspend_write_time_for_read>
+		<Flash_Channel_Count>4</Flash_Channel_Count>    <!-- SSD后端的闪存通道数-->
+		<Flash_Channel_Width>1</Flash_Channel_Width>		<!--每个闪存通道的宽度（以字节为单位）-->
+		<Channel_Transfer_Rate>200</Channel_Transfer_Rate>		<!-- SSD后端闪存通道的传输速率（MT/s）-->
+		<Chip_No_Per_Channel>2</Chip_No_Per_Channel>			<!-- SSD 后端每个通道附加的闪存芯片数量。-->
+		<Flash_Comm_Protocol>NVDDR2</Flash_Comm_Protocol>
+		<Set_count>4</Set_count>
+		<!-- Baseline NAND geometry and timing from SOML Read, ASPLOS 2019, Table 1. -->
+		<Flash_Parameter_Set>
+			<Flash_Technology>TLC</Flash_Technology>
+			<CMD_Suspension_Support>NONE</CMD_Suspension_Support>		<!--支持挂起的命令类型-->
+			<Page_Read_Latency_LSB>90000</Page_Read_Latency_LSB> <!--读取闪存单元的 LSB 位的延迟  最低有效位（Least Significant Bit）-->
+			<Page_Read_Latency_CSB>120000</Page_Read_Latency_CSB>  <!-- Cache Status Bit-->
+			<Page_Read_Latency_MSB>180000</Page_Read_Latency_MSB>  <!--最高有效位（Most Significant Bit）-->
+			<Page_Program_Latency_LSB>900000</Page_Program_Latency_LSB> <!--对闪存单元的 LSB 位进行编程的延迟-->
+			<Page_Program_Latency_CSB>900000</Page_Program_Latency_CSB>
+			<Page_Program_Latency_MSB>900000</Page_Program_Latency_MSB>
+			<!-- Micron B47R TLC 40 C table from the original 1612_2 Baseline experiment. -->
+			<!-- Simulated WL i uses original WL round(i * 177 / 255). All 178 source positions are represented. -->
+			<Wordline_Program_Latencies>
+				1441063 1435000 1435000 1430000 1435000 1435000 1430000 1435000 1435000 1435000
+				1435000 1435000 1435000 1435000 1435000 1435000 1435000 1435000 1435000 1450000
+				1450000 1380000 1380000 1375000 1360000 1360000 1380000 1360000 1360000 1365000
+				1365000 1365000 1365000 1350000 1355000 1355000 1350000 1350000 1350000 1360000
+				1365000 1365000 1380000 1380000 1380000 1380000 1380000 1380000 1380000 1380000
+				1380000 1380000 1385000 1380000 1380000 1370000 1365000 1400000 1400000 1395000
+				1390000 1390000 1395000 1400000 1400000 1465000 1465000 1465000 1465000 1465000
+				1465000 1465000 1470000 1465000 1465000 1470000 1465000 1465000 1470000 1470000
+				1460000 1460000 1460000 1460000 1460000 1460000 1455000 1455000 1460000 1460000
+				1460000 1460000 1465000 1465000 1465000 1465000 1465000 1465000 1460000 1460000
+				1460000 1465000 1455000 1455000 1610000 1610000 1605000 1605000 1610000 1605000
+				1605000 1605000 1605000 1605000 1620000 1610000 1650000 1650000 1670000 1665000
+				1665000 1665000 1660000 1660000 1665000 1665000 1665000 1441063 1441063 1400000
+				1400000 1410000 1410000 1410000 1440000 1440000 1440000 1435000 1325000 1325000
+				1340000 1325000 1315000 1315000 1310000 1310000 1310000 1310000 1310000 1310000
+				1310000 1325000 1315000 1315000 1315000 1315000 1315000 1315000 1315000 1315000
+				1315000 1315000 1315000 1315000 1315000 1315000 1315000 1315000 1315000 1315000
+				1315000 1325000 1325000 1315000 1320000 1320000 1315000 1320000 1315000 1315000
+				1330000 1330000 1330000 1330000 1330000 1330000 1320000 1320000 1320000 1320000
+				1330000 1330000 1330000 1440000 1435000 1435000 1435000 1420000 1420000 1430000
+				1430000 1430000 1430000 1430000 1420000 1420000 1425000 1435000 1435000 1425000
+				1435000 1435000 1420000 1435000 1425000 1425000 1405000 1405000 1405000 1415000
+				1405000 1405000 1420000 1415000 1415000 1415000 1415000 1605000 1605000 1605000
+				1585000 1585000 1590000 1610000 1610000 1590000 1575000 1575000 1575000 1590000
+				1570000 1570000 1570000 1570000 1570000 1570000 1570000 1570000 1735000 1770000
+				1760000 1760000 1760000 1760000 1760000 1441063
+			</Wordline_Program_Latencies>
+			<Block_Erase_Latency>10000000</Block_Erase_Latency>  <!--擦除延迟-->
+			<Block_PE_Cycles_Limit>10000</Block_PE_Cycles_Limit>		<!--擦除限制次数-->
+			<Suspend_Erase_Time>700000</Suspend_Erase_Time>		<!--暂停正在进行的擦除操作所需的时间-->
+			<Suspend_Program_Time>100000</Suspend_Program_Time>  <!--暂停正在进行的程序操作所需的时间-->
+			<Die_No_Per_Chip>1</Die_No_Per_Chip> <!-- Each of the eight chips contains one die. -->
+			<Plane_No_Per_Die>2</Plane_No_Per_Die>
+			<Block_No_Per_Plane>1437</Block_No_Per_Plane>
+			<Page_No_Per_Block>768</Page_No_Per_Block>
+			<Page_Capacity>16384</Page_Capacity>				<!--页大小-->
+			<Page_Metadat_Capacity>448</Page_Metadat_Capacity>   <!--页的元数据区域的大小   字节为单位-->
+		</Flash_Parameter_Set>									<!-- Raw capacity from the table geometry is 269.4375 GiB. -->
+	</Device_Parameter_Set>
+</Execution_Parameter_Set>

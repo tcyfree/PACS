@@ -1562,7 +1562,7 @@ namespace SSD_Components
 			const auto critical_page = std::max_element(finish.begin(), finish.end()) - finish.begin();
 			if (adaptive.enabled) {
 				const double minimum_gain = adaptive.gain_beta * program_times[critical_page];
-				const double target_finish = local_finish - minimum_gain;
+				const double target_finish = local_finish - adaptive.Effective_screening_beta() * program_times[critical_page];
 				struct Candidate {
 					Physical_Page_Address address;
 					double estimated_finish;
@@ -1574,7 +1574,7 @@ namespace SSD_Components
 				};
 				std::vector<Critical_Page> critical_pages;
 				for (std::size_t i = 0; i < finish.size(); ++i) {
-					// A zero threshold uses all pages tied for the last finish as the starting set.
+					// Keep the last-finishing pages even when the screening margin is zero.
 					if (finish[i] > target_finish || finish[i] == local_finish) {
 						critical_pages.push_back({i, {}});
 					}
@@ -1584,7 +1584,7 @@ namespace SSD_Components
 				std::vector<Physical_Page_Address> best_plan;
 				std::size_t best_crossed_pages = 0;
 				best_finish = local_finish;
-				if (target_finish > 0) {
+				if (target_finish > 0 || adaptive.screening_beta >= 0) {
 					const auto page_after_prefix = [&](const Physical_Page_Address& address, std::size_t i) {
 						const auto lane = plane_index(address);
 						std::size_t next_page = initial_frontier[lane];
@@ -1635,8 +1635,7 @@ namespace SSD_Components
 							const double candidate_finish = estimate_plan(plan, finish, use_average);
 							const double gain = local_finish - candidate_finish;
 							search_stats.rejected_by_beta += gain > 0 && gain < minimum_gain;
-							if (gain >= minimum_gain &&
-								(candidate_finish < best_finish || (candidate_finish == best_finish && crossed_pages < best_crossed_pages))) {
+							if (candidate_finish < best_finish || (candidate_finish == best_finish && crossed_pages < best_crossed_pages)) {
 								best_finish = candidate_finish;
 								best_crossed_pages = crossed_pages;
 								best_plan = plan;
@@ -1661,8 +1660,9 @@ namespace SSD_Components
 				search_stats.critical_pages = critical_pages.size();
 				search_stats.evaluations = evaluations;
 				search_stats.budget_exhausted = exhausted;
-				search_stats.only_below_beta = best_plan.empty() && search_stats.rejected_by_beta > 0;
-				if (!best_plan.empty()) {
+				const bool accepted = !best_plan.empty() && local_finish - best_finish >= minimum_gain;
+				search_stats.only_below_beta = !accepted && search_stats.rejected_by_beta > 0;
+				if (accepted) {
 					return {std::move(best_plan), best_finish};
 				}
 				return {std::move(plan), local_finish};
